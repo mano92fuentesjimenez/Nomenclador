@@ -1,0 +1,44 @@
+{
+  "a-977508": {
+    "name": "a",
+    "id": "a-977508",
+    "description": "a",
+    "fields": {
+      "dd": {
+        "type": "DB_String",
+        "needed": true,
+        "id": "dd",
+        "header": "Denominaci&oacute;n",
+        "_enumId": "a-977508",
+        "isDefault": true,
+        "isDenom": true
+      },
+      "id_enum_1100": {
+        "type": "PrimaryKey",
+        "id": "id_enum_1100"
+      }
+    },
+    "dataSource": "genesig"
+  },
+  "b-591101": {
+    "name": "b",
+    "id": "b-591101",
+    "description": "b",
+    "fields": {
+      "dd": {
+        "type": "DB_String",
+        "needed": true,
+        "id": "dd",
+        "header": "Denominaci&oacute;n",
+        "_enumId": "b-591101",
+        "isDefault": true,
+        "isDenom": true
+      },
+      "id_enum_1100": {
+        "type": "PrimaryKey",
+        "id": "id_enum_1100"
+      }
+    },
+    "dataSource": "genesig"
+  }
+}

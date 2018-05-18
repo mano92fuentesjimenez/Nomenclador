@@ -1,0 +1,18 @@
+Se necesita poner que:
+    un nomenclador solo puede referenciar a otro nomenclador que este en el mismo dataSource
+    Contrar las relaciones mediante llaves primarias y foraneas utilizando los mecanismos de postgres y no yo a mano
+
+quitar REF_VALUE_ID, y ver que nada se rompa, esto creo que no se usa para nada
+
+
+importar y exportar datos de los nomencladores.
+
+ampliar importar y exportar.
+
+decirle a juanpa el bug de cuando se manda a cargar 2 veces seguidas el mismo plugin, una de las 2 funciones de callback
+no se va a ejecutar porque en loadDynamicConfg en la linea 81, el contaor llega a 0 y sigue disminuyendo, es decir, se carga
+el plugin 2 veces seguidas, pero como hay el doble de archivos de lo que se espera por el plugin la cuenta va a negativo.
+
+arreglar todos los removeAll
+
+

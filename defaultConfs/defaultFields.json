@@ -1,0 +1,10 @@
+{
+    "denominacion": {
+        "type": "DB_String",
+        "needed": true,
+        "id": "denominacion",
+        "header": "Denominaci&oacute;n",
+        "isDefault":true,
+        "isDenom":true
+    }
+}

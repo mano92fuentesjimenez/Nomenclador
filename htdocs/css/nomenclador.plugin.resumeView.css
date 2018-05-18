@@ -1,0 +1,24 @@
+.nomenclador_resumeViewTable {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    padding: 10px;
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+}
+
+.nomenclador_resumeViewTable > thead th {
+    font-weight: bold;
+    text-align: center;
+}
+
+.nomenclador_resumeViewTable th  {
+    border: 1px solid;
+}
+
+.nomenclador_resumeViewTable td {
+    border: 1px solid;
+}
+
+.nomenclador_hiddenColumns {
+    display: none;
+}

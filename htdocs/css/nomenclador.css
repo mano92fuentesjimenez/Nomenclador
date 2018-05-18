@@ -1,0 +1,290 @@
+.inactive-image {
+    background-image: url(../../../../coreplugins/base/htdocs/gfx/genesig_estandar/inactive.gif) !important;
+    margin-left: 20px;
+    width: 15px;
+    height: 15px;
+}
+
+.active-image {
+    background-image: url(../../../../coreplugins/base/htdocs/gfx/genesig_estandar/active.gif) !important;
+    margin-left: 20px;
+    width: 15px;
+    height: 15px;
+}
+
+.enum_modified_grid_row{
+    background-color: #86A9EC !important;
+}
+.enum_inserted_grid_row{
+    background-color: #AAF5BE !important;
+}
+.enum_removed_grid_row{
+    background-color: #FFA6A6 !important;
+}
+.enum_treenode_selected{
+    background-color: slategray !important;
+}
+.enum_tree_node_icon{
+    background-image: url("../gfx/image_resize.png") !important;
+}
+.enum_tree_category_icon{
+    background-image: url("../gfx/bf.png") !important;
+    background-size: contain;
+}
+.enum_tree_field_icon{
+    background-image: url("../gfx/reload.png") !important;
+}
+.enum_tree_node{
+
+}
+.geometry_null_name{
+    background-color: grey;
+}
+
+.nomenclador_geometrie_container {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 999999;
+    animation: show_nomenclador_container 1s forwards;
+}
+
+.nomenclador_geometrie_img {
+    transition: transform 1s;
+    width: 500px;
+    height: 500px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-origin: left top;
+    transform: translate(-50%,-50%);
+    animation: show_nomenclador_geometrie_img 1s forwards;
+    border-radius: 20px;
+}
+
+.nomenclador_geometrie_container_close {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    right: -30px;
+    top: -30px;
+    color: whitesmoke;
+    font-size: 50px;
+    cursor: pointer;
+}
+
+.enum_DB_MapserverLayer_reference {
+    transition: left 0.5s, top 0.5s;
+    position: absolute;
+    border: 1px solid;
+    width: 250px;
+    height: 250px;
+    z-index: 9999999;
+}
+
+.enums_Db_Enum {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.enums_Db_Enum>div:first-child:before {
+    font-size: 15px;
+    color: #31599A;
+    position: absolute;
+    left: 50%;
+    top:50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: left 1s, opacity 1s;
+    cursor: pointer;
+}
+
+.enums_Db_Enum:hover>div:first-child:before{
+    left: calc(100% - 20px);
+    opacity: 0.8;
+}
+
+.enums_Db_Enum_link {
+    position: absolute;
+    width: 30%;
+    height: 300px;
+    max-height: 300px;
+    z-index: 99999;
+    transition: transform 0.5s, opacity 0.5s , right 0.5s;
+    transform: scale(0);
+    opacity: 0;
+    transform-origin: left top;
+}
+
+.enums_Db_Enum_linkVisible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.enums_Db_Enum_link > div:first-child {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    right: -10px;
+    top: -10px;
+    color: #1E498F;
+    text-shadow: 0px 0px 2px;
+    cursor: pointer;
+}
+
+.enums_Db_Enum_link > div:last-child {
+    max-height: inherit;
+    width: 100%;
+    background-color: #D5E2F2;
+    border-radius: 10px;
+    border: 1px;
+    box-shadow: 1px 1px 20px;
+    overflow-y: auto;
+}
+
+.enums_Db_Enum_link > div > table {
+    table-layout: fixed;
+    color: #15428B;
+    padding: 10px;
+    width: 100%;
+}
+
+.enums_Db_Enum_link > div > table > thead th {
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    font-style: italic;
+}
+
+.enums_Db_Enum_link > div > table > tbody th {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.enums_Db_Enum_link > div > table > tbody tr * {
+    vertical-align: top;
+}
+
+.enums_Db_Enum_link > div > table > tbody tr > th:first-child {
+    width: 30%;
+}
+
+.enums_Db_Enum_link > div > table tr {
+    overflow: hidden;
+    word-break: break-all;
+}
+
+.resumeView_HighLightedEnumField {
+    background-color: #D3E1F1;
+    font-style: italic;
+    font-weight: bold;
+}
+
+@keyframes show_nomenclador_container {
+    from {
+        background-color: rgba(128, 128, 128, 0);
+    }
+    to {
+        background-color: rgba(128, 128, 128, 0.4);
+    }
+}
+
+@keyframes show_nomenclador_geometrie_img {
+    from {
+        box-shadow: 0px 0px 0px white;
+        transform: scale(0) translate(-50%,-50%);
+    }
+    to {
+        box-shadow: 0px 0px 100px white;
+        transform: scale(1) translate(-50%,-50%);
+    }
+}
+.shadowedText{
+    color: dimgray !important;
+}
+
+
+.nomColumnHeaderToolTip{
+
+    position: absolute;
+    z-index:999999;
+
+}
+.nomColumnHeader{
+    border: 2px;
+    border-radius: 5px;
+    box-shadow: 6px 8px 8px black;
+    background: #D5E2F2;
+    padding:5px;
+}
+
+.nomColumnHeader td:first-child::after{
+    content: ':';
+}
+.nomColumnHeader th{
+    font-weight:bold;
+    text-align: center;
+    color: #31599A;
+}
+.nomColumnHeader td{
+    color:#15428B;
+}
+
+.nomencladorMenuIcon:before {
+
+}
+
+.enumCategoryTreeIcon:before {
+    font-family: gisTtfIcon_flaticon;
+}
+
+.x-tree-node-expanded .enumCategoryTreeIcon:before, .x-tree-node-leaf .enumCategoryTreeIcon:before {
+    content: "\e0d9";
+}
+
+.x-tree-node-collapsed .enumCategoryTreeIcon:before {
+    content: "\e085";
+}
+
+.enums_dynamic_event_link {
+    font-style: italic;
+    text-decoration: underline;
+    color: #31599A;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+._enum_image_ct img {
+    width: 100%;
+    height: 100%;
+}
+
+._enum_image_ct{
+    width: 70px;
+    height: 70px;
+
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    margin: 5px;
+    float: left;
+    box-shadow: -3px 2px 7px 0px #0d3e9e;
+    transition: box-shadow 0.3s;
+}
+
+
+/*._enum_image:hover,*/ ._enum_image_selected,.enum_image_selected2 {
+    box-shadow: -3px 2px 7px 0px red;
+}
+
+.enumsImagesDataView {
+    background-color: rgb(219, 222, 226) !important;
+    width: 100%;
+    height: 100%;
+}
