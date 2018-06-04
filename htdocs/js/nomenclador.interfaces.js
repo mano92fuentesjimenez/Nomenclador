@@ -92,6 +92,7 @@
                 title: (data ? "Modificar " : "Adicionar ") + "datos en el Nomenclador: " + this._enum.name,
                 items: [
                     {
+                        autoScroll:true,
                         frame:true,
                         layout:'form',
                         items:config
