@@ -299,15 +299,19 @@
 	});
 
 	nom.treeEditorPanel = Ext.extend(nom.nomencladorTree,{
+	    entityType : 'nomenclador',
+        addRankButtonText :'categor&iacute;a',
         animate: true,
         autoScroll: true,
         canMoveEnums:true,
         askToChangeEnum:null,
+        enumInstanceConfig:null,
         constructor: function (cfg) {
 
             var self = this;
             this.enumInstance = arguments[0].enumInstance;
             this.enumInstanceConfig = arguments[0].enumInstanceConfig;
+            this._apply_(cfg);
 
             this.initializeMenu();
             this.tbar=[
@@ -392,7 +396,7 @@
             mn.registerItem(
                 [
                     {
-                        text: 'Adicionar categor&iacute;a',
+                        text: 'Adicionar '+ this.addRankButtonText ,
                         iconCls : 'gis_adicionar',
                         handler: this.proccessAction._delegate_('add_category',this)
                     }
@@ -403,12 +407,12 @@
             mn.registerItem(
                 [
                     {
-                        text: 'Renombrar categor&iacute;a',
+                        text: 'Renombrar '+ this.addRankButtonText,
                         iconCls : 'gis_modificar',
                         handler: this.proccessAction._delegate_('mod_category',this)
                     },
                     {
-                        text: 'Eliminar categor&iacute;a',
+                        text: 'Eliminar '+this.addRankButtonText,
                         iconCls : 'gis_eliminar',
                         handler: this.proccessAction._delegate_('rem_category',this)
                     }
@@ -419,12 +423,12 @@
             mn.registerItem(
                 [
                     {
-                        text: 'Modificar nomenclador',
+                        text: 'Modificar '+ this.entityType,
                         iconCls : 'gis_modificar',
                         handler: this.proccessAction._delegate_('mod_enum',this)
                     },
                     {
-                        text: 'Eliminar nomenclador',
+                        text: 'Eliminar '+this.entityType,
                         iconCls : 'gis_eliminar',
                         handler: this.proccessAction._delegate_('rem_enum',this)
                     }
@@ -439,7 +443,7 @@
             mn.registerItem(
                 [
                     {
-                        text: 'Adicionar nomenclador',
+                        text: 'Adicionar '+this.entityType,
                         iconCls : 'gis_adicionar',
                         handler: this.proccessAction._delegate_('add_enum',this)
                     }
@@ -454,7 +458,12 @@
 
             this.menuOptions.show(type,pEv,node);
         },
+        getCustomDataTypes:function(){
 
+	        if(this.enumInstanceConfig !== null && this.enumInstanceConfig['dataTypes'] !== undefined)
+	            return this.enumInstanceConfig['dataTypes'];
+	        return null;
+        },
         proccessAction : function(pAction,pParams){
             var nd = pParams.showParams.object,
                 actions = {
@@ -499,7 +508,9 @@
                         "finishedCreation": self.addEnumInServer,
                         scope: self
                     },
-                    enumInstance:self.enumInstance
+                    enumInstance:self.enumInstance,
+                    entityType:self.entityType,
+                    configDataTypes:self.getCustomDataTypes()
                 })).show();
             });
 
@@ -542,7 +553,7 @@
                     fields: {
                         denom : fld
                     },
-                    title:fVs === null?'Adicionar categor&iacute;a':'Renombrar categor&iacute;a',
+                    title:fVs === null?'Adicionar '+self.addRankButtonText:'Renombrar '+self.addRankButtonText,
                     fieldsValues : fVs,
                     height:130,
                     hideApplyButton : true,
@@ -572,7 +583,7 @@
                     node = node.parentNode;
                 }
 
-                var mask = utils.mask(this, "Adicionando Categoria");
+                var mask = utils.mask(this, "Adicionando "+self.addRankButtonText);
 
                 nom.request('addRank',{
                     enumInstance: this.enumInstance,
@@ -597,7 +608,9 @@
                             _enum: _enum,
                             refs: response['refs'],
                             enumInstance:self.enumInstance,
-                            enumHasData: response['hasData']
+                            enumHasData: response['hasData'],
+                            entityType:self.entityType,
+                            configDataTypes:self.getCustomDataTypes()
                         }).show();
                     });
                 };
@@ -610,14 +623,14 @@
             var self = this;
             this.getAddModRank(node.attributes._text_,function(text){
                 var path = node.getPath("idNode");
-                var mask = utils.mask(self, "Modificando categoria.");
+                var mask = utils.mask(self, "Modificando "+self.addRankButtonText);
                 nom.request('modRank',{
                     enumInstance:self.enumInstance,
                     path: path,
                     name: text
                 },function (r) {
 
-                    infoMsg('La categor&iacute;a ha sido renombrada satisfactoriamente.');
+                    infoMsg('La '+self.addRankButtonText+' ha sido renombrada satisfactoriamente.');
 
                     self.reloadTreeNode(node);
                 },null,mask);
@@ -625,11 +638,11 @@
             });
         },
         removeNomenclador: function (node) {
-            var mask = Genesig.Utils.mask(this,'Eliminando nomenclador: '+node.attributes._text_+'.'),
+            var mask = Genesig.Utils.mask(this,'Eliminando '+this.entityType+': '+node.attributes._text_+'.'),
                 self = this;
 
 
-            AjaxPlugins.Ext3_components.Messages.MessageBox.confirm("Confirmaci&oacute;n","&iquest;Est&aacute; seguro que desea eliminar el nomenclador: "+node.attributes._text_+'?',function(b){
+            AjaxPlugins.Ext3_components.Messages.MessageBox.confirm("Confirmaci&oacute;n","&iquest;Est&aacute; seguro que desea eliminar el "+this.entityType+": "+node.attributes._text_+'?',function(b){
 
                 if (b == 'ok') {
                     nom.request('removeEnum',{
@@ -647,7 +660,7 @@
                         self.fireEvent('enumremoved',self.getEnumFromNode(node));
                     },function(error_obj){
                         if (error_obj.type === 'EnumCantBeRemovedIsRefException') {
-                            AjaxPlugins.Ext3_components.Messages.MessageBox.confirm("Nomenclador referenciado", error_obj.msg + '<p>' +
+                            AjaxPlugins.Ext3_components.Messages.MessageBox.confirm(self.entityType.substr(0,1).toUpperCase()+" referenciado", error_obj.msg + '<p>' +
                                 '<br>&iquest;Desea eliminar el nomenclador y el (los) nomenclador(es) donde se encuentra referenciado?</p>', function (b) {
                                 if (b == 'ok')
                                     self.deleteOnCascade(node);
@@ -664,7 +677,7 @@
             return enums.getEnumByName(this.enumInstance,node.text)
 		},
         removeRank: function (node) {
-            AjaxPlugins.Ext3_components.Messages.MessageBox.confirm("Confirmaci&oacute;n","&iquest;Est&aacute; seguro que quiere eliminar la categor&iacute;a seleccionada con todas las subcategor&iacute;as y nomencladores de la misma?",function(b) {
+            AjaxPlugins.Ext3_components.Messages.MessageBox.confirm("Confirmaci&oacute;n","&iquest;Est&aacute; seguro que quiere eliminar la "+this.addRankButtonText+" seleccionada con todas las subcategor&iacute;as y "+this.entityType+"(s) de la misma?",function(b) {
                 if (b == 'ok') {
                     var path = node.getPath('idNode'),
                         self = this;
@@ -702,7 +715,7 @@
                 nodeParent = this.selectedNode.parentNode;
 
             var _enumPath = nodeParent.getPath("idNode") + "/" + _enum.id,
-                mask = Genesig.Utils.mask(this, 'An&ntilde;adiendo nomenclador');
+                mask = Genesig.Utils.mask(this, 'An&ntilde;adiendo '+this.entityType);
 
 
             nom.request('addEnum', {
@@ -722,7 +735,7 @@
             }, mask);
         },
         modEnumInServer: function (changes,callb, node) {
-            var mask = Genesig.Utils.mask(this, 'Modificando nomenclador.');
+            var mask = Genesig.Utils.mask(this, 'Modificando '+this.entityType);
             var self = this;
             nom.request('modEnum', {
                 enumInstance:this.enumInstance,

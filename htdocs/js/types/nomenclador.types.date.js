@@ -12,6 +12,7 @@
             nameToShow :'fecha',
             getValueEditExtComp :function (enumInstance, field) {
                 return new fields.DateField({
+                    fieldLabel:field.header,
                     allowBlank: !!field.needed,
                     getFormVEvtNames: function () {
                         return 'valuesetted';

@@ -12,6 +12,7 @@
 
 
 	nom.nomencladorCreator = Ext.extend(Ext.Window, {
+		entityType:'nomenclador',
 		width :700,
 		height :600,
 		typeStore :null,
@@ -31,12 +32,18 @@
 		dataSourceSelector :null,
 		schemaSelector :null,
 		enumInstance:null,
-		constructor :function (){
+
+        /**
+         * objeto donde las keys son los id de los tipos :true
+         */
+        configDataTypes:null,
+		constructor :function (cfg){
 			var self = this;
-			this.title = 'Adicionar nomenclador';
 			this.enumInstance = arguments[0].enumInstance;
+			this._apply_(cfg);
+            this.title = 'Adicionar '+this.entityType;
 			if (arguments[0]._enum) {
-				this.title = 'Modificar nomenclador';
+				this.title = 'Modificar '+this.entityType;
 				this.creating = false;
 				this._enum = arguments[0]._enum;
 				this.enumHasData = arguments[0].enumHasData;
@@ -80,17 +87,17 @@
 			this.nameTextField = new fields.simpleField({
 				allowBlank :false,
 				fieldLabel :"Denominaci&oacute;n",
-				tooltip:'Denominaci&oacute;n del nomenclador',
+				tooltip:'Denominaci&oacute;n del '+this.entityType,
 				validator :function (text){
 					if (text.indexOf(':') != -1)
-						return "El nombre de un nomenclador no puede contener ':'";
+						return "El nombre de un "+self.entityType+" no puede contener ':'";
 					if (text.indexOf('-') != -1)
-						return "El nombre de un nomenclador no puede contener '-'";
+						return "El nombre de un "+self.entityType+" no puede contener '-'";
 					if (enums.getEnumByName(self.enumInstance, text) && (self.creating || text != self._enum.name))
-						return "No pueden haber nomencladores repetidos.";
+						return "No pueden haber "+self.entityType+"(es) repetidos.";
 					for (var _enum in enums.getEnums(self.enumInstance)){
 						if (_enum == text && (self.creating || text != self._enum.id))
-							return "No puede haber un nomenclador con un nombre identico al identificador de" +
+							return "No puede haber un "+self.entityType+" con un nombre identico al identificador de" +
 								" otro";
 					}
 					if (!self.creating)
@@ -101,7 +108,7 @@
 			this.descriptionTextArea = new fields.fieldDescripcion({
 				enableKeyEvents :true,
 				fieldLabel :"Descripci&oacute;n",
-				tooltip:'Descripci&oacute;n del nomenclador',
+				tooltip:'Descripci&oacute;n del '+this.entityType,
 				height :80
 			});
 			this.createGrid();
@@ -195,6 +202,10 @@
 				 */
 				if ((!no_enum && types[type].valueType == nom.Type.REF_Type) || type in toExclude)
 					continue;
+				//Just custom types to a enumInstance are allowed if configDataTypes is defined.
+				if(utils.isObject(this.configDataTypes) && this.configDataTypes[type]===undefined)
+				    continue;
+
 				dataArray.push([
 					types[type].nameToShow,
 					type,
@@ -289,8 +300,8 @@
 					var propertyWindow = self.properties[id];
 					if (self.enumHasData && t.valueType != nom.Type.REF_Type && !(t instanceof nom.Type.Formula)) {
 						if (self._enum.fields[id])
-							errorMsg("Error", "No se pueden cambiar las propiedades de un campo si el nomenclador " +
-								"tiene datos.");
+							errorMsg("Error", "No se pueden cambiar las propiedades de un campo si el "+self.entityType +
+								" tiene datos.");
 						return;
 					}
 					if (propertyWindow != null || t instanceof nom.Type.Formula) {
@@ -324,7 +335,7 @@
 					if (self.enumHasData) {
 						var id = self.gridStore.getAt(self.rowEditing).get("id");
 						if (self._enum.fields[id]) {
-							errorMsg("No puede cambiar el tipo de campo porque este nomenclador" +
+							errorMsg("No puede cambiar el tipo de campo porque este "+self.entityType +
 								" ya tiene datos");
 							return;
 						}
@@ -561,7 +572,7 @@
 					}
 				},
 				{
-					header:'MultiSelecci&oacute;',
+					header:'MultiSelecci&oacute;n',
 					dataIndex:'multiple',
 					editor:this.multiple,
 					renderer:boolRender
@@ -606,7 +617,7 @@
 					selected.map(function (record){
 						if (record.isDefault) {
 							errorMsg("No se puede eliminar el campo: '" + record.get('name') + "'.", "No se puede eliminar" +
-								" porque es el tipo por defecto que todo nomenclador debe tener.");
+								" porque es el tipo por defecto que todo "+self.entityType+" debe tener.");
 						}
 						else
 							self.gridStore.remove(record);
@@ -743,7 +754,7 @@
 				}
 			});
 			this.gridEditor = new Ext.grid.GridPanel({
-				title :"Campos del nomenclador",
+				title :"Campos de(l)(la) "+this.entityType,
 				region :'center',
 				cm :cm,
 				store :this.gridStore,
@@ -760,7 +771,7 @@
 					{
 						handler :function (){
 							if (self.countAddedFields() > 0) {
-								errorMsg('No puede haber campos a&ntilde;adidos si se queiere copiar un nomenclador');
+								errorMsg('No puede haber campos a&ntilde;adidos si se queiere copiar un '+self.entityType);
 								return;
 							}
 							self.showEnums(
@@ -771,7 +782,7 @@
 								}
 							)
 						},
-						tooltip :'Copiar campos del nomenclador',
+						tooltip :'Copiar campos de(l) '+this.entityType,
 						text:'Copiar',
 						 iconCls :'gis_copiar'
 					},
@@ -844,7 +855,7 @@
 			var self = this;
 			if (!this.valid())
 				return;
-			var mask = Genesig.Utils.mask(this, 'Guardando nomenclador');
+			var mask = Genesig.Utils.mask(this, 'Guardando '+this.entityType);
 			this.fireEvent("finishedCreation", this.getNomenclador(), function (r){
 				mask();
 				if (r) {
@@ -1016,7 +1027,7 @@
 					b &= (record2 == record) || (record.get("name") !== record2.get("name"));
 					if (!b && !notShowAlert) {
 						notShowAlert = true;
-						errorMsg("No es valido el nomenclador", "Un nomenclador no puede tener" +
+						errorMsg("No es valido el(la) "+self.entityType, "Un(a) "+self.entityType+" no puede tener" +
 							"2 campos con nombres iguales.");
 					}
 					return b;
@@ -1097,12 +1108,13 @@
 			}
 		},
 		alertRefsError :function (name, references){
-			var s = "";
+			var s = "",
+				self = this;
 			if (references) {
 				references._map_(function (item, key){
 					var split = key.split(":");
 					var _enum = enums.getEnums(this.enumInstance)[split[0]];
-					s += "Nomenclador: " + _enum._enum.name + " Campo:" + _enum._enum.fields[split[1]].header + ", \n";
+					s += self.entityType+": " + _enum._enum.name + " Campo:" + _enum._enum.fields[split[1]].header + ", \n";
 				});
 				errorMsg("El campo " + name + " no se puede eliminar", "El campo " + name +
 					" esta referenciado por:\n" + s);
