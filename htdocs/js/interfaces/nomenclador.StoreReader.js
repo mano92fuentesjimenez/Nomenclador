@@ -1,4 +1,3 @@
-
 (function() {
     var comps = AjaxPlugins.Ext3_components,
         buttons = comps.buttons,
@@ -286,6 +285,7 @@
                 function (response, params) {
                     this.store.loadData(response);
                     this.hasLoadedBoolean = true;
+                    this.refreshView();
                     this.fireEvent("finishedloadingenum", this, this._enum, params);
                     nom.execute(cb,[],this);
                 },
@@ -458,8 +458,10 @@
         },
         setTitle:function(title){
             Logger.warn('Funcion setTitle no fue sobrescrita');
+        },
+        refreshView :function(){
+            Logger.warn('Funcion refreshView no fue sobrescrita');
         }
-
     });
 
     
