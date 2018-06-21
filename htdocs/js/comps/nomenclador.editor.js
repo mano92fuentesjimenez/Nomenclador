@@ -299,6 +299,7 @@
 	});
 
 	nom.treeEditorPanel = Ext.extend(nom.nomencladorTree,{
+	    //label de la entidad en la interfaz
 	    entityType : 'nomenclador',
         addRankButtonText :'categor&iacute;a',
         animate: true,
@@ -310,7 +311,7 @@
 
             var self = this;
             this.enumInstance = arguments[0].enumInstance;
-            this.enumInstanceConfig = arguments[0].enumInstanceConfig;
+            this.enumInstanceConfig = arguments[0].enumInstanceConfig || {};
             this._apply_(cfg);
 
             this.initializeMenu();
@@ -398,7 +399,7 @@
                     {
                         text: 'Adicionar '+ this.addRankButtonText ,
                         iconCls : 'gis_adicionar',
-                        handler: this.proccessAction._delegate_('add_category',this)
+                        handler: this.proccessAction._delegate_('add_category',this, true)
                     }
                 ],
                 ['root','categoria','nomenclador']
@@ -409,12 +410,12 @@
                     {
                         text: 'Renombrar '+ this.addRankButtonText,
                         iconCls : 'gis_modificar',
-                        handler: this.proccessAction._delegate_('mod_category',this)
+                        handler: this.proccessAction._delegate_('mod_category',this, true)
                     },
                     {
                         text: 'Eliminar '+this.addRankButtonText,
                         iconCls : 'gis_eliminar',
-                        handler: this.proccessAction._delegate_('rem_category',this)
+                        handler: this.proccessAction._delegate_('rem_category',this, true)
                     }
                 ],
                 'categoria'
@@ -425,12 +426,12 @@
                     {
                         text: 'Modificar '+ this.entityType,
                         iconCls : 'gis_modificar',
-                        handler: this.proccessAction._delegate_('mod_enum',this)
+                        handler: this.proccessAction._delegate_('mod_enum',this, true)
                     },
                     {
                         text: 'Eliminar '+this.entityType,
                         iconCls : 'gis_eliminar',
-                        handler: this.proccessAction._delegate_('rem_enum',this)
+                        handler: this.proccessAction._delegate_('rem_enum',this, true)
                     }
                     //                    ,{
                     //                        text:'Eliminar en cascada',
@@ -440,12 +441,23 @@
                 'nomenclador'
             );
 
+            var addEnumMenu = (this.enumInstanceConfig.tpl || {})._queryBy_(function(v,k){
+                return k !== 'default';
+            },this,true)._map_(function(v,k){
+                return {
+                    text:k,
+                    handler:this.proccessAction._delegate_(['add_enum',k],this, true)
+                };
+            },this,false);
+            addEnumMenu = addEnumMenu._length_() ===0?undefined:addEnumMenu;
+
             mn.registerItem(
                 [
                     {
                         text: 'Adicionar '+this.entityType,
                         iconCls : 'gis_adicionar',
-                        handler: this.proccessAction._delegate_('add_enum',this)
+                        handler: this.proccessAction._delegate_(['add_enum','default'],this, true),
+                        menu:addEnumMenu
                     }
                 ],
                 ['categoria','nomenclador']
@@ -464,7 +476,7 @@
 	            return this.enumInstanceConfig['dataTypes'];
 	        return null;
         },
-        proccessAction : function(pAction,pParams){
+        proccessAction : function(pParams,mouseEvt,pAction, tpl){
             var nd = pParams.showParams.object,
                 actions = {
                     add_category : function(pN){
@@ -477,13 +489,13 @@
                         this.removeRank(pN);
                     },
                     mod_enum : function(pN){
-                        this.modNomenclador(pN);
+                        this.modNomenclador(pN, tpl);
                     },
                     rem_enum : function(pN){
                         this.removeNomenclador(pN)
                     },
                     add_enum : function(pN){
-                        this.addNomenclador();
+                        this.addNomenclador(tpl);
                     },
                     del_on_cascade:function(pN){
                         this.deleteOnCascade(pN);
@@ -496,7 +508,7 @@
                 actions[pAction].call(this,nd);
             }
         },
-        addNomenclador: function () {
+        addNomenclador: function (tpl) {
             var self = this;
             nom.request('hasDataSources',{enumInstance:this.enumInstance},function (resp) {
                 if (!resp) {
@@ -510,7 +522,8 @@
                     },
                     enumInstance:self.enumInstance,
                     entityType:self.entityType,
-                    configDataTypes:self.getCustomDataTypes()
+                    tpl:tpl,
+                    tplConfigs:self.enumInstanceConfig.tpl || {},
                 })).show();
             });
 
@@ -595,7 +608,7 @@
 
             });
         },
-        modNomenclador: function (node) {
+        modNomenclador: function (node, tpl) {
             var _enum = enums.getEnumByName(this.enumInstance,node.text),
                 self = this,
                 f = function(){
@@ -610,7 +623,8 @@
                             enumInstance:self.enumInstance,
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
-                            configDataTypes:self.getCustomDataTypes()
+                            tpl:tpl,
+                            tplConfigs: this.enumInstanceConfig.tpl || {}
                         }).show();
                     });
                 };

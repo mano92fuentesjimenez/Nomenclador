@@ -33,10 +33,10 @@
 		schemaSelector :null,
 		enumInstance:null,
 
-        /**
-         * objeto donde las keys son los id de los tipos :true
-         */
-        configDataTypes:null,
+		//nombre del tpl q se va a usar para crear el nomenclador
+        tpl:'default',
+		//configuraciones de todos los tpl en esta instancia de nomenclador.
+		tplConfigs:undefined,
 		constructor :function (cfg){
 			var self = this;
 			this.enumInstance = arguments[0].enumInstance;
@@ -118,7 +118,7 @@
 				this.updateFieldCounter();
 			}
 			else {
-				this.addFields(enums.getDefaultFields(self.enumInstance));
+				this.addFields(enums.getDefaultFields(self.enumInstance,self.tpl));
 			}
 			this.items = [
 				{
@@ -195,6 +195,8 @@
 			var dataArray = [];
 			var types = nom.Type.Utils.getTypesDict();
 			var no_enum = Object.keys(enums.getEnums(this.enumInstance)).length;
+			var configDataTypes = ((this.tplConfigs ||{})[this.tpl] || {}).dataTypes;
+
 			for (var type in types){
 				/**
 				 * No anhadir ningun tipo por referencia si no hay nomencladores a los cuales se les pueda
@@ -202,8 +204,8 @@
 				 */
 				if ((!no_enum && types[type].valueType == nom.Type.REF_Type) || type in toExclude)
 					continue;
-				//Just custom types to a enumInstance are allowed if configDataTypes is defined.
-				if(utils.isObject(this.configDataTypes) && this.configDataTypes[type]===undefined)
+				//custom types are allowed in a enumInstance if configDataTypes is defined.
+				if(utils.isObject(configDataTypes) && configDataTypes[type]===undefined)
 				    continue;
 
 				dataArray.push([
