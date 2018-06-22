@@ -174,15 +174,24 @@
             this.checkEnumInstance(enumInstance);
             return this.simpleTree[enumInstance];
         },
-        getDefaultFields:function(enumInstance) {
+        getDefaultFields:function(enumInstance, tpl) {
             this.checkEnumInstance(enumInstance);
-            var config = this.getConfigFromInstance(enumInstance, 'defaultFields'),
+            var config = this.getConfigFromInstance(enumInstance, 'tpl'),
                 qb = function (v) {
                     return v.isDenom
                 };
 
+            tpl = utils.isString(tpl) ? tpl: 'default';
+            config = (config[tpl] || {});
+            //if tpl:default == true
+            if(config === true)
+                config = this.defaultFields;
+            else
+                config = config.defaultFields;
+
             if (config != null) {
                 if (config._queryBy_(qb)._length_() == 0)
+                    //esto es porque siempre siempre, un nomenclador tiene que tener un campo denominacion
                     config['denom_rand_1254'] = this.defaultFields._queryBy_(qb)._first_();
                 return config;
             }
@@ -917,9 +926,17 @@
      *                       enumDataEditor: Debe contener el prototipo de la clase que se va a usar como interfaz para
      *                                      visualizar los datos. Debe heredar de EnumStoreWriter si esta interfaz va a
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
+    *            tpl: "nombre Tpl":
      *                       defaultFields: Listado de campos por defectos que se deben mostrar cada vez q se cree un nomenclador
      *                                      Es de la forma  [field] donde cada field es de la misma forma en q se guarda
      *                                      en el servidor los cada campo de un nomenclador.
+    *                        dataTypes: Objeto de la forma { dataTypeId:true}
+    *                        extraProps: Objeto q contiene un listado de propiedades extras en una entidad, La llave es
+    *                                  el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
+    *                                  Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
+    *                                  el json del nomenclador q se construyo.
+    *                 Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
+    *                 instancia de nomencladores.
      *
      */
     nom.showUI = function (enumInstance, config){

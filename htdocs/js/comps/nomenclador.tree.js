@@ -53,14 +53,17 @@
 			});
 			this.on('nodedragover', this.nodeDragOverFunc, this);
 			this.on('nodedrop', this.nodeDropFunc, this);
+			this.on('beforeclick',function(nd){
+                if (nd && nd.attributes._type_ === 'enum') this.fireEvent('beforeenumselected', enums.getEnumByName(this.enumInstance,nd.text));
+			}, this);
             this.on('click',function(pNd){
-                if (pNd && pNd.attributes._type_ == 'enum') this.fireEvent('enumselected', enums.getEnumByName(this.enumInstance,pNd.text));
+                if (pNd && pNd.attributes._type_ === 'enum') this.fireEvent('enumselected', enums.getEnumByName(this.enumInstance,pNd.text));
             },this);
 			var selM = this.getSelectionModel();
 			selM.on({
 				scope :this,
 				selectionchange :function (pSelM, pNd){
-					if (pNd && pNd.attributes._type_ == 'enum') this.fireEvent('enumselected', enums.getEnumByName(this.enumInstance,pNd.text));
+					if (pNd && pNd.attributes._type_ === 'enum') this.fireEvent('enumselected', enums.getEnumByName(this.enumInstance,pNd.text));
 				}
 			});
 			selM._apply_({

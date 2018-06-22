@@ -41,7 +41,6 @@
                         'class="gisTtfIcon_flaticon-information-button">' +
                         '</div>' +
                         '<div>' + rend + '</div>';
-                '</div>';
                 return html._format_({
                     enumId: enumD.id,
                     enum_row: pRec.get(nom.Type.PrimaryKey.UNIQUE_ID),

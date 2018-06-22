@@ -32,11 +32,12 @@
 		dataSourceSelector :null,
 		schemaSelector :null,
 		enumInstance:null,
+        extraProps:null,
 
-        /**
-         * objeto donde las keys son los id de los tipos :true
-         */
-        configDataTypes:null,
+		//nombre del tpl q se va a usar para crear el nomenclador
+        tpl:'default',
+		//configuraciones de todos los tpl en esta instancia de nomenclador.
+		tplConfigs:undefined,
 		constructor :function (cfg){
 			var self = this;
 			this.enumInstance = arguments[0].enumInstance;
@@ -48,114 +49,7 @@
 				this._enum = arguments[0]._enum;
 				this.enumHasData = arguments[0].enumHasData;
 			}
-
-			this.buttonSave = new buttons.btnAceptar({
-				disabled :true,
-				handler :this.SaveAndExit, scope :this
-			});
-			var dbConfigStore = new Ext.data.JsonStore({
-				fields :["id"],
-				url :Genesig.ajax.getLightURL("Nomenclador.default") + "&action=getDbConfigs",
-				baseParams:{enumInstance:this.enumInstance}
-			});
-
-			dbConfigStore.on("load", function (t, records){
-				this.dataSourceSelector.setValue(records[0].get("id"));
-			}, this);
-			this.dataSourceSelector = new fields.triggerField({
-				fieldLabel :"Fuente de datos",
-				allowBlank :false,
-				readOnly :true,
-				tooltipsTriggers :['Limpiar', 'Seleccionar fuente de datos'],
-				tooltip :'Seleccionar la fuente de datos',
-				onTrigger2Click :function (){
-					new nom.dataSourcesList({
-						enumInstance:self.enumInstance,
-						callback :function (r){
-							self.dataSourceSelector.setValue(r);
-							self.dataSourceSelector.fireEvent('valuesetted');
-						}
-					})
-				},
-				isValid :function (){
-					return true
-				},
-				getXType :function (){
-					return 'dataSource';
-				}
-			});
-			this.nameTextField = new fields.simpleField({
-				allowBlank :false,
-				fieldLabel :"Denominaci&oacute;n",
-				tooltip:'Denominaci&oacute;n del '+this.entityType,
-				validator :function (text){
-					if (text.indexOf(':') != -1)
-						return "El nombre de un "+self.entityType+" no puede contener ':'";
-					if (text.indexOf('-') != -1)
-						return "El nombre de un "+self.entityType+" no puede contener '-'";
-					if (enums.getEnumByName(self.enumInstance, text) && (self.creating || text != self._enum.name))
-						return "No pueden haber "+self.entityType+"(es) repetidos.";
-					for (var _enum in enums.getEnums(self.enumInstance)){
-						if (_enum == text && (self.creating || text != self._enum.id))
-							return "No puede haber un "+self.entityType+" con un nombre identico al identificador de" +
-								" otro";
-					}
-					if (!self.creating)
-						self.buttonSave.enable();
-					return true;
-				}
-			});
-			this.descriptionTextArea = new fields.fieldDescripcion({
-				enableKeyEvents :true,
-				fieldLabel :"Descripci&oacute;n",
-				tooltip:'Descripci&oacute;n del '+this.entityType,
-				height :80
-			});
-			this.createGrid();
-			if (!this.creating) {
-				this.fillComponents(this._enum);
-				this.dataSourceSelector.disable();
-				this.updateFieldCounter();
-			}
-			else {
-				this.addFields(enums.getDefaultFields(self.enumInstance));
-			}
-			this.items = [
-				{
-					title :"Datos generales",
-					frame :true,
-					layout :"column",
-					anchor :"100%",
-					region :'north',
-					height :150,
-					collapsible :true,
-					split :true,
-					defaults :{
-						labelAlign :"top",
-						columnWidth :.5,
-						layout :'form',
-						anchor :'100%',
-						bodyStyle :'padding:0 10px 0 10px',
-						defaults :{
-							anchor :"100%"
-						}
-					},
-					items :[
-						{
-							items :[
-								this.nameTextField,
-								this.dataSourceSelector
-							]
-						},
-						{
-							items :[
-								this.descriptionTextArea
-							]
-						},
-					]
-				},
-				this.gridEditor
-			];
+            this.getUIConfig();
 			nom.nomencladorCreator.superclass.constructor.call(this, Ext.apply(arguments[0] || {}, {
 				buttons :[
 					new buttons.btnCancelar({
@@ -179,6 +73,175 @@
 				this.createValidator();
 			});
 		},
+        getUIConfig:function(){
+		    var self =this;
+            this.buttonSave = new buttons.btnAceptar({
+                disabled :true,
+                handler :this.SaveAndExit, scope :this
+            });
+            var dbConfigStore = new Ext.data.JsonStore({
+                fields :["id"],
+                url :Genesig.ajax.getLightURL("Nomenclador.default") + "&action=getDbConfigs",
+                baseParams:{enumInstance:this.enumInstance}
+            });
+
+            dbConfigStore.on("load", function (t, records){
+                this.dataSourceSelector.setValue(records[0].get("id"));
+            }, this);
+            this.dataSourceSelector = new fields.triggerField({
+                fieldLabel :"Fuente de datos",
+                allowBlank :false,
+                readOnly :true,
+                tooltipsTriggers :['Limpiar', 'Seleccionar fuente de datos'],
+                tooltip :'Seleccionar la fuente de datos',
+                onTrigger2Click :function (){
+                    new nom.dataSourcesList({
+                        enumInstance:self.enumInstance,
+                        callback :function (r){
+                            self.dataSourceSelector.setValue(r);
+                            self.dataSourceSelector.fireEvent('valuesetted');
+                        }
+                    })
+                },
+                isValid :function (){
+                    return true
+                },
+                getXType :function (){
+                    return 'dataSource';
+                }
+            });
+            this.nameTextField = new fields.simpleField({
+                allowBlank :false,
+                fieldLabel :"Denominaci&oacute;n",
+                tooltip:'Denominaci&oacute;n del '+this.entityType,
+                validator :function (text){
+                    if (text.indexOf(':') !== -1)
+                        return "El nombre de un "+self.entityType+" no puede contener ':'";
+                    if (text.indexOf('-') !== -1)
+                        return "El nombre de un "+self.entityType+" no puede contener '-'";
+                    if (enums.getEnumByName(self.enumInstance, text) && (self.creating || text != self._enum.name))
+                        return "No pueden haber "+self.entityType+"(es) repetidos.";
+                    for (var _enum in enums.getEnums(self.enumInstance)){
+                        if (_enum === text && (self.creating || text !== self._enum.id))
+                            return "No puede haber un "+self.entityType+" con un nombre identico al identificador de" +
+                                " otro";
+                    }
+                    if (!self.creating)
+                    	self.gridEditor.fireEvent('dataadded');
+                    return true;
+                }
+            });
+            this.descriptionTextArea = new fields.fieldDescripcion({
+                enableKeyEvents :true,
+                fieldLabel :"Descripci&oacute;n",
+                tooltip:'Descripci&oacute;n del '+this.entityType,
+                height :80
+            });
+            this.createGrid();
+            if (!this.creating) {
+                this.fillComponents(this._enum);
+                this.dataSourceSelector.disable();
+                this.updateFieldCounter();
+            }
+            else {
+                this.addFields(enums.getDefaultFields(self.enumInstance,self.tpl));
+            }
+            var items = [
+                {
+                    title :"Datos generales",
+                    layout :"column",
+                    anchor :"100%",
+                    region:'center',
+                    defaults : {
+                        labelAlign: "top",
+                        columnWidth: .5,
+                        anchor: '100%',
+                        layout :'form',
+                        bodyStyle: 'padding:0 10px 0 10px',
+                        defaults: {
+                            anchor: "100%"
+                        }
+                    },
+                    items:[
+                        {
+                            items :[
+                                this.nameTextField,
+                                this.dataSourceSelector
+                            ]
+                        },
+                        {
+                            items :[
+                                this.descriptionTextArea
+                            ]
+                        },
+                    ]
+                }
+            ];
+            var northHeigth = 150;
+            var tpl = ((this.tplConfigs || {})[this.tpl] ||{});
+            if( (tpl.extraProps||{})._length_()>0 )
+            {
+                this.extraProps = [];
+                var extraProps = tpl.extraProps;
+                var i = 0;
+                var itemsL =[];
+                var itemsR = [];
+
+                extraProps._each_(function(v,k){
+                    var input = new v({propId:k});
+                    if(i%2 ===0)
+                        itemsL.push(input);
+                    else
+                        itemsR.push(input);
+                    self.extraProps.push(input);
+                    i++;
+                });
+                items.push({
+                    layout: 'column',
+                    title: 'Propiedades',
+                    region: 'south',
+                    height: 100,
+                    autoScroll: true,
+                    split: true,
+					xtype:'fieldset',
+                    defaults: {
+                        labelAlign: "top",
+                        columnWidth: .5,
+                        anchor: '100%',
+                        layout: 'form',
+                        bodyStyle: 'padding:0 10px 0 10px',
+                        defaults: {
+                            anchor: "100%"
+                        }
+                    },
+                    items: [
+                        {
+                            items: itemsL
+                        },
+                        {
+                            items: itemsR
+                        }
+                    ]
+                });
+                northHeigth +=100;
+            }
+            this.items = [
+                {
+
+                    frame :true,
+                    region :'north',
+                    height :northHeigth,
+                    collapsible :true,
+                    layout:'border',
+                    split :true,
+
+                     items : items
+
+
+                },
+                this.gridEditor
+            ];
+        },
 		updateFieldCounter :function (){
 			// parseInt(id.substr(0,id.length-1))
 			var self = this;
@@ -195,6 +258,8 @@
 			var dataArray = [];
 			var types = nom.Type.Utils.getTypesDict();
 			var no_enum = Object.keys(enums.getEnums(this.enumInstance)).length;
+			var configDataTypes = ((this.tplConfigs ||{})[this.tpl] || {}).dataTypes;
+
 			for (var type in types){
 				/**
 				 * No anhadir ningun tipo por referencia si no hay nomencladores a los cuales se les pueda
@@ -202,8 +267,8 @@
 				 */
 				if ((!no_enum && types[type].valueType == nom.Type.REF_Type) || type in toExclude)
 					continue;
-				//Just custom types to a enumInstance are allowed if configDataTypes is defined.
-				if(utils.isObject(this.configDataTypes) && this.configDataTypes[type]===undefined)
+				//custom types are allowed in a enumInstance if configDataTypes is defined.
+				if(utils.isObject(configDataTypes) && configDataTypes[type]===undefined)
 				    continue;
 
 				dataArray.push([
@@ -624,7 +689,7 @@
 					});
 					var count = self.gridStore.getCount();
 					removeButton.setDisabled(self.countAddedFields()==0);
-					self.buttonSave.setDisabled(!count);
+					self.gridEditor.fireEvent('dataadded');
 				}
 			});
 			var addButton = new buttons.btnAdicionar({
@@ -644,7 +709,7 @@
 					rowEditor.startEditing(self.gridStore.getCount() - 1, 1, true);
 					this.disable();
 					removeButton.disable();
-					self.buttonSave.disable();
+                    self.gridEditor.fireEvent('dataadded');
 				}
 			});
 			this.removeButton = removeButton;
@@ -666,7 +731,7 @@
 								self.properties[record.get('id')] = propW;
 							}
 						}
-						self.buttonSave.setDisabled(!self.gridStore.getCount());
+                        self.gridEditor.fireEvent('dataadded');
 						if (self.gridStore.getCount() == 0)
 							removeButton.enable();
 					},
@@ -696,7 +761,7 @@
 						edittingGrid = true;
 						addButton.disable();
 						removeButton.disable();
-						self.buttonSave.setDisabled(!self.gridStore.getCount());
+                        self.gridEditor.fireEvent('dataadded');
 						self.showPropertiesButton(t,dataTypeSelector);
 						return true
 					},
@@ -705,7 +770,7 @@
 						edittingGrid = false;
 						addButton.enable();
 						removeButton.enable();
-						self.buttonSave.setDisabled(!self.gridStore.getCount());
+                        self.gridEditor.fireEvent('dataadded');
 						if (self.properties[id]) {
 							var record = self.gridStore.getAt(self.rowEditing);
 							var editedRow = self.rowEditing;
@@ -765,6 +830,15 @@
 				clicksToEdit :1,
 				selModel :new Ext.grid.RowSelectionModel(),
 				plugins :[rowEditor],
+				getXType:function(){
+					return 'EnumGridEditor'
+				},
+                getFormVEvtNames:function(){
+					return 'dataadded';
+				},
+				isValid:function(){
+					return this.store.getCount() > 0;
+				},
 				tbar :[
 					addButton,
 					removeButton,
@@ -838,13 +912,18 @@
 			nom.showEnumTree(this.enumInstance,true, callBack);
 		},
 		createValidator :function (){
+
+			var fields = [
+                this.nameTextField,
+                this.descriptionTextArea,
+                this.dataSourceSelector,
+				this.gridEditor
+            ];
+			(this.extraProps || {})._each_(function (v,k) {
+				fields.push(v);
+            });
 			this.formValidator = new Genesig.Componentes.FormValidator({
-				fields :[
-					this.nameTextField,
-					this.descriptionTextArea,
-					this.dataSourceSelector,
-					this.gridEditor
-				],
+				fields :fields,
 				buttons :[
 					this.buttonSave
 				]
@@ -919,6 +998,14 @@
 						self.refs.add(self.enumInstance, nomenclador.id, id, properties._enum, properties.field);
 				}
 			});
+			//adicionando las propiedades extras de la entidad.
+			nomenclador.tpl= this.tpl;
+			if(this.extraProps) {
+			    nomenclador.extraProps = {};
+                this.extraProps._each_(function (v) {
+                    nomenclador.extraProps[v.propId] = v.getValue();
+                });
+            }
 
 			fields[nom.Type.PrimaryKey.UNIQUE_ID] = {
 				"type" :nom.Type.PrimaryKey.type,
@@ -1102,7 +1189,7 @@
 					this.gridStore.add(r);
 					if (!modifying) {
 						this.removeButton.setDisabled(this.countAddedFields() ==0);
-						this.buttonSave.setDisabled(false);
+						this.gridEditor.fireEvent('dataadded');
 					}
 				}
 			}
