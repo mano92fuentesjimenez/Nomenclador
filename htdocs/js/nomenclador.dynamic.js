@@ -180,8 +180,14 @@
                 qb = function (v) {
                     return v.isDenom
                 };
+
             tpl = utils.isString(tpl) ? tpl: 'default';
-            config = (config[tpl] || {}).defaultFields;
+            config = (config[tpl] || {});
+            //if tpl:default == true
+            if(config === true)
+                config = this.defaultFields;
+            else
+                config = config.defaultFields;
 
             if (config != null) {
                 if (config._queryBy_(qb)._length_() == 0)
@@ -925,7 +931,7 @@
      *                                      Es de la forma  [field] donde cada field es de la misma forma en q se guarda
      *                                      en el servidor los cada campo de un nomenclador.
     *                        dataTypes: Objeto de la forma { dataTypeId:true}
-    *                        extraProp: Objeto q contiene un listado de propiedades extras en una entidad, La llave es
+    *                        extraProps: Objeto q contiene un listado de propiedades extras en una entidad, La llave es
     *                                  el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
     *                                  Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
     *                                  el json del nomenclador q se construyo.
