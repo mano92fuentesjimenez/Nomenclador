@@ -180,6 +180,8 @@
                 qb = function (v) {
                     return v.isDenom
                 };
+            if(config === null)
+                config = {};
 
             tpl = utils.isString(tpl) ? tpl: 'default';
             config = (config[tpl] || {});

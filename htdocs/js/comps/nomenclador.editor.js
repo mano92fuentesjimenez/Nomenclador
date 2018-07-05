@@ -152,6 +152,8 @@
 
 			this.enumInstance = arguments[0].enumInstance;
 			this.enumInstanceConfig = arguments[0].enumInstanceConfig;
+			if( this.enumInstanceConfig == null)
+			    this.enumInstanceConfig = {};
 
 			this.treePanel = new nom.treeEditorPanel({
 				region:'center',
@@ -470,12 +472,7 @@
 
             this.menuOptions.show(type,pEv,node);
         },
-        getCustomDataTypes:function(){
 
-	        if(this.enumInstanceConfig !== null && this.enumInstanceConfig['dataTypes'] !== undefined)
-	            return this.enumInstanceConfig['dataTypes'];
-	        return null;
-        },
         proccessAction : function(pParams,mouseEvt,pAction, tpl){
             var nd = pParams.showParams.object,
                 actions = {
@@ -613,6 +610,7 @@
                 self = this,
                 f = function(){
                     nom.request('modEnumData',{ enumId:_enum.id, enumInstance:self.enumInstance},function (response) {
+
                         new nom.nomencladorCreator({
                             listeners: {
                                 "finishedCreation": self.modEnumInServer.createDelegate(self, [self.selectedNode], true),
@@ -624,7 +622,7 @@
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
                             tpl:tpl,
-                            tplConfigs: this.enumInstanceConfig.tpl || {}
+                            tplConfigs: self.enumInstanceConfig.tpl || {}
                         }).show();
                     });
                 };
