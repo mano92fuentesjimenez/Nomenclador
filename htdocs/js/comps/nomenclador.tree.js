@@ -30,7 +30,7 @@
 				plugins = [
 					plgSearch,
 					new comps.plugins.tree.nodeRenderer({
-						nodesProxy :this.wrapNodeAttributes._delegate_([], this),
+						nodesProxy :this.treeNodesProxy._delegate_([], this),
                         nodesProviderProxy: function (pAttrs) {
                             return comps.treeUIProviders.ttfIconNode;
                         }
@@ -153,68 +153,19 @@
 				},mask,this.enumInstanceConfig
 			);
 		},
-		wrapNodeAttributes :function (pAtrs){
-			var self = this,
-				toExclude = self.excludeEnum,
-				toInclude = self.includeEnum,
-				typ = pAtrs._type_ || ('childs' in pAtrs ? 'category' : 'enum'),
-				isEnum = typ == 'enum',
-				enumFields = this.showFields && isEnum ? (
-					enums.getEnumById(this.enumInstance, pAtrs.idNode).fields._queryBy_(function (pV){
-						return pV.id != nom.Type.PrimaryKey.UNIQUE_ID && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
-					}, this, true)
-				) : [],
-				children = typ == 'category'
-					? this._default_(pAtrs.childs, {})._queryBy_(function (pV, pK){
-					return 'childs' in pV || (
-							(!toExclude || ( utils.isObject(toExclude) ? !(pK in toExclude): pK != toExclude))
-							&& (!toInclude || toInclude.id == pK)
-							&& (self.showEnums && !('childs' in pV))
-						);
-				}, this, true)._map_(function (pV, pK){
-					var isCat = 'childs' in pV;
-					return {}._apply_(pV, {
-						_type_ :isCat ? 'category' : 'enum',
-						allowChildren :isCat,
-						text :pV.text
-					})
-				}, this, false)
-					: (
-					isEnum
-						? enumFields._map_(function (pV, pK){
-						return {}._apply_(pV, {
-							text :pV.header,
-							_type_ :'field',
-							field :true,
-							iconCls :"enum_tree_field_icon",
-							leaf :true,
-							idNode:pV.id,
-							_enumId:pV._enumId
-						});
-					}, this, false)
-						: []
-				),
-				text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(self.enumInstance, pAtrs.idNode).name,
-				checked = (utils.isArray(this.checked) && typ ==='enum') ? this.checked.indexOf(pAtrs.idNode) !== -1: undefined,
-				checked = checked || (this.checked===true ? (typ ==='enum'? false:undefined):undefined);
+        treeNodesProxy:function(attr){
+			var config = {
+				enumInstance:this.enumInstance,
+				checked:this.checked,
+				excludeEnum:this.excludeEnum,
+				includeEnum:this.includeEnum,
+				nodesEvaluator:this.nodesEvaluator,
+				showFields:this.showFields,
+				showEnums:this.showEnums
+			};
 
-
-			delete pAtrs.id;
-			pAtrs._apply_({
-				idNode :pAtrs.idNode,
-				_type_ :typ,
-				children :children && (function (){
-				})._same_(this.nodesEvaluator) ? children._queryBy_(this.nodesEvaluator) : children,
-				text :text,
-				category :pAtrs.childs,
-				//iconCls :'',//'iconCls' in pAtrs ? pAtrs.iconCls : (pAtrs.childs ? "enum_tree_category_icon" : "enum_tree_node_icon"),
-                iconCls : (isEnum ? 'gisTtfIcon_webdev-seo-form' : 'enumCategoryTreeIcon'),//pAtrs.childs ? '' : "enum_tree_node",
-				leaf :children.length === 0,
-				_text_ :text,
-				allowChildren :pAtrs.childs != null,
-				checked: checked
-			});
-			return pAtrs;
+			return nom.treeNodesProxy(attr,config);
 		}
+
 	});
 })();
