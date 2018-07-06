@@ -941,7 +941,7 @@
             _text_ :text,
             allowChildren :pAtrs.childs != null,
             checked: checked,
-            tpl: enums.getEnum(config.enumInstance,pAtrs.idNode).tpl
+            tpl: enums.getEnumById(config.enumInstance,pAtrs.idNode).tpl
         });
         return pAtrs;
     };
