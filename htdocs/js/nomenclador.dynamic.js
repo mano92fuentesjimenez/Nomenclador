@@ -866,6 +866,86 @@
         }.createDelegate(dependsField, [currentField], 0));
     };
 
+    /**
+     * Funcion que modifica el arbol de nomencladores segun la configuracion.
+     * @param pAtrs
+     * @param config {object | string}  Es un objeto de configuracion o el string diciendo la instancia de nomencladores.
+     *     excludeEnum  {object | string}  Contiene los nomencladores q se van a excluir, si es un objeto es de la forma {idEnum:true}
+     *     includeEnum  {obectj} Es un nomenclador y si esta presente, solo se va a mostrar este mas todas las categorias
+     *     enumInstance {string} Es el nombre de la instancia de nomencladores. Es obligatorio
+     *     showFields   {bool}  Si es true, se van a mostrar los campos de los nomencladores.
+     *     showEnums    {bool}  Dice si se muestran los nomencladores o no.
+     *     checked      {array[string]}  Si este arreglo existe, muestra checkboxes en los nodos de los nomencladores
+     *                        Y esta checked si el identificador del nomenclador esta en el arreglo
+     *     nodesEvaluator {function}  Funcion q dice si un nodo va a formar parte del arbol o no
+     * @returns {*}
+     */
+    nom.treeNodesProxy = function (pAtrs, config){
+        //Si config no es un objeto o string, entonces q de error.
+        var config = utils.isString(config) ? {enumInstance:config}: config,
+            toExclude = config.excludeEnum,
+            toInclude = config.includeEnum,
+            typ = pAtrs._type_ || ('childs' in pAtrs ? 'category' : 'enum'),
+            isEnum = typ == 'enum',
+            enumFields = config.showFields && isEnum ? (
+                enums.getEnumById(config.enumInstance, pAtrs.idNode).fields._queryBy_(function (pV){
+                    return pV.id != nom.Type.PrimaryKey.UNIQUE_ID && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
+                }, this, true)
+            ) : [],
+            children = typ == 'category'
+                ? this._default_(pAtrs.childs, {})._queryBy_(function (pV, pK){
+                    return 'childs' in pV || (
+                        (!toExclude || ( utils.isObject(toExclude) ? !(pK in toExclude): pK != toExclude))
+                        && (!toInclude || toInclude.id == pK)
+                        && (config.showEnums && !('childs' in pV))
+                    );
+                }, this, true)._map_(function (pV, pK){
+                    var isCat = 'childs' in pV;
+                    return {}._apply_(pV, {
+                        _type_ :isCat ? 'category' : 'enum',
+                        allowChildren :isCat,
+                        text :pV.text
+                    })
+                }, this, false)
+                : (
+                    isEnum
+                        ? enumFields._map_(function (pV, pK){
+                            return {}._apply_(pV, {
+                                text :pV.header,
+                                _type_ :'field',
+                                field :true,
+                                iconCls :"enum_tree_field_icon",
+                                leaf :true,
+                                idNode:pV.id,
+                                _enumId:pV._enumId
+                            });
+                        }, this, false)
+                        : []
+                ),
+            text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(config.enumInstance, pAtrs.idNode).name,
+            checked = (utils.isArray(config.checked) && typ ==='enum') ? config.checked.indexOf(pAtrs.idNode) !== -1: undefined;
+
+            checked = checked || (config.checked===true ? (typ ==='enum'? false:undefined):undefined);
+
+        delete pAtrs.id;
+        pAtrs._apply_({
+            idNode :pAtrs.idNode,
+            _type_ :typ,
+            children :children && (function (){
+            })._same_(config.nodesEvaluator) ? children._queryBy_(config.nodesEvaluator) : children,
+            text :text,
+            category :pAtrs.childs,
+            //iconCls :'',//'iconCls' in pAtrs ? pAtrs.iconCls : (pAtrs.childs ? "enum_tree_category_icon" : "enum_tree_node_icon"),
+            iconCls : (isEnum ? 'gisTtfIcon_webdev-seo-form' : 'enumCategoryTreeIcon'),//pAtrs.childs ? '' : "enum_tree_node",
+            leaf :children.length === 0,
+            _text_ :text,
+            allowChildren :pAtrs.childs != null,
+            checked: checked,
+            tpl: enums.getEnum(config.enumInstance,pAtrs.idNode).tpl
+        });
+        return pAtrs;
+    };
+
     nom.getEnumSelectorClass = function(enumInstance,enumId, columnId, manageEnum, filterBy,value, visualConfigs ){
         var _enum = nom.enums.getEnumById(enumInstance,enumId),
             columnId = columnId || nom.getDefaultColumnId(enumInstance,enumId),

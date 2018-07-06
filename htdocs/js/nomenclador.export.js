@@ -337,6 +337,11 @@
     addService('getPrimaryKeyId', function(){
         return nom.Type.PrimaryKey.UNIQUE_ID;
     });
+
+    exp.getTreeNodesProxy= function(){};
+    addService('getTreeNodesProxy', function(){
+        return nom.treeNodesProxy;
+    });
     /**
 	 * Carga una instancia de nomencladores, asi en una sola carga se pueden hacer todas las operaciones sobre enums.export
 	 * que se quiera
