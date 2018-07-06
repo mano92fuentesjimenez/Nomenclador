@@ -18,6 +18,7 @@ require_once 'DB_Types/DB_Integration.php';
 require_once 'DB_Types/DB_Date.php';
 require_once 'DB_Types/DB_Integration.php';
 require_once 'DB_Types/DB_Images.php';
+require_once 'DB_Types/DB_Description.php';
 
 abstract class BaseType
 {

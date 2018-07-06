@@ -126,8 +126,6 @@
                             return "No puede haber un "+self.entityType+" con un nombre identico al identificador de" +
                                 " otro";
                     }
-                    if (!self.creating)
-                    	self.gridEditor.fireEvent('dataadded');
                     return true;
                 }
             });
