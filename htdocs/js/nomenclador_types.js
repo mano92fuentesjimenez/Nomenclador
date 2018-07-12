@@ -26,7 +26,7 @@
              */
         },
         /**
-         * Booleano que dice si property tiene que se mostrado obligatoriamente.
+         * Booleano que dice si property tiene que ser mostrado obligatoriamente.
          */
         propertyNeeded: true,
         /**
