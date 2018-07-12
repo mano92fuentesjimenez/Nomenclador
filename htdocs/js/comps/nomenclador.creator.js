@@ -837,6 +837,9 @@
 				isValid:function(){
 					return this.store.getCount() > 0;
 				},
+				getValue:function(){
+					return '';
+				},
 				tbar :[
 					addButton,
 					removeButton,
