@@ -12,32 +12,34 @@
 
 
 	nom.nomencladorCreator = Ext.extend(Ext.Window, {
-		entityType:'nomenclador',
-		width :700,
-		height :600,
-		typeStore :null,
-		dataArray :null,
-		nameTextField :null,
-		descriptionTextArea :null,
-		modal :true,
-		creating :true,
-		gridEditor :null,
-		layout :"border",
-		buttonSave :null,
-		//private
-		rowEditing :0,
-		idCount :1,
-		//private
-		properties :null,
-		dataSourceSelector :null,
-		schemaSelector :null,
-		enumInstance:null,
+        entityType:'nomenclador',
+        width: 700,
+        height: 600,
+        modal: true,
+        _enum: null,
+        enumInstance: null,
+
+        //nombre del tpl q se va a usar para crear el nomenclador
+        tpl:'default',
+        //configuraciones de todos los tpl en esta instancia de nomenclador.
+        tplConfigs:undefined,
+
+        //private
+
+        rowEditing :0,
+        idCount :1,
+        layout :"border",
+        buttonSave :null,
+        creating :true,
+        descriptionTextArea :null,
+        typeStore :null,
+        dataArray :null,
+        nameTextField :null,
+        gridEditor :null,
+        properties :null,
+        dataSourceSelector :null,
         extraProps:null,
 
-		//nombre del tpl q se va a usar para crear el nomenclador
-        tpl:'default',
-		//configuraciones de todos los tpl en esta instancia de nomenclador.
-		tplConfigs:undefined,
 		constructor :function (cfg){
 			var self = this;
 			this.enumInstance = arguments[0].enumInstance;
