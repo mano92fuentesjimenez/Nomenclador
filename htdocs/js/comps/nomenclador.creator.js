@@ -137,9 +137,7 @@
             });
             this.createGrid();
             if (!this.creating) {
-                this.fillComponents(this._enum);
-                this.dataSourceSelector.disable();
-                this.updateFieldCounter();
+            	this.setEnum();
             }
             else {
                 this.addFields(enums.getDefaultFields(self.enumInstance,self.tpl));
@@ -946,9 +944,7 @@
 			});
 		},
 		destroyProperties :function (){
-			var self = this;
 			this.properties._each_(function (pVal){
-				var s = self;
 				if (pVal && pVal.rendered)
 					pVal.destroy();
 			})
@@ -1069,6 +1065,17 @@
 			changes.addRefs = self.refs.getAddedReferences(this.enumInstance);
 			changes['_enum'] = nomenclador;
 			return changes
+		},
+		getValue: this.getNomenclador,
+		setValue:function(obj){
+			this._enum = obj._enum;
+			this.gridStore.removeAll();
+			this.setEnum();
+		},
+		setEnum:function(){
+            this.fillComponents(this._enum);
+            this.dataSourceSelector.disable();
+            this.updateFieldCounter();
 		},
 		getFields :function (exclude){
 			var fields = {};
