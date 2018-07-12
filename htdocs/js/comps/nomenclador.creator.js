@@ -298,6 +298,7 @@
                             self.properties[fieldId].setValue(self.enumInstance,current_PropValue, fieldId, _enumId);
                             return;
                         }
+                        //poner el primer campo si no se puso ninguna propiedad al cerrar la ventana.
                         var t = dataArray[0][1];
                         dataTypeSelector.setValue(t);
                         showFilter(t);
