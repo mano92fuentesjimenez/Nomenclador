@@ -130,6 +130,7 @@
                     }
                     return true;
                 }
+
             });
             this.descriptionTextArea = new fields.fieldDescripcion({
                 enableKeyEvents :true,
@@ -929,23 +930,21 @@
 				fields :fields,
 				buttons :[
 					this.buttonSave
-				]
+				],
+                checkDirty:false
 			});
 			this.formValidator.registrarNuevoXtype({'dataSource' :{evt :['valuesetted']}});
 		},
 		SaveAndExit :function (){
-			var self = this;
 			if (!this.valid())
 				return;
-			var mask = Genesig.Utils.mask(this, 'Guardando '+this.entityType);
-			this.fireEvent("finishedCreation", this.getNomenclador(), function (r){
-				mask();
-				if (r) {
-					self.destroyProperties();
-					self.close();
-				}
-			});
+			this.fireEvent("finishedCreation", this.getNomenclador());
+			this.close();
 		},
+		destroy:function(){
+        	this.destroyProperties();
+        	nom.nomencladorCreator.superclass.destroy.call(this);
+        },
 		destroyProperties :function (){
 			var self = this;
 			this.properties._each_(function (pVal){
