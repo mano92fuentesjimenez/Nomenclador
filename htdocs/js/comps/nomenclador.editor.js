@@ -716,7 +716,7 @@
             },this);
 
         },
-        addEnumInServer: function (obj, f) {
+        addEnumInServer: function (obj) {
 
             var self = this;
             var _enum = obj._enum;
@@ -727,8 +727,7 @@
                 nodeParent = this.selectedNode.parentNode;
 
             var _enumPath = nodeParent.getPath("idNode") + "/" + _enum.id,
-                mask = Genesig.Utils.mask(this, 'An&ntilde;adiendo '+this.entityType);
-
+                mask = Genesig.Utils.mask(nom.getUI(this.enumInstance, this.enumInstanceConfig), 'An&ntilde;adiendo '+this.entityType);
 
             nom.request('addEnum', {
                 enumInstance:this.enumInstance,
@@ -739,14 +738,11 @@
             }, function () {
                 enums.add(self.enumInstance, _enum);
                 self.reloadTreeNode(_enum.id);
-                f(true);
 
                 infoMsg('El nomenclador ha sido adicionado satisfactoriamente');
-            }, function () {
-                f(false);
-            }, mask);
+            }, null, mask);
         },
-        modEnumInServer: function (changes,callb, node) {
+        modEnumInServer: function (changes, node) {
             var mask = Genesig.Utils.mask(this, 'Modificando '+this.entityType);
             var self = this;
             nom.request('modEnum', {
@@ -758,7 +754,6 @@
                 var _enum = changes._enum;
                 enums.add(self.enumInstance, _enum);
                 self.reloadTreeNode(node);
-                callb(true);
 
                 infoMsg('Se ha modificado satisfactoriamente el nomenclador.');
                 self.fireEvent('enummodified',_enum);
