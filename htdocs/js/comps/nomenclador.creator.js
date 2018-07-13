@@ -18,6 +18,8 @@
         modal: true,
         _enum: null,
         enumInstance: null,
+		//Si es true solo muestra una ventana en donde se pueden especificar los campos de un modelo, pero el modelo no tiene nombre ni fuente de datos ni descripcion
+		fieldsMode: false,
 
         //nombre del tpl q se va a usar para crear el nomenclador
         tpl:'default',
@@ -223,22 +225,25 @@
                 });
                 northHeigth +=100;
             }
-            this.items = [
-                {
 
-                    frame :true,
-                    region :'north',
-                    height :northHeigth,
-                    collapsible :true,
-                    layout:'border',
-                    split :true,
+            this.items=[];
+            var defaults ={};
 
-                     items : items
+			this.items.push({
+
+				frame :true,
+				region :'north',
+				height :northHeigth,
+				collapsible :true,
+				layout:'border',
+				split :true,
+				hidden:this.fieldsMode,
+				items : items,
 
 
-                },
-                this.gridEditor
-            ];
+			});
+            this.items.push( this.gridEditor);
+
         },
 		updateFieldCounter :function (){
 			// parseInt(id.substr(0,id.length-1))
@@ -841,6 +846,9 @@
 				getValue:function(){
 					return '';
 				},
+				isDirty:function(){
+					return true;
+				},
 				tbar :[
 					addButton,
 					removeButton,
@@ -902,6 +910,8 @@
 		},
 		getEnumId :function (){
 			var _enumId;
+			if(this.fieldsMode)
+				return 'fieldsMode';
 			if (this.creating) {
 				if(!this._enumId_)
 					this._enumId_ = (this.nameTextField.getValue().replace(/([^a-z A-Z0-9_])*/g, '') + '-' + Math.ceil(Math.random() * 1000000));
@@ -916,11 +926,14 @@
 		createValidator :function (){
 
 			var fields = [
-                this.nameTextField,
-                this.descriptionTextArea,
-                this.dataSourceSelector,
 				this.gridEditor
             ];
+			if(!this.fieldsMode)
+				fields.push.apply(fields,[
+					this.nameTextField,
+                    this.descriptionTextArea,
+                    this.dataSourceSelector
+				]);
 			(this.extraProps || {})._each_(function (v,k) {
 				fields.push(v);
             });
