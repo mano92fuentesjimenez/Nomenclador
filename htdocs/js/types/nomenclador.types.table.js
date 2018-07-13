@@ -20,13 +20,14 @@
           	var creator = new nom.nomencladorCreator({
 				enumInstance:enumInstance,
 				entityType: 'Tabla',
+				closeAction:'hide',
+                fieldsMode:true,
 				tplConfigs:{
 					default:{
 						defaultFields:{},
 						dataTypes:{
 							'DB_Bool':true,
 							'DB_String':true,
-
 							'DB_Number':true,
 							'DB_Description':true,
 						}
