@@ -5,13 +5,43 @@
 	var nom = AjaxPlugins.Nomenclador,
 		addType =nom.Type.Utils.addType;
 
-	addType('Db_Table',Ext.extend(nom.Type.ValueType, {
+	addType('DB_Table',Ext.extend(nom.Type.ValueType, {
 		nameToShow :"Tabla",
-		getValueEditExtComp :function (enumInstance, field){
-			return new AjaxPlugins.Ext3_components.fields.simpleField({
-				allowBlank :!field.needed,
-				fieldLabel :field.header
-			})
+		getValueEditExtComp :function (enumInstance, field,_enum) {
+			var c = new nom.GridOfflineDataEditor({
+
+					_enum: field.properties._enum,
+					enumInstance: enumInstance,
+					height: 400,
+					frame: false
+				}),
+				ui = c.getUI()._apply_({
+					isGrid: true,
+					getValue: function () {
+						var values = [];
+						c.store.each(function (r) {
+							values.push(r.data);
+						});
+						return Ext.encode(values);
+					},
+					setValue: function (v) {
+						c.loadData(Ext.decode(v));
+					},
+					isDirty: function () {
+						return true;
+					},
+					isValid: function () {
+						if (field.needed)
+							return c.store.getCount() > 0;
+						return true;
+					},
+					getFormVEvtNames: function () {
+						return 'datachanged';
+					}
+
+				});
+
+			return ui;
 		},
         getPropertiesExtComp :function (enumInstance,_enumId, fieldId, fields){
 			var f = function(){
@@ -35,7 +65,7 @@
 				},
                 listeners: {
                     "finishedCreation":f,
-                    'close':  function() {
+                    'cancel':  function() {
                         this.fireEvent('propertynotsetted');
                     }
                 },
