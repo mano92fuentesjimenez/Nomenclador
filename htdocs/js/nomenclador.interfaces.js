@@ -116,10 +116,6 @@
         gridEditor :null,
         closable :true,
         layout :'fit',
-        submitButton :null,
-        cancelChangesButton :null,
-        updateStore :null,
-
         //privates
 
         constructor :function (config) {
@@ -140,23 +136,8 @@
             nom.GridDataEditor.superclass.constructor.call(this, ({items:[]})._apply_(config));
         },
         initializeUI :function (_enum, multiSelection ) {
-            var tbar = undefined;
+            var tbar = this.initializeStoreWriterButtons();
 
-            if(this.manageEnum) {
-                tbar = [
-                    this.getButtonInstance(writterBtn.addBtn),
-                    this.getButtonInstance(writterBtn.rmBtn),
-                    {
-                        xtype: 'tbseparator'
-                    },
-                    // this.getButtonInstance(readerBtns.refresh),
-                    this.getButtonInstance(writterBtn.submitBtn),
-                    this.getButtonInstance(writterBtn.cancelBtn),
-                    {
-                        xtype: 'tbspacer'
-                    }
-                ];
-            }
             this.gridEditor = new Ext.grid.GridPanel({
                 title:this.title,
                 cm: this.getCM(this.columns),
@@ -174,6 +155,25 @@
             this.multiSelection = multiSelection;
             return this.gridEditor;
             // this.addMenuToColumnHeader();
+        },
+        initializeStoreWriterButtons: function(){
+			var tbar = undefined;
+			if(this.manageEnum) {
+				tbar = [
+					this.getButtonInstance(writterBtn.addBtn),
+					this.getButtonInstance(writterBtn.rmBtn),
+					{
+						xtype: 'tbseparator'
+					},
+					// this.getButtonInstance(readerBtns.refresh),
+					this.getButtonInstance(writterBtn.submitBtn),
+					this.getButtonInstance(writterBtn.cancelBtn),
+					{
+						xtype: 'tbspacer'
+					}
+				];
+			}
+			return tbar;
         },
         getCM:function(columns){
           return nom.getColumnModelFromEnum(this.enumInstance, this._enum, true, columns);
@@ -303,5 +303,44 @@
             div.style.top = mouseEvent.clientY;*/
         }
     });
+
+    nom.GridOfflineDataEditor = Ext.extend(nom.GridDataEditor,{
+        offlineMode:true,
+        getPagingBar:function(){
+            return undefined;
+        },
+        initializeStoreWriterButtons:function(){
+            var tbar = undefined;
+			if(this.manageEnum) {
+				tbar = [
+					this.getButtonInstance(writterBtn.addBtn),
+					this.getButtonInstance(writterBtn.rmBtn)
+				];
+			}
+			return tbar;
+        },
+        loadData:function(data){
+            var self = this,
+                f = function(){
+					self.store.loadData(data);
+				};
+            if(!this.storeinitialized)
+                this.on('storeinitialized',f);
+            else f();
+        },
+        setNewStore:function(store) {
+			var f = function(){
+				this.getUI().fireEvent('datachanged');
+			};
+
+			this.on('recordAdded',f, this);
+			this.on('recordDeleted',f,this);
+			this.on('recordModified',f, this);
+			nom.GridOfflineDataEditor.superclass.setNewStore.apply(this,arguments);
+        }
+
+
+
+    })
 
 })();
