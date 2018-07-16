@@ -307,6 +307,7 @@
     nom.GridOfflineDataEditor = Ext.extend(nom.GridDataEditor,{
         offlineMode:true,
 		showColors:false,
+
         getPagingBar:function(){
             return undefined;
         },
@@ -338,9 +339,18 @@
 			this.on('recordDeleted',f,this);
 			this.on('recordModified',f, this);
 			nom.GridOfflineDataEditor.superclass.setNewStore.apply(this,arguments);
-        }
-
-
+        },
+		getValue: function () {
+			var values = [];
+			this.store.each(function (r) {
+				values.push(r.data);
+			});
+			return Ext.encode(values);
+		},
+		setValue: function (v) {
+			var value = v == "" ? [] : Ext.decode(v);
+			this.loadData(value);
+		}
 
     })
 
