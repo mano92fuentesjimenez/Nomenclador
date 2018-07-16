@@ -133,6 +133,8 @@
         },
         configureStore: function () {
             var self = this;
+            if(this.offlineMode)
+                return;
             var changes = {mod: {}, del: {}, add: {}};
             self.store.changes = changes;
 
