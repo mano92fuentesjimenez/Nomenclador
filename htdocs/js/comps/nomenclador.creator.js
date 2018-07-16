@@ -1081,14 +1081,6 @@
 			changes['_enum'] = nomenclador;
 			return changes
 		},
-		getValue: function(){
-			return this.getNomenclador();
-		},
-		setValue:function(obj){
-			this._enum = obj._enum;
-			this.gridStore.removeAll();
-			this.setEnum();
-		},
 		setEnum:function(){
 			this.fillComponents(this._enum);
 			this.dataSourceSelector.disable();

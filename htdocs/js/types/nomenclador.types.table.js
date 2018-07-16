@@ -25,7 +25,8 @@
 						return Ext.encode(values);
 					},
 					setValue: function (v) {
-						c.loadData(Ext.decode(v));
+						var value = v=="" ? [] : Ext.decode(v);
+						c.loadData(value);
 					},
 					isDirty: function () {
 						return true;
@@ -69,6 +70,14 @@
                         this.fireEvent('propertynotsetted');
                     }
                 },
+				getValue: function(){
+					return this.getNomenclador();
+				},
+				setValue:function(enumInstance, obj){
+					this._enum = obj._enum;
+					this.gridStore.removeAll();
+					this.setEnum();
+				},
 			});
 			return creator;
         },
