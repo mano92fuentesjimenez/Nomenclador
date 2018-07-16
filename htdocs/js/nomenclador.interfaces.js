@@ -146,7 +146,7 @@
                 clicksToEdit: 1,
                 viewConfig: {
                     forceFit: true,
-                    getRowClass: this.getRowClass
+                    getRowClass: this.getRowClassFunc()
                 },
                 tbar: tbar,
                 sm:new Ext.grid.RowSelectionModel({singleSelect:!multiSelection}),
@@ -258,7 +258,7 @@
             var grid = this.gridEditor;
             if(grid.rendered && grid.getView()){
                 grid.reconfigure(store, this.getCM(this.columns));
-                grid.getView().getRowClass = this.getRowClass;
+                grid.getView().getRowClass = this.getRowClassFunc();
             }else{
                 grid.store = store;
                 grid.columnModel = this.getCM(this.columns);
@@ -306,6 +306,7 @@
 
     nom.GridOfflineDataEditor = Ext.extend(nom.GridDataEditor,{
         offlineMode:true,
+		showColors:false,
         getPagingBar:function(){
             return undefined;
         },

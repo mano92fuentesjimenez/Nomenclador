@@ -25,7 +25,8 @@
 
     nom.interfaces.EnumStoreWriter = Ext.extend(nom.interfaces.EnumStoreReader, {
 
-
+		//config
+		showColors:true,
 
 		//privates
 		submitButton: null,
@@ -271,17 +272,22 @@
 
             })
         },
-        getRowClass: function (record) {
-            var cssClass = record.id;
-            if (record.state == undefined)
-                return cssClass;
-            if (record.state == INSERTED)
-                return insertedCssClass + ' ' + cssClass;
-            if (record.state == DELETED)
-                return removeCssClass + ' ' + cssClass;
-            if (record.state == MODIFIED)
-                return modifiedCssClass + ' ' + cssClass;
-            return "";
+        getRowClassFunc: function (record) {
+			if(!this.showColors)
+				return undefined;
+			return function (record) {
+				var cssClass = record.id;
+				if (record.state == undefined)
+					return cssClass;
+				if (record.state == INSERTED)
+					return insertedCssClass + ' ' + cssClass;
+				if (record.state == DELETED)
+					return removeCssClass + ' ' + cssClass;
+				if (record.state == MODIFIED)
+					return modifiedCssClass + ' ' + cssClass;
+				return "";
+			};
+
         },
         reconfigure: function () {
             nom.interfaces.EnumStoreWriter.superclass.reconfigure.apply(this, arguments);
