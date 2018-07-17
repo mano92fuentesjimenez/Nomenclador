@@ -26,7 +26,7 @@
              */
         },
         /**
-         * Booleano que dice si property tiene que se mostrado obligatoriamente.
+         * Booleano que dice si property tiene que ser mostrado obligatoriamente.
          */
         propertyNeeded: true,
         /**
@@ -62,6 +62,11 @@
         /**
          * Renderer del grid
          * @param text
+         * @param meta    Ver Column en Ext.grid
+         * @param record  Ver Column en Ext.grid
+         *    En this._fieldDetails_ se encuentran los metadatos del campo q se renderiza
+         *    En this._enumDetails_ se encuentran los metadatos del nomenclador q se renderiza
+         *    En this._enumInstance_ se encuentra el nombre de la instancia de nomencladores q se usa.
          * @returns {*}
          */
         gridRender : function(text){

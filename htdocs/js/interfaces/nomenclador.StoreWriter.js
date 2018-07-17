@@ -25,16 +25,19 @@
 
     nom.interfaces.EnumStoreWriter = Ext.extend(nom.interfaces.EnumStoreReader, {
 
-        submitButton: null,
-        cancelChangesButton: null,
-        updateStore: null,
-        hasLoadedBoolean: null,
-        totalCount: null,
-        manageEnum:true,
+		//config
+		showColors:true,
 
-        dataEditor: null,
+		//privates
+		submitButton: null,
+		cancelChangesButton: null,
+		updateStore: null,
+		hasLoadedBoolean: null,
+		totalCount: null,
+		manageEnum:true,
 
-        //privates
+		dataEditor: null,
+
         selections:null,
         constructor: function (config) {
             var self = this;
@@ -80,7 +83,7 @@
                             var selection = self.getSelection();
                             if(selection._length_()> 0 )
                                 self.modifyRecord(selection._first_());
-
+                            self.fireEvent('recordModified',selection);
                         }
                     },
                     rmBtn:{
@@ -130,6 +133,8 @@
         },
         configureStore: function () {
             var self = this;
+            if(this.offlineMode)
+                return;
             var changes = {mod: {}, del: {}, add: {}};
             self.store.changes = changes;
 
@@ -226,23 +231,26 @@
             var changes = this.store.getRawChanges();
             var mask  = this.getMaskObj('Subiendo cambios.'),
                 self = this;
-
-            nom.request('submitChanges', {
-                enumInstance: this.enumInstance,
-                data: changes,
-                _enum: this._enum,
-                actions: this.actions
-            }, function (response, o) {
-                changes['add'] = response.add;
-                if (self.fireEvent('changessubmited',changes) === false)
-                    return;
-                if (response.delMsg) {
-                    errorMsg("Error eliminando datos", response.delMsg);
-                    return;
-                }
+            if(!this.offlineMode)
+                nom.request('submitChanges', {
+                    enumInstance: this.enumInstance,
+                    data: changes,
+                    _enum: this._enum,
+                    actions: this.actions
+                }, function (response, o) {
+                    changes['add'] = response.add;
+                    if (self.fireEvent('changessubmited',changes) === false)
+                        return;
+                    if (response.delMsg) {
+                        errorMsg("Error eliminando datos", response.delMsg);
+                        return;
+                    }
+                    self.store.commitChanges();
+                    self.reloadCurrentPage()
+                }, null, mask/*,true*/);
+            else setTimeout(function(){
                 self.store.commitChanges();
-                self.reloadCurrentPage()
-            }, null, mask/*,true*/);
+            }, 0)
         },
         hasChanges: function () {
             return this.store && this.store.hasChanges && this.store.hasChanges();
@@ -266,17 +274,22 @@
 
             })
         },
-        getRowClass: function (record) {
-            var cssClass = record.id;
-            if (record.state == undefined)
-                return cssClass;
-            if (record.state == INSERTED)
-                return insertedCssClass + ' ' + cssClass;
-            if (record.state == DELETED)
-                return removeCssClass + ' ' + cssClass;
-            if (record.state == MODIFIED)
-                return modifiedCssClass + ' ' + cssClass;
-            return "";
+        getRowClassFunc: function (record) {
+			if(!this.showColors)
+				return undefined;
+			return function (record) {
+				var cssClass = record.id;
+				if (record.state == undefined)
+					return cssClass;
+				if (record.state == INSERTED)
+					return insertedCssClass + ' ' + cssClass;
+				if (record.state == DELETED)
+					return removeCssClass + ' ' + cssClass;
+				if (record.state == MODIFIED)
+					return modifiedCssClass + ' ' + cssClass;
+				return "";
+			};
+
         },
         reconfigure: function () {
             nom.interfaces.EnumStoreWriter.superclass.reconfigure.apply(this, arguments);

@@ -95,7 +95,7 @@
 		},
 		enumTypeRenderer :function (value){
 			if (value['displayField'] == null) {
-				return 'Formula a evaluar.'
+				return 'null'
 			}
 			return value['displayField'];
 		},

@@ -43,6 +43,7 @@
         multiSelection:true,
 
         lazyInit:false,
+        offlineMode:false,
         initValues:null,
 
         //privates
@@ -53,6 +54,8 @@
 
         hasLoadedBoolean: null,
         enumUI:null,
+        storeInitialized:false,
+
         /**
          * Objeto de la forma
          * { fieldId:v, fieldValue:vv}
@@ -180,6 +183,9 @@
         },
         initializeEnumEvents:function(){
 
+            if(this.offlineMode)
+                return;
+
             var _enum = this._enum,
                 self = this,enum_obs,
                 funcEnumChange = function (){
@@ -207,21 +213,25 @@
         },
 
         init: function () {
-            var self = this;
-            nom.request('getTotalRecordsFromEnum', {
-                enumInstance: this.enumInstance,
-                _enum: this._enum.id,
-                where: this.getEnumLoadConfig(0).where,
-                actions:this.actions
-            }, function (r) {
-                self.totalCount = r;
-                self.store = self.createStore();
-                self.setNewStore(self.store);
-                self.loadEnumData(self.pagePosition, function() {
-                    self.pagePosition = 0;
-                    self.fireEvent('storeinitialized', self);
-                });
-            }, null ,self.getMaskObj());
+            var self = this,
+                cb = function (r) {
+					self.totalCount = r;
+					self.store = self.createStore();
+					self.setNewStore(self.store);
+					self.loadEnumData(self.pagePosition, function () {
+						self.pagePosition = 0;
+						self.storeInitialized = true;
+						self.fireEvent('storeinitialized', self);
+					})
+				};
+			if(!this.offlineMode)
+                nom.request('getTotalRecordsFromEnum', {
+                    enumInstance: this.enumInstance,
+                    _enum: this._enum.id,
+                    where: this.getEnumLoadConfig(0).where,
+                    actions:this.actions
+                }, cb,null ,self.getMaskObj());
+			else setTimeout(cb,0);
 
         },
         getEnumLoadConfig: function (pagePosition) {
@@ -279,18 +289,27 @@
          */
         loadEnumData: function (pagePosition, cb) {
             var self = this;
-            nom.getEnumData(
-                this.enumInstance,
-                this._enum.id,
-                function (response, params) {
-                    this.store.loadData(response);
-                    this.hasLoadedBoolean = true;
-                    this.refreshView();
-                    this.fireEvent("finishedloadingenum", this, this._enum, params);
-                    nom.execute(cb,[],this);
-                },
-                this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj()
-            );
+            if(!this.offlineMode)
+                nom.getEnumData(
+                    this.enumInstance,
+                    this._enum.id,
+                    function (response, params) {
+                        this.store.loadData(response);
+                        this.hasLoadedBoolean = true;
+                        this.refreshView();
+                        this.fireEvent("finishedloadingenum", this, this._enum, params);
+                        nom.execute(cb,[],this);
+                    },
+                    this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj()
+                );
+            else setTimeout(function(){
+                self.store.loadData(self.store.data || []);
+                self.hasLoadedBoolean = true
+                self.refreshView();
+                self.fireEvent("finishedloadingenum", self, self._enum);
+                nom.execute(cb, [],self);
+            },0)
+
 
         },
         nextPage: function () {
