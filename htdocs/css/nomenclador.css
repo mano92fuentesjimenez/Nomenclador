@@ -288,10 +288,10 @@
     width: 100%;
     height: 100%;
 }
-.enum_desc_button{
+.gis_grow_button{
     display: none;
 }
-.enum_desc_hover .enum_desc_button{
+.gis_grow_hover .gis_grow_button{
     display:block !important;
     background-color: red;
     width: 10px;
