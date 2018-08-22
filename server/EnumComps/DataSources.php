@@ -37,6 +37,7 @@ class DataSources
 //            file_put_contents($pathDataS, Utils::json_encode($dbData));
 //        }
 
+        require_once '../DBConections/DBConection.php';
         $this->enumInstance = $enumInstance;
         $conn = EnumsUtils::getConn();
         $projName = EnumsUtils::getProjectName();
@@ -102,7 +103,7 @@ class DataSources
         return $resp;
     }
 
-    public function addDataSource($newDataSource)
+    public function addDataSource($newDataSource, $overwrite = false)
     {
 
         $ds = isset($this->dataSources[$newDataSource->dataSource['id']]) ?
@@ -114,7 +115,7 @@ class DataSources
         if ($ds && $ds != $newDataSource->dataSource) {
             throw new EnumException("No se puede a&ntilde;adir la fuente de datos '{$newDataSource->dataSource['name']}'', porque ya existe otra con el mismo nombre");
         }
-        if (!isset($newDataSource->dataSource['id'])) {
+        if (!$overwrite && !isset($newDataSource->dataSource['id'])) {
             $newDataSource->dataSource['id'] = $newDataSource->dataSource['name'];
             if ($this->dataSources[$newDataSource->dataSource['id']]) {
                 $newDataSource->dataSource['id'] = $newDataSource->dataSource['id'] . rand(0, 100000);
@@ -126,6 +127,20 @@ class DataSources
         $conn->createSchema($newDataSource->getSchema());
         $conn->closeConnection();
         return $newDataSource->getId();
+    }
+    public function addDataSourceFromDSN($id, $user, $pass, $schema, $db, $host, $pass, $port){
+        $ds = array(
+            "dbname" => $db,
+            "host"=>$host,
+            "user"=>$user,
+            "password"=>$pass,
+            "port"=>$port,
+            "dataSource"=> DBConnectionTypes::POSTGREE_9_1,
+            "id" => $id,
+            "name"=>$id,
+            "schema"=>$schema
+        );
+        $this->addDataSource($ds, true);
     }
 
     public static function decryptPass(&$dataSource)
