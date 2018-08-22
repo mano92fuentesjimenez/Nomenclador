@@ -1112,6 +1112,10 @@
 		},
 		valid :function (notShowAlert){
 			var getType = nom.Type.Utils.getType;
+            var b = true;
+            var self = this;
+
+
 			if(!this.fieldsMode){
 				if (!this.nameTextField.isValid())
 					return false;
@@ -1121,10 +1125,6 @@
 					b = false;
 				}
 			}
-
-			var b = true;
-			var self = this;
-
 			var fields = this.getFields();
 			this.gridEditor.getStore().each(function (record){
 				var type = null;
