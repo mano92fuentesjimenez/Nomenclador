@@ -163,7 +163,8 @@
 				},
 				canMoveEnums:true,
 				enumInstance:this.enumInstance,
-				enumInstanceConfig:this.enumInstanceConfig
+				enumInstanceConfig:this.enumInstanceConfig,
+                maskObj: this
 			});
 
 			this.visorTabPanel = new nom.dataEditorTabPanel({
@@ -309,6 +310,7 @@
         canMoveEnums:true,
         askToChangeEnum:null,
         enumInstanceConfig:null,
+        maskObj:null,
         constructor: function (cfg) {
 
             var self = this;
@@ -727,7 +729,7 @@
                 nodeParent = this.selectedNode.parentNode;
 
             var _enumPath = nodeParent.getPath("idNode") + "/" + _enum.id,
-                mask = Genesig.Utils.mask(nom.getUI(this.enumInstance, this.enumInstanceConfig), 'An&ntilde;adiendo '+this.entityType);
+                mask =this.maskObj? Genesig.Utils.mask(this.maskObj, 'An&ntilde;adiendo '+this.entityType) :null;
 
             nom.request('addEnum', {
                 enumInstance:this.enumInstance,
