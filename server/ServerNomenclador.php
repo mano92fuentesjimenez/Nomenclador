@@ -18,12 +18,16 @@ class ServerNomenclador extends ClientResponderAdapter
 
     private function loadEnumFiles(){
         require_once 'Exceptions.php';
+        require_once 'ActionManager.php';
     }
 
     public function handlePreDrawing($requ)
     {
         $enumResult = new NomencladorResult();
         $this->loadEnumFiles();
+        $enumInstance = $requ->value['enumInstance'];
+        $actionM = ActionManager::getInstance($enumInstance);
+        $actionM->setActions($requ->value['actions']);
         
         try{
             switch ($requ->action) {
@@ -32,8 +36,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     EnumsRequests::modEnum(
                         $requ->value['enumInstance'],
                         $requ->value['changes'],
-                        $requ->value['original'],
-                        $requ->value['actions']
+                        $requ->value['original']
                     );
                 }
                     break;
@@ -65,8 +68,7 @@ class ServerNomenclador extends ClientResponderAdapter
                         $requ->value['enumInstance'],
                         $requ->value['_enum'],
                         $requ->value['_enumPath'],
-                        $requ->value["refs"],
-                        $requ->value['actions']);
+                        $requ->value["refs"]);
                 }
                     break;
                 case 'modRank': {
@@ -130,9 +132,8 @@ class ServerNomenclador extends ClientResponderAdapter
 
                     $data = $requ->value['data'];
                     $enum = $requ->value['_enum'];
-                    $actions = $requ->value['actions'];
 
-                    $enumResult->resp= EnumsRequests::submitChanges($requ->value['enumInstance'],$enum, $data, $actions);
+                    $enumResult->resp= EnumsRequests::submitChanges($requ->value['enumInstance'],$enum, $data);
                 }
                     break;
                 case 'getEnumData': {
@@ -151,8 +152,7 @@ class ServerNomenclador extends ClientResponderAdapter
                         null,
                         $params['enumLoadColumns'],
                         $params['enumLoadWhere'],
-                        null,
-                        $params['enumLoadActions']
+                        null
                         );
                 }
                     break;
@@ -161,7 +161,6 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enum_id = $requ->value['_enum'];
                     $enums = Enums::getInstance($enumInstance);
                     $enum = $enums->getEnum($enum_id);
-                    $enum->setActions($requ->value['actions']);
 
                     $enumResult->resp = $enum->getTotalRecords($requ->value['where']);
                 }
@@ -184,16 +183,14 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumResult->resp = EnumsRequests::removeEnum(
                         $requ->value['enumInstance'],
                         $requ->value['enumId'],
-                        $requ->value['path'],
-                        $requ->value['actions']
+                        $requ->value['path']
                     );
                 }
                     break;
                 case 'removeRank': {
                     EnumsRequests::removeRank(
                         $requ->value['enumInstance'],
-                        $requ->value['path'],
-                        $requ->value['actions']
+                        $requ->value['path']
                     );
                 }
                     break;
@@ -453,13 +450,11 @@ class ServerNomenclador extends ClientResponderAdapter
         return PrimaryKey::ID;
     }
 
-    public function queryEnum($enumInstance, $enumId, $pageOffset, $pageSize, $loadAll, $idRow, $fieldLazyToEval, $fields, $where,$inData, $loadActions){
+    public function queryEnum($enumInstance, $enumId, $pageOffset, $pageSize, $loadAll, $idRow, $fieldLazyToEval, $fields, $where,$inData){
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnum($enumId);
 
-        $enum->setActions($loadActions);
         return $enum->queryEnum($pageOffset,$pageSize,$loadAll, $idRow,$fieldLazyToEval,$fields,$where,$inData );
-
     }
 
     static $conn =null;

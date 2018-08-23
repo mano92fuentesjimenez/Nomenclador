@@ -236,7 +236,7 @@
                     enumInstance: this.enumInstance,
                     data: changes,
                     _enum: this._enum,
-                    actions: this.actions
+                    actions: this.getActions()
                 }, function (response, o) {
                     changes['add'] = response.add;
                     if (self.fireEvent('changessubmited',changes) === false)

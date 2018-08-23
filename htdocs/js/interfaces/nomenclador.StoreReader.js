@@ -62,24 +62,8 @@
          */
         groupBy:null,
 
-        actions:null,
-        // actions:{
-        //     load : {
-        //         pre:[
-        //             'Saeca.method'
-        //         ],
-        //         post:[
-        //
-        //         ]
-        //     },
-        //     save : {
-        //
-        //     },
-        //     delete : {
-        //         pre:''
-        //     }
-        // },
-
+        //Cada nomenclador puede tener acciones en especifico q se pueden llevar en el servidor.
+        actionManager:null,
         constructor: function (config){
             this._apply_(config);
             var self = this;
@@ -127,6 +111,8 @@
 
             if(this.lazyInit && this.initValues && utils.isArray(this.initValues))
                 this.store.loadData(this.initValues);
+
+            this.actionManager = new nom.ActionManager();
         },
         initializeConfig:function(){
             var self = this,
@@ -229,7 +215,7 @@
                     enumInstance: this.enumInstance,
                     _enum: this._enum.id,
                     where: this.getEnumLoadConfig(0).where,
-                    actions:this.actions
+                    actions:this.getActions(this)
                 }, cb,null ,self.getMaskObj());
 			else setTimeout(cb,0);
 
@@ -250,7 +236,7 @@
                 pageSize: this.pageSize,
                 offset: (pagePosition * this.pageSize),
                 columns: this.columns,
-                actions: this.actions
+                actions: this.getActions(this)
             };
         },
         getPagingBar:function(){
@@ -421,15 +407,10 @@
         },
 
         addAction:function(which, when, action){
-
-            if(this.actions == null)
-                this.actions = {};
-            if(!utils.isObject(this.actions[which]))
-                this.actions[which]={};
-            if(!utils.isArray(this.actions[which][when]))
-                this.actions[which][when] = [];
-
-            this.actions[which][when].push(action);
+            this.actionManager.addAction(this.enumInstance,when,which,action);
+        },
+        getActions: function(){
+            return this.actionManager.getActions(this.enumInstance);
         },
 
         //Filtering methods

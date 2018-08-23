@@ -28,14 +28,10 @@
              */
             'enumchanged'
             ];
-        this.actions = {}
+        this.actions = {};
+        this.ActionManager = new nom.ActionManager();
     };
-    nom.enums = Ext.extend(nom.enums, {
-        loaded: null,
-        simpleTree:null,
-        dataSources:null,
-        defaultFields:null,
-        instanceConfigs:null,
+    nom.ActionManager = function(){
         /**
          * actions =
          * {
@@ -46,16 +42,18 @@
          *   }
          * }
          *
-         * actionType = [addEnum, removeEnum, modEnum]
+         * actionType = [enumInstanceAdding,addEnum, removeEnum, modEnum]
          * when = [pre, post]
          * action = pluginName.Action
          */
-        actions:null,
+        this.actions = {};
+
+    };
+    nom.ActionManager = Ext.extend(nom.ActionManager,{
 
         addAction:function(enumInstance, when, actionType, action){
             if(this.actions[enumInstance] == null)
                 this.actions[enumInstance] = {};
-
             if(!utils.isObject(this.actions[enumInstance][actionType]))
                 this.actions[enumInstance][actionType]={};
             if(!utils.isArray(this.actions[enumInstance][actionType][when]))
@@ -63,10 +61,21 @@
 
             this.actions[enumInstance][actionType][when].push(action);
         },
-        getActions:function(enumInstance,actionType){
-            if(this.actions[enumInstance] && this.actions[enumInstance][actionType])
-                return this.actions[enumInstance][actionType];
+        getActions:function(enumInstance){
+            if(this.actions[enumInstance])
+                return this.actions[enumInstance];
             return {};
+        },
+    });
+    nom.enums = Ext.extend(nom.enums, {
+        loaded: null,
+        simpleTree:null,
+        dataSources:null,
+        defaultFields:null,
+        instanceConfigs:null,
+
+        getActionManager:function(){
+            return this.ActionManager;
         },
         checkEnumInstance:function(enumInstance){
             if(!this.enums[enumInstance])
@@ -321,7 +330,7 @@
      *                      idRow:int          Id de la fila que se quiere recuperar.
      *                      actions:{          Indica las acciones a ejecutarse antes y despues de cargar los datos
      *                         load:{          en el servidor en un plugin. La accion es de la forma "pluginName.action"
-     *                           action:{
+     *                           action:{      Estas acciones se aplican solo al nomenclador q pertenece a este reader
      *                              pre:[],
      *                              post:[]
      *                           }
@@ -1054,9 +1063,7 @@
     };
     nom.request = function (action, params, onSuccess, onError, mask, trigger) {
 
-        var gg = arguments;
         var f = function (r, o) {
-            var f = gg;
             var response = '';
             try {
                 nom.execute(mask);
@@ -1083,6 +1090,15 @@
         if(params == null)
             params = {};
         params['action'] =action;
+
+        if(params.enumInstance) {
+            var actions = nom.enums.getActionManager().getActions(params.enumInstance);
+            if(params['actions'])
+                params['actions']._apply_(actions);
+            else
+                params['actions'] = actions;
+        }
+
         var p = {params:Ext.encode( params)};
         var failure = function (o) {
             if (mask)

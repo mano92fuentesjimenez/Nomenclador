@@ -11,12 +11,6 @@ class Enum
     private $enums;
     public $enumInstance;
 
-    private $actions;
-
-    const STOP = 1;
-    const CONVERT_TO_ADD = 2;
-    const CONTINUE_P = 3;
-
     public function __construct($enumInstance, &$enum_tree, $enums)
     {
         $this->enumInstance = $enumInstance;
@@ -24,101 +18,6 @@ class Enum
         $this->enums = isset($enums) ? $enums->enums : null;
         $this->actions = null;
     }
-    public function getActions($which,$when){
-        if(isset($this->actions)){
-            if (is_array($this->actions) &&
-                is_array($this->actions[$which]) &&
-                is_array($this->actions[$which][$when])) {
-
-                return $this->actions[$which][$when];
-            }
-        }
-        return null;
-    }
-    public function setActions($actions){
-        $this->actions = $actions;
-    }
-
-    public function callPreLoadActions(&$offset, &$limit, &$idRow, &$fieldsToGet, &$inData, &$loadAllData, &$where){
-        $r = null;
-        $actions = $this->getActions('load','pre');
-
-        foreach ($actions as $action) {
-            $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($this, $offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where);
-            if($r==self::STOP)
-                break;
-        }
-        return $r;
-    }
-    public function callPostLoadActions(&$data){
-        $actions = $this->getActions('load','post');
-
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($this, $data);
-        }
-    }
-    public function callPreSubmitActions(&$data){
-
-        //del
-        $actions = $this->getActions('del','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-
-            if($p['server']->{$p['action']}($this, $data['del']) == self::STOP){
-                unset($data['del']);
-                break;
-            }
-        }
-
-        //mod
-        $actions = $this->getActions('mod','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-
-            $r = $p['server']->{$p['action']}($this, $data['mod']);
-
-            if($r == self::CONVERT_TO_ADD){
-               foreach ($data['mod'] as $record){
-                   unset($record[PrimaryKey::ID]);
-                   $data['add'][] = $record;
-               }
-            }
-            if($r == self::STOP || $r == self::CONVERT_TO_ADD){
-                unset($data['mod']);
-                break;
-            }
-        }
-
-        //add
-        $actions = $this->getActions('add','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-            if($p['server']->{$p['action']}($this, $data['mod']) == self::STOP)
-                break;
-        }
-
-    }
-    private function callCountActions(&$where){
-        $actions = $this->getActions('count','pre');
-        $r = null;
-
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($this, $where);
-        }
-        return $r;
-    }
-    public function callPostAddActions(&$data){
-        $actions = $this->getActions('add','post');
-
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($this,$data);
-        }
-    }
-
 
     private function getPlugin($action){
 
@@ -416,7 +315,8 @@ class Enum
      * @return mixed
      */
     public function getTotalRecords($where){
-        $c = $this->callCountActions($where);
+        $actionM = ActionManager::getInstance($this->enumInstance);
+        $c = $actionM->callCountActions($where);
         if(is_numeric($c)){
             return $c;
         }
@@ -473,13 +373,14 @@ class Enum
     private function getEnumData($offset = null, $limit = null, $loadAllData = false, $idRow = null,
                                  $fieldLazyToEval = null, $fields = null,$where=null, $inData = null)
     {
+        $actionM = ActionManager::getInstance($this->enumInstance);
 
         //cojo los campos a evaluar.
         $fieldsWithDep = $this->getFieldsForGettingData($fields);
         //filtrar los fields a coger de base de datos quitando los que no se guardan en bd
         $fieldsToGet = $this->getFieldsSavedInBD($fieldsWithDep);
 
-        if($this->callPreLoadActions($offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where) == self::STOP){
+        if($actionM->callPreLoadActions($offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where) == ActionManager::STOP){
             return array();
         }
 
@@ -494,7 +395,7 @@ class Enum
         if (!is_null($fields)) {
             $data = $this->filterData($data, $fields);
         }
-        $this->callPostLoadActions($data);
+        $actionM->callPostLoadActions($data);
 
         return $data;
     }

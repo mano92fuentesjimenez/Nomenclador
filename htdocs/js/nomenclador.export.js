@@ -357,4 +357,10 @@
         nom.showUI(enumInstance);
     });
 
+    exp.getActionManager = function (enumInstance) {};
+    addService('getActionManager', function () {
+		return nom.enums.getActionManager();
+    })
+
+
 })();

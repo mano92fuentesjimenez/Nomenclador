@@ -177,15 +177,15 @@ class SimpleTree
 
     }
 
-    public function delRank($path,$actions)
+    public function delRank($path)
     {
 
         $self = $this;
-        $this->walk($path, function ($last, &$walking) use ($self, $actions) {
+        $this->walk($path, function ($last, &$walking) use ($self) {
             $enums = Enums::getInstance($self->enumInstance);
 
             $self->canRemoveEnums($walking[$last], $enums);
-            $self->removeEnums($walking[$last], $enums, $actions);
+            $self->removeEnums($walking[$last], $enums);
 
             unset($walking[$last]);
         });
@@ -211,8 +211,9 @@ class SimpleTree
         }
     }
 
-    public function removeEnums($tree, $enums, $actions)
+    public function removeEnums($tree, $enums)
     {
+        $actionsM = ActionManager::getInstance($this->enumInstance);
         foreach ($tree['childs'] as $value) {
             if (isset($value['childs'])) {
                 $this->removeEnums($value, $enums);
@@ -220,13 +221,13 @@ class SimpleTree
                 $refs = Refs::getInstance($this->enumInstance);
 
                 $_enum = $enums->getEnum($value['idNode']);
-                EnumsRequests::callPreRemActions($_enum->enumInstance, $_enum, $actions);
+                $actionsM->callPreEnumRemActions($_enum->enumInstance, $_enum);
                 $refs->deleteReferencesFrom($_enum);
 
                 $conn = EnumsUtils::getDBConnection($_enum);
                 $conn->removeTable($_enum->getId(), $_enum->getDataSource()->getSchema());
                 $enums->delEnum($_enum);
-                EnumsRequests::callPostRemActions($_enum->enumInstance, $_enum, $actions);
+                $actionsM->callPostEnumRemActions($_enum->enumInstance, $_enum);
 
             }
         }

@@ -28,34 +28,16 @@ class EnumsRequests
 
         return $obj;
     }
-    private static function callPreModActions($enumInstance,$enum,$actions){
-        if(is_array($actions) && is_array($actions['pre'])){
-            foreach ($actions['pre'] as $action){
-                $p = self::getPlugin($action);
-                $v = $p['server']->{$p['action']}($enumInstance,$enum);
-                if($v ==Enum::STOP)
-                    throw new Exception("La modificacion del nomenclador ha sido refutada por el plugin {$p['server']}");
-            }
-        }
-    }
 
-    private static function callPostModActions($enumInstance,$enum,$actions){
-        if(is_array($actions) && is_array($actions['post'])){
-            foreach ($actions['post'] as $action){
-                $p = self::getPlugin($action);
-                $p['server']->{$p['action']}($enumInstance,$enum);
-            }
-        }
-    }
 
-    public static function modEnum($enumInstance, $changes, $original, $actions)
+    public static function modEnum($enumInstance, $changes, $original)
     {
+        $actionsM = ActionManager::getInstance($enumInstance);
         $enums = Enums::getInstance($enumInstance);
         $oldEnum = $enums->getEnum($changes['_enum']['id']);
 
         $newEnum = new Enum($enumInstance,$changes['_enum'], $enums);
-        if(is_array($actions))
-            self::callPreModActions($enumInstance,$newEnum, $actions);
+        $actionsM->callPreEnumModActions($enumInstance,$newEnum);
 
         //Se tiene que verificar que el nomenclador que se esta modificando, es la ultima modificacion del mismo
         //o sea comparar si son iguales el nomenclador en el server y el nomenclador sin modificar en el cliente.
@@ -196,44 +178,13 @@ class EnumsRequests
         $refs->saveRefs();
         $enums->saveEnums();
 
-        if(is_array($actions))
-            self::callPostModActions($enumInstance, $newEnum, $actions);
-    }
-    private static function getPlugin($action){
-
-        $v = array();
-        $arr = explode('.',$action);
-        $plugin = reset($arr);
-        $action = end($arr);
-        $server = ServerPlugin::requirePlugin($plugin);
-
-        $v['server'] = $server;
-        $v['action'] = $action;
-        $v['plugin'] = $plugin;
-        return $v;
-    }
-    private static function callPreAddActions($enumInstance,$enum,$actions){
-        if(is_array($actions) && is_array($actions['pre'])){
-            foreach ($actions['pre'] as $action){
-                $p = self::getPlugin($action);
-                $v = $p['server']->{$p['action']}($enumInstance,$enum);
-                if($v ==Enum::STOP)
-                    throw new Exception("La adicion del nomenclador ha sido refutada por el plugin {$p['plugin']}");
-            }
-        }
-    }
-    private static function callPostAddActions($enumInstance,$enum,$actions){
-        if(is_array($actions) && is_array($actions['post'])){
-            foreach ($actions['post'] as $action){
-                $p = self::getPlugin($action);
-                $p['server']->{$p['action']}($enumInstance,$enum);
-            }
-        }
+        $actionsM->callPostEnumModActions($enumInstance, $newEnum);
     }
 
-    public static function addEnum($enumInstance, $enumTree, $enumTreePath, $refs, $actions)
+
+    public static function addEnum($enumInstance, $enumTree, $enumTreePath, $refs)
     {
-
+        $actionsM = ActionManager::getInstance($enumInstance);
         $enums = Enums::getInstance($enumInstance);
         $simpleTree = SimpleTree::getInstance($enumInstance);
 
@@ -245,8 +196,7 @@ class EnumsRequests
             throw new EnumException( 'Mientras usted anhadia el nomenclador, el mismo ya fue anhadido por otra
             person.');
         }
-        if(is_array($actions))
-            self::callPreAddActions($enumInstance,$enum,$actions);
+        $actionsM->callPreEnumAddActions($enumInstance,$enum);
 
         //anhadir $enum al arreglo de enums guardado en enums.json
         $enums->addEnum($enum);
@@ -268,12 +218,11 @@ class EnumsRequests
             $references->saveRefs();
             $simpleTree->saveSimpleTree($enumInstance);
 
-            if(is_array($actions))
-                self::callPostAddActions($enumInstance, $enum, $actions);
+            $actionsM->callPostEnumAddActions($enumInstance, $enum);
         }
     }
 
-    public static function submitChanges($enumInstance, $enum, $data, $actions)
+    public static function submitChanges($enumInstance, $enum, $data)
     {
         if (!$data) {
             return;
@@ -281,7 +230,7 @@ class EnumsRequests
         $enums = Enums::getInstance($enumInstance);
         $enum2 = new Enum($enumInstance,$enum, null);
         $enum = $enums->getEnum($enum);
-        $enum->setActions($actions);
+        $actionsM = ActionManager::getInstance($enumInstance);
 
         if (!Enum::enumEquals($enum, $enum2)) {
             throw new EnumException("Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.");
@@ -292,7 +241,7 @@ class EnumsRequests
         $msg = '';
         $ids = null;
 
-        $enum->callPreSubmitActions($data);
+        $actionsM->callPreSubmitActions($data);
 
 
         //$conn->beginTransaction();
@@ -320,7 +269,7 @@ class EnumsRequests
             }
         }
 
-        $enum->callPostAddActions();
+        $actionsM->callPostAddActions();
 
         //modificar
         if (count($data['mod']) > 0) {
@@ -361,8 +310,6 @@ class EnumsRequests
 
         }
 
-
-
         //eliminar
         if (count($data['del']) > 0) {
             $msg = $enum->canDeleteData($data['del']);
@@ -390,27 +337,10 @@ class EnumsRequests
         return array('delMsg' => $msg, 'add'=>$ids);
     }
 
-
-    public static function callPreRemActions($enumInstance,$enum,$actions){
-        if(is_array($actions) && is_array($actions['pre'])){
-            foreach ($actions['pre'] as $action){
-                $p = self::getPlugin($action);
-                $v = $p['server']->{$p['action']}($enumInstance,$enum);
-                if($v ==Enum::STOP)
-                    throw new EnumActionRejected("La modificacion del nomenclador ha sido refutada por el plugin {$p['server']}");
-            }
-        }
-    }
-    public static function callPostRemActions($enumInstance,$enum,$actions){
-        if(is_array($actions) && is_array($actions['post'])){
-            foreach ($actions['post'] as $action){
-                $p = self::getPlugin($action);
-                $p['server']->{$p['action']}($enumInstance,$enum);
-            }
-        }
-    }
-    public static function removeEnum($enumInstance, $enumId, $path, $actions)
+    public static function removeEnum($enumInstance, $enumId, $path)
     {
+        $actionsM = ActionManager::getInstance($enumInstance);
+
         $enums = Enums::getInstance($enumInstance);
         $_enum = $enums->getEnum($enumId);
         $simpleTree = SimpleTree::getInstance($enumInstance);
@@ -419,8 +349,8 @@ class EnumsRequests
         if(is_string($r))
             throw new EnumCantBeRemovedIsRefException($_enum->getId(), $_enum->getName(), $r);
 
-        if(is_array($actions))
-            self::callPreRemActions($enumInstance, $_enum, $actions);
+
+        $actionsM->callPreEnumRemActions($enumInstance, $_enum);
 
         $simpleTree->removeTreeNode($path);
 
@@ -428,18 +358,17 @@ class EnumsRequests
 
         EnumsUtils::saveHeaders($enumInstance);
 
-        if(is_array($actions))
-            self::callPostRemActions($enumInstance, $_enum, $actions);
+        $actionsM->callPostEnumRemActions($enumInstance, $_enum);
     }
 
-    public static function removeRank($enumInstance, $path,$actions)
+    public static function removeRank($enumInstance, $path)
     {
         $simpleTree = SimpleTree::getInstance($enumInstance);
         $enums = Enums::getInstance($enumInstance);
         $refs = Refs::getInstance($enumInstance);
 
         try {
-            $simpleTree->delRank($path, $actions);
+            $simpleTree->delRank($path);
             $simpleTree->saveSimpleTree();
             $enums->saveEnums();
             $refs->saveRefs();

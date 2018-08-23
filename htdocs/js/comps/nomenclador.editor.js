@@ -662,8 +662,7 @@
                     nom.request('removeEnum',{
                         enumInstance:this.enumInstance,
                         enumId: enums.getEnumByName(self.enumInstance, node.text).id,
-                        path: node.getPath('idNode'),
-                        actions:nom.enums.getActions(this.enumInstance,'removeEnum')
+                        path: node.getPath('idNode')
                     },function (response) {
 
                         infoMsg('El nomenclador: ' + node.attributes._text_ + ' ha sido eliminado satisfactoriamente.');
@@ -707,8 +706,7 @@
 
                     nom.request('removeRank', {
                         enumInstance:this.enumInstance,
-                        path: path,
-                        actions:nom.enums.getActions(this.enumInstance,'removeEnum')
+                        path: path
                     }, function () {
                         infoMsg('La categor&iacute;a ha sido eliminada satisfactoriamente.');
                         self.reloadTreeNode(node.parentNode);
@@ -735,8 +733,7 @@
                 enumInstance:this.enumInstance,
                 _enum: _enum,
                 _enumPath: _enumPath,
-                refs: obj.refs,
-                actions:nom.enums.getActions(this.enumInstance,'addEnum')
+                refs: obj.refs
             }, function () {
                 enums.add(self.enumInstance, _enum);
                 self.reloadTreeNode(_enum.id);
@@ -750,8 +747,7 @@
             nom.request('modEnum', {
                 enumInstance:this.enumInstance,
                 'changes': changes,
-                'original': enums.getEnumByName(self.enumInstance,node.text),
-                actions:nom.enums.getActions(this.enumInstance,'modEnum')
+                'original': enums.getEnumByName(self.enumInstance,node.text)
             }, function (r) {
                 var _enum = changes._enum;
                 enums.add(self.enumInstance, _enum);
