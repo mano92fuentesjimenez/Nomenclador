@@ -37,7 +37,7 @@ class DataSources
 //            file_put_contents($pathDataS, Utils::json_encode($dbData));
 //        }
 
-        require_once '../DBConections/DBConection.php';
+        require_once __DIR__.'/../DBConections/DBConection.php';
         $this->enumInstance = $enumInstance;
         $conn = EnumsUtils::getConn();
         $projName = EnumsUtils::getProjectName();
