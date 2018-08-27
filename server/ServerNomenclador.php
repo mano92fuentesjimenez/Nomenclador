@@ -3,6 +3,8 @@ include_once 'Types/BaseType.php';
 include_once 'DBConections/DBConection.php';
 require_once 'Enums.php';
 require_once CARTOWEB_HOME.'include/Zend/Crypt/Rsa.php';
+require_once 'Exceptions.php';
+require_once 'ActionManager.php';
 
 class ServerNomenclador extends ClientResponderAdapter
 {
@@ -16,15 +18,9 @@ class ServerNomenclador extends ClientResponderAdapter
     {
     }
 
-    private function loadEnumFiles(){
-        require_once 'Exceptions.php';
-        require_once 'ActionManager.php';
-    }
-
     public function handlePreDrawing($requ)
     {
         $enumResult = new NomencladorResult();
-        $this->loadEnumFiles();
         $enumInstance = $requ->value['enumInstance'];
         $actionM = ActionManager::getInstance($enumInstance);
         $actionM->setActions($requ->value['actions']);
