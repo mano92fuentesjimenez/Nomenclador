@@ -16,6 +16,7 @@
                 allowBlank :!field.needed,
                 fieldLabel :field.header,
                 height:100,
+                maxLength: 10000,
 				plugins:[
 					new grow()
 				]
