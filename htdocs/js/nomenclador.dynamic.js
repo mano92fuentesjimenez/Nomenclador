@@ -1028,6 +1028,8 @@
     *                                  el json del nomenclador q se construyo.
     *                 Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
     *                 instancia de nomencladores.
+    *            defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
+    *                                    nomencladores de esta instancia.
      *
      */
     nom.showUI = function (enumInstance, config){

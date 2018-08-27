@@ -523,6 +523,7 @@
                     entityType:self.entityType,
                     tpl:tpl,
                     tplConfigs:self.enumInstanceConfig.tpl || {},
+                    defaultDataSource: self.enumInstanceConfig.defaultDataSource || {}
                 })).show();
             });
 

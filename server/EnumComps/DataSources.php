@@ -103,7 +103,7 @@ class DataSources
         return $resp;
     }
 
-    public function addDataSource($newDataSource, $overwrite = false)
+    public function addDataSource($newDataSource)
     {
 
         $ds = isset($this->dataSources[$newDataSource->dataSource['id']]) ?
@@ -115,7 +115,8 @@ class DataSources
         if ($ds && $ds != $newDataSource->dataSource) {
             throw new EnumException("No se puede a&ntilde;adir la fuente de datos '{$newDataSource->dataSource['name']}'', porque ya existe otra con el mismo nombre");
         }
-        if (!$overwrite && !isset($newDataSource->dataSource['id'])) {
+
+        if (!isset($newDataSource->dataSource['id'])) {
             $newDataSource->dataSource['id'] = $newDataSource->dataSource['name'];
             if ($this->dataSources[$newDataSource->dataSource['id']]) {
                 $newDataSource->dataSource['id'] = $newDataSource->dataSource['id'] . rand(0, 100000);
@@ -140,7 +141,7 @@ class DataSources
             "name"=>$id,
             "schema"=>$schema
         );
-        $this->addDataSource($ds, true);
+        $this->addDataSource($ds);
     }
 
     public static function decryptPass(&$dataSource)

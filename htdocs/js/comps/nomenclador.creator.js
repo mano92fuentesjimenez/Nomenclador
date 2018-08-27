@@ -25,6 +25,8 @@
 		tpl:'default',
 		//configuraciones de todos los tpl en esta instancia de nomenclador.
 		tplConfigs:undefined,
+		//Si tiene valor, es el identificador de un dataSource q se va a usar para
+		defaultDataSource:null,
 
 		//private
 
@@ -99,6 +101,7 @@
 				readOnly :true,
 				tooltipsTriggers :['Limpiar', 'Seleccionar fuente de datos'],
 				tooltip :'Seleccionar la fuente de datos',
+				hidden: this.isDefaultDS(),
 				onTrigger2Click :function (){
 					new nom.dataSourcesList({
 						enumInstance:self.enumInstance,
@@ -975,7 +978,7 @@
 
 			nomenclador.description = this.descriptionTextArea.getValue();
 			nomenclador.fields = fields;
-			nomenclador.dataSource = this.dataSourceSelector.getValue();
+			nomenclador.dataSource = this.isDefaultDS() ? this.defaultDataSource : this.dataSourceSelector.getValue();
 
 			this.gridEditor.getStore().each(function (record){
 
@@ -1083,8 +1086,12 @@
 		},
 		setEnum:function(){
 			this.fillComponents(this._enum);
-			this.dataSourceSelector.disable();
+			if(this.isDefaultDS())
+				this.dataSourceSelector.disable();
 			this.updateFieldCounter();
+		},
+		isDefaultDS:function(){
+		   return utils.isString(this.defaultDataSource);
 		},
 		getFields :function (exclude){
 			var fields = {};
@@ -1119,7 +1126,7 @@
 			if(!this.fieldsMode){
 				if (!this.nameTextField.isValid())
 					return false;
-				if (this.dataSourceSelector.getValue() == '') {
+				if ( ! this.isDefaultDS() && this.dataSourceSelector.getValue() == '') {
 					errorMsg("Debe seleccionar un tipo de fuente de datos.");
 					notShowAlert = true;
 					b = false;
@@ -1160,7 +1167,8 @@
 		fillComponents :function (_enum){
 			this.descriptionTextArea.setValue(_enum.description);
 			this.nameTextField.setValue(_enum.name);
-			this.dataSourceSelector.setValue(_enum.dataSource);
+			if(this.isDefaultDS())
+				this.dataSourceSelector.setValue(_enum.dataSource);
 			this.addFields(_enum.fields, true);
 		},
 		idToNumber :function (id){
