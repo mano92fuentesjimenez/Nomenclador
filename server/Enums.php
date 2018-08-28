@@ -37,7 +37,7 @@ class EnumsRequests
         $oldEnum = $enums->getEnum($changes['_enum']['id']);
 
         $newEnum = new Enum($enumInstance,$changes['_enum'], $enums);
-        $actionsM->callPreEnumModActions($enumInstance,$newEnum);
+        $actionsM->callPreEnumModActions($newEnum);
 
         //Se tiene que verificar que el nomenclador que se esta modificando, es la ultima modificacion del mismo
         //o sea comparar si son iguales el nomenclador en el server y el nomenclador sin modificar en el cliente.
@@ -178,7 +178,7 @@ class EnumsRequests
         $refs->saveRefs();
         $enums->saveEnums();
 
-        $actionsM->callPostEnumModActions($enumInstance, $newEnum);
+        $actionsM->callPostEnumModActions( $newEnum);
     }
 
 
@@ -196,7 +196,7 @@ class EnumsRequests
             throw new EnumException( 'Mientras usted anhadia el nomenclador, el mismo ya fue anhadido por otra
             person.');
         }
-        $actionsM->callPreEnumAddActions($enumInstance,$enum);
+        $actionsM->callPreEnumAddActions($enum);
 
         //anhadir $enum al arreglo de enums guardado en enums.json
         $enums->addEnum($enum);
@@ -218,7 +218,7 @@ class EnumsRequests
             $references->saveRefs();
             $simpleTree->saveSimpleTree($enumInstance);
 
-            $actionsM->callPostEnumAddActions($enumInstance, $enum);
+            $actionsM->callPostEnumAddActions($enum);
         }
     }
 
@@ -269,7 +269,7 @@ class EnumsRequests
             }
         }
 
-        $actionsM->callPostAddActions();
+        $actionsM->callPostAddActions($data['add']);
 
         //modificar
         if (count($data['mod']) > 0) {
@@ -350,7 +350,7 @@ class EnumsRequests
             throw new EnumCantBeRemovedIsRefException($_enum->getId(), $_enum->getName(), $r);
 
 
-        $actionsM->callPreEnumRemActions($enumInstance, $_enum);
+        $actionsM->callPreEnumRemActions( $_enum);
 
         $simpleTree->removeTreeNode($path);
 
@@ -358,7 +358,7 @@ class EnumsRequests
 
         EnumsUtils::saveHeaders($enumInstance);
 
-        $actionsM->callPostEnumRemActions($enumInstance, $_enum);
+        $actionsM->callPostEnumRemActions( $_enum);
     }
 
     public static function removeRank($enumInstance, $path)
