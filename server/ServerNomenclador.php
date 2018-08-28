@@ -55,8 +55,7 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'getServerHeaders': {
-                    $headers = EnumsRequests::getEnumHeaders($requ->value['enumInstance']);
-                    $enumResult->resp = $headers;
+                    $enumResult->resp = $this->getSeverHeaders($requ->value['enumInstance']);
                 }
                     break;
                 case 'addEnum': {
@@ -381,6 +380,10 @@ class ServerNomenclador extends ClientResponderAdapter
             'document' => CARTOWEB_HTTP . 'generated/pdf/' . $pdfName
         );
 
+    }
+
+    public function getSeverHeaders($enumInstance){
+        return EnumsRequests::getEnumHeaders($enumInstance);
     }
 
     public function obtenerNomencladorDetalles($nomenclador, $categoria, $elemento, $extraParams){
