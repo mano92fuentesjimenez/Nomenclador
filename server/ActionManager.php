@@ -13,9 +13,12 @@ class ActionManager
     const STOP = 1;
     const CONVERT_TO_ADD = 2;
     const CONTINUE_P = 3;
+    private $enumInstance;
 
     private static $instances;
-    private function __construct(){}
+    private function __construct($enumInstance){
+        $this->enumInstance = $enumInstance;
+    }
 
     /**
      * @param $enumInstance
@@ -31,7 +34,7 @@ class ActionManager
         $instances = &self::$instances[$proj];
 
         if(is_null($instances[$enumInstance]))
-            $instances[$enumInstance] = new ActionManager();
+            $instances[$enumInstance] = new ActionManager($enumInstance);
         return $instances[$enumInstance];
     }
 
@@ -144,58 +147,80 @@ class ActionManager
         }
     }
 
-    public function callPreEnumAddActions($enumInstance,$enum){
+    public function callPreEnumAddActions($enum){
         $actions = $this->getActions('addEnum','pre');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $v = $p['server']->{$p['action']}($enumInstance,$enum);
+            $v = $p['server']->{$p['action']}(self,$enum);
             if($v ==Enum::STOP)
                 throw new Exception("La adicion del nomenclador ha sido refutada por el plugin {$p['plugin']}");
         }
 
     }
-    public function callPostEnumAddActions($enumInstance,$enum){
+    public function callPostEnumAddActions($enum){
         $actions = $this->getActions('addEnum','post');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($enumInstance,$enum);
+            $p['server']->{$p['action']}($this->enumInstance,$enum);
         }
     }
-    public function callPreEnumModActions($enumInstance,$enum){
+    public function callPreEnumModActions($enum){
         $actions = $this->getActions('modEnum','pre');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $v = $p['server']->{$p['action']}($enumInstance,$enum);
+            $v = $p['server']->{$p['action']}($this->enumInstance,$enum);
             if($v ==Enum::STOP)
                 throw new Exception("La modificacion del nomenclador ha sido refutada por el plugin {$p['server']}");
         }
 
     }
-    public function callPostEnumModActions($enumInstance,$enum){
+    public function callPostEnumModActions($enum){
         $actions = $this->getActions('modEnum','post');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($enumInstance,$enum);
+            $p['server']->{$p['action']}($this->enumInstance,$enum);
         }
     }
 
-    public function callPreEnumRemActions($enumInstance,$enum){
+    public function callPreEnumRemActions($enum){
         $actions = $this->getActions('remEnum','pre');
         foreach ($actions as $action) {
             $p = self::getPlugin($action);
-            $v = $p['server']->{$p['action']}($enumInstance, $enum);
+            $v = $p['server']->{$p['action']}($this->enumInstance, $enum);
             if ($v == Enum::STOP)
                 throw new EnumActionRejected("La modificacion del nomenclador ha sido refutada por el plugin {$p['server']}");
 
         }
     }
-    public function callPostEnumRemActions($enumInstance,$enum){
+    public function callPostEnumRemActions($enum){
         $actions = $this->getActions('remEnum','post');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($enumInstance,$enum);
+            $p['server']->{$p['action']}($this->enumInstance,$enum);
         }
 
+    }
+
+    public function callOnExceptionActions( $enum, $message){
+        $actions = $this->getActions('exception','post');
+        if(count($actions)==0)
+            throw new CartowebException($message);
+        foreach ($actions as $action){
+            $p = self::getPlugin($action);
+            $p['server']->{$p['action']}($this->enumInstance,$enum, $message);
+        }
+    }
+
+    /**
+     *
+     * @param $compInitializing  values=[DataSource, Enums, SimpleTree]
+     */
+    public function callInstanceAddingActions($compInitializing){
+        $actions = $this->getActions('enumInstanceAdding','pre');
+        foreach ($actions as $action){
+            $p = self::getPlugin($action);
+            $p['server']->{$p['action']}($this->enumInstance, $compInitializing);
+        }
     }
 
 }

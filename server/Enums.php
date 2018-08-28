@@ -612,18 +612,31 @@ class Enums
         $this->enumInstance = $enumInstance;
         $conn = EnumsUtils::getConn();
         $projName = EnumsUtils::getProjectName();
-        $sql = "select * from mod_nomenclador.enums where proj = '$projName' and enum_instance='$enumInstance'";
 
-        $enums = $conn->getAll($sql, null, DB_FETCHMODE_ASSOC);
-        EnumsUtils::checkDBresponse($enums);
-        if(count($enums)==0){
-            $defaultV = '{}';
+        $enums = $this->getData($conn);
+        if(count($enums) == 0) {
+            $defaultV = json_encode($this->getDefaultValue());
             $conn->simpleQuery("insert into mod_nomenclador.enums(v,proj,enum_instance) values ('$defaultV', '$projName', '$enumInstance')");
-            $enums = array(array('v'=>$defaultV));
+
+            $actions = ActionManager::getInstance($this->enumInstance);
+            $actions->callInstanceAddingActions($this);
+            $enums = $this->getData($conn);
         }
         $enums = reset($enums);
         $enums = json_decode($enums['v'], true);
         $this->enums = $enums;
+    }
+    private function getData($conn){
+        $projName = EnumsUtils::getProjectName();
+        $enumInstance = $this->enumInstance;
+        $sql = "select * from mod_nomenclador.enums where proj = '$projName' and enum_instance='$enumInstance'";
+
+        $enums = $conn->getAll($sql, null, DB_FETCHMODE_ASSOC);
+        EnumsUtils::checkDBresponse($enums);
+        return $enums;
+    }
+    public function getDefaultValue(){
+        return array();
     }
     public static $instance;
 

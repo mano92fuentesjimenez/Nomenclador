@@ -28,17 +28,30 @@ class SimpleTree
         $this->enumInstance = $enumInstance;
         $conn = EnumsUtils::getConn();
         $projName = EnumsUtils::getProjectName();
+        $simpleTree = $this->getData($conn);
+
+        if(count($simpleTree) == 0){
+            $defaultV =json_encode($this->getDefaultValue());
+            $conn->simpleQuery("insert into mod_nomenclador.simpletree(v,proj,enum_instance) values ('$defaultV', '$projName','$enumInstance')");
+
+            $actions = ActionManager::getInstance($this->enumInstance);
+            $actions->callInstanceAddingActions($this);
+            $simpleTree = $this->getData($conn);
+        }
+        $simpleTree = reset($simpleTree);
+        $this->simpleTree = json_decode($simpleTree['v'], true);
+    }
+    private function getDefaultValue(){
+        return array('childs'=>array(),'idNode' =>"Nomencladores");
+    }
+    private function getData($conn){
+        $projName = EnumsUtils::getProjectName();
+        $enumInstance = $this->enumInstance;
         $sql = "select * from mod_nomenclador.simpletree where proj = '$projName' and enum_instance='$enumInstance'";
 
         $simpleTree= $conn->getAll($sql, null, DB_FETCHMODE_ASSOC);
         EnumsUtils::checkDBresponse($simpleTree);
-        if(count($simpleTree)==0){
-            $defaultV = '{"childs":[],"idNode":"Nomencladores"}';
-            $conn->simpleQuery("insert into mod_nomenclador.simpletree(v,proj,enum_instance) values ('$defaultV', '$projName','$enumInstance')");
-            $simpleTree  = array(array('v'=>$defaultV));
-        }
-        $simpleTree = reset($simpleTree);
-        $this->simpleTree = json_decode($simpleTree['v'], true);
+        return $simpleTree;
     }
 
     private static $instance;

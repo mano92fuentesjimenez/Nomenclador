@@ -36,25 +36,38 @@ class DataSources
 //            chmod($pathDataS, 0777);
 //            file_put_contents($pathDataS, Utils::json_encode($dbData));
 //        }
-
+        $conn = EnumsUtils::getConn();
         require_once __DIR__.'/../DBConections/DBConection.php';
         $this->enumInstance = $enumInstance;
-        $conn = EnumsUtils::getConn();
         $projName = EnumsUtils::getProjectName();
-        $sql = "select * from mod_nomenclador.datasources where proj = '$projName' and enum_instance = '$enumInstance'";
+        $dataSources = $this->getData($conn);
+        if(count($dataSources) == 0){
+            $defaultValue = json_encode($this->getDefaultValue());
+            $conn->simpleQuery("insert into mod_nomenclador.dataSources(v,proj,enum_instance) values ('$defaultValue', '$projName','$enumInstance')");
 
-        $dataSources = $conn->getAll($sql, null, DB_FETCHMODE_ASSOC);
-        EnumsUtils::checkDBresponse($dataSources);
-        if(count($dataSources)==0){
-            $conn->simpleQuery("insert into mod_nomenclador.dataSources(v,proj,enum_instance) values ('[]', '$projName','$enumInstance')");
-            $dataSources = array(array('v'=>'[]'));
+            $actions = ActionManager::getInstance($this->enumInstance);
+            $actions->callInstanceAddingActions($this);
+            $dataSources = $this->getData($conn);
         }
         $dataSources = reset($dataSources);
         $this->dataSources = json_decode($dataSources['v'], true);
     }
 
+    private function getData($conn){
+        $enumInstance = $this->enumInstance;
+
+        $projName = EnumsUtils::getProjectName();
+        $sql = "select * from mod_nomenclador.datasources where proj = '$projName' and enum_instance = '$enumInstance'";
+        $dataSources = $conn->getAll($sql, null, DB_FETCHMODE_ASSOC);
+        EnumsUtils::checkDBresponse($dataSources);
+        return $dataSources;
+    }
+
     private static $instance;
 
+    private function getDefaultValue(){
+        return array();
+    }
 
     public static function getInstance($enumInstance)
     {
@@ -105,6 +118,8 @@ class DataSources
 
     public function addDataSource($newDataSource)
     {
+        if(is_null($this->dataSources))
+            $this->dataSources = $this->getDefaultValue();
 
         $ds = isset($this->dataSources[$newDataSource->dataSource['id']]) ?
             $this->dataSources[$newDataSource->dataSource['id']] : null;
@@ -129,7 +144,7 @@ class DataSources
         $conn->closeConnection();
         return $newDataSource->getId();
     }
-    public function addDataSourceFromDSN($id, $user, $pass, $schema, $db, $host, $pass, $port){
+    public function addDataSourceFromDSN($id, $user, $pass, $schema, $db, $host, $port){
         $ds = array(
             "dbname" => $db,
             "host"=>$host,
