@@ -1167,7 +1167,7 @@
 		fillComponents :function (_enum){
 			this.descriptionTextArea.setValue(_enum.description);
 			this.nameTextField.setValue(_enum.name);
-			if(this.isDefaultDS())
+			if(!this.isDefaultDS())
 				this.dataSourceSelector.setValue(_enum.dataSource);
 			this.addFields(_enum.fields, true);
 		},

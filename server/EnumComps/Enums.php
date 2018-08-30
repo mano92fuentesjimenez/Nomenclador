@@ -447,13 +447,11 @@ class Enum
 
                 $field = $this->getField($key);
 
-                $prop =null;
-                $enum =null;
-                $isMulti = false;
-                if ($field->getType() == "DB_Enum") {
-                    $prop = $field->getProperties();
-                    $enum = $enums->getEnum($prop['_enum']);
-                    $isMulti = $prop['multiSelection'];
+                $prop =$field->getProperties();
+                $currentReferencedEnum =null;
+                $isMulti = $field->isMulti();
+                if ($field->getType() == "DB_Enum"){
+                    $currentReferencedEnum = $enums->getEnum($prop['_enum']);
                 }
 
                 //En este primer paso se captura toda la tabla guardada en bd y se hace join con los enums que pueda
@@ -462,25 +460,25 @@ class Enum
                 //servidor, sus datos se cogen en la segunda ronda.
                 if ($first && (is_null($multiField) || !$isMulti )) {
                     if ($field->getType() == "DB_Enum") {
-                        $ds2 = $enum->getDataSource();
+                        $ds2 = $currentReferencedEnum->getDataSource();
 
                         //si el campo del enum depende de otros campos, no se puede coger el valor con un join de bd.
-                        $fieldRef = $enum->getField($prop['field']);
+                        $fieldRef = $currentReferencedEnum->getField($prop['field']);
                         $fieldRefType = $fieldRef->getType();
 
                         //si se repite la tabla o depende de otros igual se llena la tabla.
-                        if (isset($enumsVisited[$enum->getId()]) || $fieldRefType::dependsOnOtherFields($enum, $fieldRef)) {
+                        if (isset($enumsVisited[$currentReferencedEnum->getId()]) || $fieldRefType::dependsOnOtherFields($currentReferencedEnum, $fieldRef)) {
 
                             if($isMulti) {
                                 $multiField = $field;
                                 if(is_null($from))
                                     $from ='';
-                                $multiName = DB_Enum::getMultiTableName($this, $enum);
+                                $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
 
                                 $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(),
-                                    $ds->getSchema(),$enum->getId(),$multiName,$from);
+                                    $ds->getSchema(),$currentReferencedEnum->getId(),$multiName,$from);
 
-                                $select = $conn->continueSelect($this->getDataSource()->getSchema(), $multiName,$enum->getId(),$key,$select);
+                                $select = $conn->continueSelect($this->getDataSource()->getSchema(), $multiName,$currentReferencedEnum->getId(),$key,$select);
                             }
                             else {
                                 $selectSubq = $conn->continueSelect($this->getDataSource()->getSchema(), $this->getId(), $key,
@@ -496,31 +494,34 @@ class Enum
                             continue;
                         }
                         else {
-                            $enumsVisited[$enum->getId()] = true;
+                            $enumsVisited[$currentReferencedEnum->getId()] = true;
 
                             if($isMulti){
                                 if(is_null($from))
                                     $from = '';
 
                                 $multiField = $field;
-                                $multiName = DB_Enum::getMultiTableName($this, $enum);
-                                $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(), $ds->getSchema(),$enum->getId(),$multiName,$from);
+                                $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
+                                $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(), $ds->getSchema(),$currentReferencedEnum->getId(),$multiName,$from);
                                 //poner el valor verdadero del enum en $key (id del campo)
-                                $select = $conn->continueSelect($this->getDataSource()->getSchema(), $multiName, $enum->getId(),
+                                $select = $conn->continueSelect($this->getDataSource()->getSchema(), $multiName, $currentReferencedEnum->getId(),
                                     $key, $select);
-                                $select = $conn->continueSelect($ds2->getSchema(),$enum->getId(),$prop['field'],$key . BaseType::REF_TYPE_VALUE_HEADER,$select);
+                                $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getId(),$prop['field'],$key . BaseType::REF_TYPE_VALUE_HEADER,$select);
                             }
                             else {
 
                                 $fromSubq = $conn->continueFrom($this->getDataSource()->getSchema(), $this->getId(), $ds->getSchema(),
-                                    $enum->getId(), $key, $fromSubq);
+                                    $currentReferencedEnum->getId(), $key, $fromSubq);
                                 //poner el valor verdadero del enum en $key (id del campo)
                                 $select = $conn->continueSelect($this->getDataSource()->getSchema(), $this->getId(), $key,
                                     $key, $select,true);
+                                $select = $conn->continueSelect(null, null, $key . BaseType::REF_TYPE_VALUE_HEADER,
+                                    $key . BaseType::REF_TYPE_VALUE_HEADER, $select,true);
+
                                 $selectSubq = $conn->continueSelect($this->getDataSource()->getSchema(), $this->getId(), $key,
                                     $key, $selectSubq);
                                 //poner el valor del enum en $key.BaseType::REF_TYPE_VALUE_HEADER
-                                $selectSubq = $conn->continueSelect($enum->getDataSource()->getSchema(),$enum->getId(),$prop['field'],
+                                $selectSubq = $conn->continueSelect($currentReferencedEnum->getDataSource()->getSchema(),$currentReferencedEnum->getId(),$prop['field'],
                                     $key . BaseType::REF_TYPE_VALUE_HEADER, $selectSubq);
                             }
                         }
@@ -536,7 +537,7 @@ class Enum
                     if ($field->getType() != "DB_Enum") {
                         throw new Exception('Esto nunca debe pasaaaaar');
                     }
-                    $enumField = $enum->getField($prop['field']);
+                    $enumField = $currentReferencedEnum->getField($prop['field']);
 
                     $inData = $this->getInData($data, $field);
 

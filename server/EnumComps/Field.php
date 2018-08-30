@@ -73,4 +73,12 @@ class Field
     public function getNeeded(){
         return isset($this->field_tree['needed']) ? $this->field_tree['needed'] : null;
     }
+    public function isMulti(){
+        $prop = $this->getProperties();
+        if(isset($prop['multiSelection'])){
+            $prop = $this->getProperties();
+            return (isset($prop['multiSelection']) ? $prop['multiSelection'] : false);
+        }
+        return false;
+    }
 }
