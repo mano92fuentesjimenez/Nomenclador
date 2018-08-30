@@ -333,6 +333,7 @@
                     text: '',
                     handler : function(pBtn,pEv){
                         var wdw = new nom.dataSourcesList({
+                            managing:true,
                             enumInstance:self.enumInstance,
                             width:'60%',
                             plugins : self.dataSourcesPanelPlugins ? self.dataSourcesPanelPlugins._map_(function(pV){
