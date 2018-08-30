@@ -982,6 +982,7 @@
 			nomenclador.fields = fields;
 			nomenclador.dataSource = this.isDefaultDS() ? this.defaultDataSource : this.dataSourceSelector.getValue();
 
+			var order = 0;
 			this.gridEditor.getStore().each(function (record){
 
 				var id = record.get("id"),
@@ -1008,8 +1009,10 @@
 					'_enumId' :self.getEnumId(),
 					'isDefault' :record.isDefault,
 					'isDenom' :record.isDenom,
-					'integrationProperty':integrationProp
+					'integrationProperty':integrationProp,
+					'order':order
 				};
+				order++;
 				//anhadir todas las nuevas referencias.
 				if (nom.Type.Utils.getType(type).valueType == nom.Type.REF_Type) {
 					if (!self.refs.exists(self.enumInstance,nomenclador.id, id, properties._enum, properties.field))

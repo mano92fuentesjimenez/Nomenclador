@@ -388,6 +388,10 @@
                 return columns.indexOf(v.id) !== -1;
             });
 
+
+        fields._sort_(function(a,b){
+            return a.order>b.order;
+        });
         fields._each_(function (field){
             if (field.id == nom.Type.PrimaryKey.UNIQUE_ID) {
                 cmFields.push({header: "Llave primaria", dataIndex: field.id, hidden: true, sortable: true});
