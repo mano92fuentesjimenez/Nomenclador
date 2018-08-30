@@ -945,7 +945,7 @@
             text :text,
             category :pAtrs.childs,
             //iconCls :'',//'iconCls' in pAtrs ? pAtrs.iconCls : (pAtrs.childs ? "enum_tree_category_icon" : "enum_tree_node_icon"),
-            iconCls : (isEnum ? 'gisTtfIcon_webdev-seo-form' : 'enumCategoryTreeIcon'),//pAtrs.childs ? '' : "enum_tree_node",
+            iconCls : 'enum_tree_node '+(isEnum ? 'gisTtfIcon_webdev-seo-form' : 'enumCategoryTreeIcon'),//pAtrs.childs ? '' : "enum_tree_node",
             leaf :children.length === 0,
             _text_ :text,
             allowChildren :pAtrs.childs != null,
