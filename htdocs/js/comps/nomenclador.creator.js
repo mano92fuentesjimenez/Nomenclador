@@ -843,7 +843,7 @@
 					return 'EnumGridEditor'
 				},
 				getFormVEvtNames:function(){
-					return 'dataadded';
+					return ['dataadded','orderchanged'];
 				},
 				isValid:function(){
 					return this.store.getCount() > 0;
@@ -889,6 +889,7 @@
 								self.gridStore.remove(r);
 								self.gridStore.insert(pos - 1, r);
 								sm.selectRecords([r]);
+								self.gridEditor.fireEvent('orderchanged');
 							}
 						},
 						tooltip :'Subir campo'
@@ -905,6 +906,7 @@
 								self.gridStore.remove(r);
 								self.gridStore.insert(pos + 1, r);
 								sm.selectRecords([r]);
+                                self.gridEditor.fireEvent('orderchanged');
 							}
 						},
 						tooltip :'Bajar campo'
