@@ -239,8 +239,8 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'MoveNodeInSimpleTree':{
-
-                    SimpleTree::moveNode( $requ->value['enumInstance'],
+                    $simpleTree = SimpleTree::getInstance($requ->value['enumInstance']);
+                    $simpleTree->moveNode(
                         $requ->value['previousPath'],
                         $requ->value['point'],
                         $requ->value['newPath'],

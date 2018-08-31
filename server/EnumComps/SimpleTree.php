@@ -287,52 +287,58 @@ class SimpleTree
 
     }
 
-    public static function moveNode($enumInstance, $previousPath, $point, $newPath, $targetPos)
+    public function moveNode( $previousPath, $point, $newPath, $targetPos)
     {
-        $simpleT = SimpleTree::getInstance($enumInstance);
 
         $nodeToMove = null;
-        $simpleT->walk($previousPath, function ($last, $walking) use (&$nodeToMove) {
-            $nodeToMove = $walking[$last];
+        $this->walk($previousPath, function ($last, $walking) use (&$nodeToMove) {
+            $nodeToMove = $this->findNodeWithId($last, $walking);
         });
 
-        $simpleT->removeTreeNode($previousPath);
+        $this->removeTreeNode($previousPath);
         $newPath = explode('/', $newPath);
         array_splice($newPath, 0, 2);
         $targetPos = explode('/', $targetPos);
         $targetPos = $targetPos[count($targetPos) - 1];
-        $tree = self::setNode($simpleT->simpleTree['childs'], $newPath, $targetPos, $point, $nodeToMove);
-        $simpleT->simpleTree['childs'] = $tree;
-        $simpleT->saveSimpleTree($enumInstance);
+        $tree = $this->setNode($this->simpleTree['childs'], $newPath, $targetPos, $point, $nodeToMove);
+        $this->simpleTree['childs'] = $tree;
+        $this->saveSimpleTree();
 
     }
 
-    public static function setNode($currentTree, $newPathExploded, $targetPosLastWord, $point, $nodeToMove)
+    public function setNode($currentTree, $newPathExploded, $targetPosLastWord, $point, $nodeToMove)
     {
         if (count($newPathExploded) == 1) {
             $tree = array();
+            $targetPosLastkey = $this->findKeyFromNodeWithId($targetPosLastWord,$currentTree);
+            $plus = 0;
             foreach ($currentTree as $key => $value) {
-                if ($key == $targetPosLastWord) {
+                if ($key == $targetPosLastkey) {
                     if ($point == 'above') {
-                        $tree[$newPathExploded[0]] = $nodeToMove;
-                        $tree[$key] = $value;
+                        $tree[$targetPosLastkey] = $nodeToMove;
+                        $plus ++;
+                        $tree[$key+$plus] = $value;
                     } else if ($point == 'below') {
                         $tree[$key] = $value;
-                        $tree[$newPathExploded[0]] = $nodeToMove;
+                        $plus ++;
+                        $tree[$targetPosLastkey+$plus] = $nodeToMove;
                     }
                 } else {
-                    $tree [$key] = $value;
+                    $tree [$key+$plus] = $value;
                 }
             }
             return $tree;
         } else {
             $tree = $currentTree;
             $word = $newPathExploded[0];
+            $word_key = $this->findKeyFromNodeWithId($word, $tree);
             array_splice($newPathExploded, 0, 1);
             if (count($newPathExploded) == 1 && $point == 'append') {
-                $tree[$word]['childs'][$newPathExploded[0]] = $nodeToMove;
+                $cTree = &$tree[$word_key]['childs'];
+                $newPathExplodedKey = $this->findKeyFromNodeWithId($newPathExploded[0], $cTree);
+                $cTree[$newPathExplodedKey] = $nodeToMove;
             } else {
-                $tree[$word]['childs'] = self::setNode($currentTree[$word]['childs'], $newPathExploded,
+                $tree[$word_key]['childs'] = $this->setNode($currentTree[$word_key]['childs'], $newPathExploded,
                     $targetPosLastWord, $point, $nodeToMove);
             }
             return $tree;
