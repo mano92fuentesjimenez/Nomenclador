@@ -188,33 +188,6 @@ class SimpleTree
         });
     }
 
-    public function addImportedTree($importedtree, $prefixPath)
-    {
-
-        $this->walk($prefixPath, function ($last, &$walking) use ($importedtree, $prefixPath) {
-            if ($prefixPath == '') {
-                $walking['childs'] = $importedtree;
-                return;
-            }
-
-            $intersect = EnumsUtils::areAnyKeysRepeated($importedtree, $walking[$last]['childs']);
-            if (count($intersect) > 0) {
-                $overlapedNodes = '';
-
-                foreach ($intersect as $value) {
-                    $overlapedNodes .= $walking[$last][$value]['text'] . ', ';
-                }
-                $overlapedNodes = substr($overlapedNodes, 0, -1);
-                throw new EnumException("No se puede importar en el &aacute;rbol en la ruta dada, pu&eacute;s los nodos 
-                '$overlapedNodes' se van a sobreescribir");
-            }
-
-            $walking[$last]['childs'] = array_merge($walking[$last]['childs'], $importedtree);
-
-        });
-
-    }
-
     public function delRank($path)
     {
 
