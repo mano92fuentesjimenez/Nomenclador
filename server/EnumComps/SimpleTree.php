@@ -42,6 +42,15 @@ class SimpleTree
         $this->simpleTree = json_decode($simpleTree['v'], true);
         $this->simpleTree = $this->convert($this->simpleTree);
     }
+    private function convert($s){
+        if(isset($s['childs'])){
+            $s['childs'] = array_values($s['childs']);
+            foreach ($s['childs'] as &$v){
+                $v = $this->convert($v);
+            }
+        }
+        return $s;
+    }
     private function getDefaultValue(){
         return array('childs'=>array(),'idNode' =>"Nomencladores");
     }
@@ -85,13 +94,25 @@ class SimpleTree
 
         $walking = &$simpleTree['childs'];
         foreach ($words as $value) {
-            if (!isset($walking[$value])) {
+            $node = &$this->findNodeWithId($value,$walking);
+            if (is_null($node)) {
                 throw new EnumException('El arbol de nomencladores ha cambiado mientras usted trabajaba, recargue para
                 ver los cambios');
             }
-            $walking =& $walking[$value]['childs'];
+            if(!isset($node['childs'])){
+                throw new EnumException('Un nomenclador no tiene hijos');
+            }
+            $walking =&$node['childs'];
         }
         $f($last, $walking);
+    }
+    private function &findNodeWithId($id, &$nodes){
+        foreach ($nodes as &$node){
+            if($node['idNode'] == $id) {
+                return $node;
+            }
+        }
+        return null;
     }
 
     public function walkAllNodes(&$start, $applyF)
@@ -144,11 +165,13 @@ class SimpleTree
             //si alguien tiene una ventana de nomenclador abierta desde hace un tiempo sin hacerle cambios, cuando
             //anhada una nueva categoria, si alguien ya habia construido un subarbol con root igual al nombre de
             //la categoria, este subarbol se va a eliminar.
-            if (isset($walking[$last]) && isset($walking[$last]['childs'])) {
-                return;
+
+            $node = $this->findNodeWithId($last,$walking);
+            if (!is_null($node) ) {
+                throw new EnumException('El arbol de categorias se ha modificado mientras usted trabajaba, refresque el arbol de categorias');
             }
             $id = $last . '-' . (time() * rand(1, 100));
-            $walking[$id] = array(
+            $walking[] = array(
                 'childs' => array(),
                 'idNode' => $id,
                 'text' => $last
