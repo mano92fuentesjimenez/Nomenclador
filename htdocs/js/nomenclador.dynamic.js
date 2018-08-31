@@ -900,57 +900,57 @@
             toInclude = config.includeEnum,
             typ = pAtrs._type_ || ('childs' in pAtrs ? 'category' : 'enum'),
             isEnum = typ == 'enum',
+            isCat = typ == 'category',
+            children = null,
+            checked = undefined,
+            text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(config.enumInstance, pAtrs.idNode).name,
             enumFields = config.showFields && isEnum ? (
                 enums.getEnumById(config.enumInstance, pAtrs.idNode).fields._queryBy_(function (pV){
                     return pV.id != nom.Type.PrimaryKey.UNIQUE_ID && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
                 }, this, true)
-            ) : [],
-            children = typ == 'category'
-                ? this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK){
-                    return 'childs' in pV || (
-                        (!toExclude || ( utils.isObject(toExclude) ? !(pK in toExclude): pK != toExclude))
-                        && (!toInclude || toInclude.id == pK)
-                        && (config.showEnums && !('childs' in pV))
-                    );
-                }, this, true)._map_(function (pV, pK){
-                    var isCat = 'childs' in pV;
-                    return {}._apply_(pV, {
-                        _type_ :isCat ? 'category' : 'enum',
-                        allowChildren :isCat,
-                        text :pV.text
-                    })
-                }, this, false)
-                : (
-                    isEnum
-                        ? enumFields._map_(function (pV, pK){
-                            return {}._apply_(pV, {
-                                text :pV.header,
-                                _type_ :'field',
-                                field :true,
-                                iconCls :"enum_tree_field_icon",
-                                leaf :true,
-                                idNode:pV.id,
-                                _enumId:pV._enumId
-                            });
-                        }, this, false)
-                        : []
-                ),
-            text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(config.enumInstance, pAtrs.idNode).name,
-            checked = (utils.isArray(config.checked) && typ ==='enum') ? config.checked.indexOf(pAtrs.idNode) !== -1: undefined;
-
-            checked = checked || (config.checked===true ? (typ ==='enum'? false:undefined):undefined);
+            ) : [];
+        if(isCat) {
+            children = this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK) {
+                return 'childs' in pV || (
+                    (!toExclude || (utils.isObject(toExclude) ? !(pK in toExclude) : pK != toExclude))
+                    && (!toInclude || toInclude.id == pK)
+                    && (config.showEnums && !('childs' in pV))
+                );
+            }, this, true)._map_(function (pV, pK) {
+                var isCat = 'childs' in pV;
+                return {}._apply_(pV, {
+                    _type_: isCat ? 'category' : 'enum',
+                    allowChildren: isCat,
+                    text: pV.text
+                })
+            }, this, false);
+        }
+        else if(isEnum && config.showFields){
+            children = enumFields._map_(function (pV, pK){
+                // esta linea clona la configuracion de enum, ademas de ponerle algunos valores
+                return ({})._apply_(pV,{
+                    text :pV.header,
+                    _type_ :'field',
+                    field :true,
+                    iconCls :"enum_tree_field_icon",
+                    leaf :true,
+                    idNode:pV.id,
+                    _enumId:pV._enumId
+                });
+            }, this, false)
+        }
+        checked = (utils.isArray(config.checked) && typ ==='enum') ? config.checked.indexOf(pAtrs.idNode) !== -1: undefined;
+        checked = checked || (config.checked===true ? (typ ==='enum'? false:undefined):undefined);
 
         delete pAtrs.id;
         pAtrs._apply_({
             idNode :pAtrs.idNode,
             _type_ :typ,
-            children :children && (function (){
-            })._same_(config.nodesEvaluator) ? children._queryBy_(config.nodesEvaluator) : children,
+            children :children && (function (){})._same_(config.nodesEvaluator) ? children._queryBy_(config.nodesEvaluator) : children,
             text :text,
             category :pAtrs.childs,
-            //iconCls :'',//'iconCls' in pAtrs ? pAtrs.iconCls : (pAtrs.childs ? "enum_tree_category_icon" : "enum_tree_node_icon"),
-            iconCls : 'enum_tree_node '+(isEnum ? 'gisTtfIcon_webdev-seo-form' : 'enumCategoryTreeIcon'),//pAtrs.childs ? '' : "enum_tree_node",
-            leaf :children.length === 0,
+            iconCls : (isEnum ? 'enum_tree_node gisTtfIcon_webdev-seo-form' : 'enumCategoryTreeIcon'),
+            leaf :children === null,
             _text_ :text,
             allowChildren :pAtrs.childs != null,
             checked: checked,
