@@ -154,7 +154,8 @@ class SimpleTree
     public function modRank($path, $name)
     {
         $this->walk($path, function ($last, &$walking) use ($name) {
-            $walking[$last]['text'] = $name;
+            $node = &$this->findNodeWithId($last,$walking);
+            $node['text'] = $name;
         });
 
     }
@@ -183,7 +184,7 @@ class SimpleTree
     public function addEnum($path)
     {
         $this->walk($path, function ($last, &$walking) {
-            $walking[$last] = array('idNode' => $last);
+            $walking[] = array('idNode' => $last);
         });
     }
 
