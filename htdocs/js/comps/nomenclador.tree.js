@@ -124,8 +124,7 @@
 				doAppend = function (pNds){
 					root.appendChild(pNds);
 					root.expand(false, false);
-					this._default_(pCallback, function (){
-					}).call(pScope || this);
+					nom.execute(pCallback,pScope);
 					indexer.nodeEachChild(root, function (pNd){
 						indexer.nodeLocate(pNd, false, true);
 					}, this, false);
