@@ -106,13 +106,21 @@ class SimpleTree
         }
         $f($last, $walking);
     }
-    private function &findNodeWithId($id, &$nodes){
-        foreach ($nodes as &$node){
+
+    private function f($id, &$nodes){
+        foreach ($nodes as $key=> &$node){
             if($node['idNode'] == $id) {
-                return $node;
+                return array('key'=> $key, 'value'=>&$node);
             }
         }
-        return null;
+        return array('key'=> null, 'value'=>null);
+    }
+    private function findKeyFromNodeWithId($id, &$nodes){
+        return $this->f($id, $nodes)['key'];
+    }
+    private function &findNodeWithId($id, &$nodes){
+        $ret = &$this->f($id, $nodes)['value'];
+        return $ret;
     }
 
     public function walkAllNodes(&$start, $applyF)
@@ -195,10 +203,11 @@ class SimpleTree
         $this->walk($path, function ($last, &$walking) use ($self) {
             $enums = Enums::getInstance($self->enumInstance);
 
-            $self->canRemoveEnums($walking[$last], $enums);
-            $self->removeEnums($walking[$last], $enums);
+            $node = &$this->findNodeWithId($last, $walking);
+            $self->canRemoveEnums($node, $enums);
+            $self->removeEnums($node, $enums);
 
-            unset($walking[$last]);
+            unset($node);
         });
 
     }
@@ -248,7 +257,10 @@ class SimpleTree
     public function removeTreeNode($path)
     {
         $this->walk($path, function ($last, &$walking) {
-            unset($walking[$last]);
+            $node = &$this->findNodeWithId($last,$walking);
+            if(is_null($node))
+                throw new EnumException('No se puede borrar un nodo del arbol de categorias q no existe');
+            unset($node);
         });
     }
 
@@ -256,19 +268,15 @@ class SimpleTree
     {
         $this->walkAllNodes($this->simpleTree, function (&$child) use ($enumArray) {
             if (isset($child['childs'])) {
-                foreach ($enumArray as $value) {
-                    if (isset($child['childs'][$value]) && !isset($child['childs'][$value]['childs'])) {
-                        unset($child['childs'][$value]);
+                foreach ($enumArray as $key=> $value) {
+                    $node = &$this->findNodeWithId($value,$child['childs']);
+                    if(!is_null($node) && !isset($node['childs'])){
+                        unset($node);
+                        unset($enumArray[$key]);
                     }
                 }
             }
         });
-    }
-
-    public static function removeFromSimpleTree(&$item, $key, $enumArray)
-    {
-        unset($item);
-
     }
 
     public function removeAll()
