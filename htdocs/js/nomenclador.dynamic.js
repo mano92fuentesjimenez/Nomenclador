@@ -390,6 +390,8 @@
 
 
         fields._sort_(function(a,b){
+            if(a.order === undefined || b.order === undefined)
+                return false;
             return a.order>b.order;
         });
         fields._each_(function (field){
