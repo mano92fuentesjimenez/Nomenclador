@@ -258,10 +258,10 @@ class SimpleTree
     public function removeTreeNode($path)
     {
         $this->walk($path, function ($last, &$walking) {
-            $node = &$this->findNodeWithId($last,$walking);
-            if(is_null($node))
+            $nodeKey = $this->findKeyFromNodeWithId($last,$walking);
+            if(is_null($nodeKey))
                 throw new EnumException('No se puede borrar un nodo del arbol de categorias q no existe');
-            unset($node);
+            unset($walking[$nodeKey]);
         });
     }
 
@@ -271,8 +271,9 @@ class SimpleTree
             if (isset($child['childs'])) {
                 foreach ($enumArray as $key=> $value) {
                     $node = &$this->findNodeWithId($value,$child['childs']);
-                    if(!is_null($node) && !isset($node['childs'])){
-                        unset($node);
+                    $nodeKey = &$this->findKeyFromNodeWithId($value,$child['childs']);
+                    if(!is_null($nodeKey) && !isset($node['childs'])){
+                        unset($child['childs'][$nodeKey]);
                         unset($enumArray[$key]);
                     }
                 }
