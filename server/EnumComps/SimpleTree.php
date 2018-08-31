@@ -207,7 +207,8 @@ class SimpleTree
             $self->canRemoveEnums($node, $enums);
             $self->removeEnums($node, $enums);
 
-            unset($node);
+            $key = $this->findKeyFromNodeWithId($last, $walking);
+            unset($walking[$key]);
         });
 
     }
