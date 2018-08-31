@@ -906,7 +906,7 @@
                 }, this, true)
             ) : [],
             children = typ == 'category'
-                ? this._default_(pAtrs.childs, {})._queryBy_(function (pV, pK){
+                ? this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK){
                     return 'childs' in pV || (
                         (!toExclude || ( utils.isObject(toExclude) ? !(pK in toExclude): pK != toExclude))
                         && (!toInclude || toInclude.id == pK)

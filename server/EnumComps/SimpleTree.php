@@ -40,6 +40,7 @@ class SimpleTree
         }
         $simpleTree = reset($simpleTree);
         $this->simpleTree = json_decode($simpleTree['v'], true);
+        $this->simpleTree = $this->convert($this->simpleTree);
     }
     private function getDefaultValue(){
         return array('childs'=>array(),'idNode' =>"Nomencladores");
