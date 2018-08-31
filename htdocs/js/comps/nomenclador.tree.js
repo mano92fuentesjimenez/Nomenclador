@@ -6,7 +6,6 @@
 		nom = AjaxPlugins.Nomenclador,
 		enums = nom.enums,
 		utils = Genesig.Utils;
-
 	nom.nomencladorTree = Ext.tree.TreePanel._createSubClass_({
 		showFields :false,
 		showEnums :true,
@@ -122,13 +121,14 @@
 				args = arguments,
 				self = this,
 				doAppend = function (pNds){
-					root.appendChild(pNds);
-					root.expand(false, false);
-					this._default_(pCallback, function (){
-					}).call(pScope || this);
-					indexer.nodeEachChild(root, function (pNd){
-						indexer.nodeLocate(pNd, false, true);
-					}, this, false);
+			        pNds._each_(function(v){
+                        root.appendChild(v);
+                        root.expand(false, false);
+                        nom.execute(pCallback,[],pScope);
+                        indexer.nodeEachChild(root, function (v){
+                            indexer.nodeLocate(v, false, true);
+                        }, this, false);
+                    });
 					self.fireEvent('loadedheaders');
 				};
 			nom.enums.load(
@@ -138,13 +138,9 @@
 					var simpleTree = nom.enums.getSimpleTree(self.enumInstance);
 					if (simpleTree) {
 						if (self.rendered) {
-							doAppend(simpleTree.childs._map_(function (pV){
-								return pV;
-							}, self, false));
+							doAppend(simpleTree.childs);
 						} else {
-							self.on('afterrender', doAppend.createDelegate(self, [simpleTree.childs._map_(function (pV){
-								return pV;
-							}, self, false)]));
+							self.on('afterrender', doAppend.createDelegate(self, [simpleTree.childs]));
 						}
 					}
 				},

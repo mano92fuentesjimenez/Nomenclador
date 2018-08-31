@@ -124,7 +124,8 @@
 			});
 		}
 		
-	})._apply_({
+	})._apply_(
+		{
 		getEnumRowDataContainer :function (pElement, pEnum){
 			var bd = Ext.getBody(),
 				box = pElement.getBoundingClientRect(),
@@ -263,7 +264,6 @@
 		closeAction :'hide',
 		layout :'fit',
 		onLoadedHeaders :null,
-		multiSelection:null,
 		constructor :function (args){
 			this.onLoadedHeaders = Genesig.Utils.createOnReadyFunction();
 			this.enums = nom.enums;
@@ -272,18 +272,12 @@
 				excludeEnums = args.enumsToExclude;
 				excludeEnums[arguments[0]._enumId] = true;
 			}
-			this.multiSelection = new comps.Button({
-				tooltip:'Selecci&oacuten m&uacuteltiple',
-                text:'Multiselecci&oacute;n',
-				enableToggle:true
-			});
 			this.tree = new nom.nomencladorTree({
 				autoScroll :true,
 				showFields :true,
 				autoLoadTree :false,
 				excludeEnum :excludeEnums,
 				enumInstance:args['enumInstance'],
-				tbar:[this.multiSelection],
 				listeners :{
 					scope :this,
 					loadedheaders :function (pTree){
@@ -363,7 +357,7 @@
 					return false;
 				}
 			});
-			return {field :field.id, _enum :_enum.id, multiSelection:this.multiSelection.pressed};
+			return {field :field.id, _enum :_enum.id};
 		},
 		setValue :function (enumInstance, obj, fieldId, _enumId){
 			var self = this,
@@ -393,7 +387,6 @@
                             );
                             self.selectedNode = nd;
                         }
-                        self.multiSelection.toggle(obj.multiSelection === true);
                     }, self);
 
                 };

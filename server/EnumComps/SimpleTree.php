@@ -40,6 +40,16 @@ class SimpleTree
         }
         $simpleTree = reset($simpleTree);
         $this->simpleTree = json_decode($simpleTree['v'], true);
+        $this->simpleTree = $this->convert($this->simpleTree);
+    }
+    private function convert($s){
+        if(isset($s['childs'])){
+            $s['childs'] = array_values($s['childs']);
+            foreach ($s['childs'] as &$v){
+                $v = $this->convert($v);
+            }
+        }
+        return $s;
     }
     private function getDefaultValue(){
         return array('childs'=>array(),'idNode' =>"Nomencladores");
@@ -84,13 +94,33 @@ class SimpleTree
 
         $walking = &$simpleTree['childs'];
         foreach ($words as $value) {
-            if (!isset($walking[$value])) {
+            $node = &$this->findNodeWithId($value,$walking);
+            if (is_null($node)) {
                 throw new EnumException('El arbol de nomencladores ha cambiado mientras usted trabajaba, recargue para
                 ver los cambios');
             }
-            $walking =& $walking[$value]['childs'];
+            if(!isset($node['childs'])){
+                throw new EnumException('Un nomenclador no tiene hijos');
+            }
+            $walking =&$node['childs'];
         }
         $f($last, $walking);
+    }
+
+    private function f($id, &$nodes){
+        foreach ($nodes as $key=> &$node){
+            if($node['idNode'] == $id) {
+                return array('key'=> $key, 'value'=>&$node);
+            }
+        }
+        return array('key'=> null, 'value'=>null);
+    }
+    private function findKeyFromNodeWithId($id, &$nodes){
+        return $this->f($id, $nodes)['key'];
+    }
+    private function &findNodeWithId($id, &$nodes){
+        $ret = &$this->f($id, $nodes)['value'];
+        return $ret;
     }
 
     public function walkAllNodes(&$start, $applyF)
@@ -132,7 +162,8 @@ class SimpleTree
     public function modRank($path, $name)
     {
         $this->walk($path, function ($last, &$walking) use ($name) {
-            $walking[$last]['text'] = $name;
+            $node = &$this->findNodeWithId($last,$walking);
+            $node['text'] = $name;
         });
 
     }
@@ -143,11 +174,13 @@ class SimpleTree
             //si alguien tiene una ventana de nomenclador abierta desde hace un tiempo sin hacerle cambios, cuando
             //anhada una nueva categoria, si alguien ya habia construido un subarbol con root igual al nombre de
             //la categoria, este subarbol se va a eliminar.
-            if (isset($walking[$last]) && isset($walking[$last]['childs'])) {
-                return;
+
+            $node = $this->findNodeWithId($last,$walking);
+            if (!is_null($node) ) {
+                throw new EnumException('El arbol de categorias se ha modificado mientras usted trabajaba, refresque el arbol de categorias');
             }
             $id = $last . '-' . (time() * rand(1, 100));
-            $walking[$id] = array(
+            $walking[] = array(
                 'childs' => array(),
                 'idNode' => $id,
                 'text' => $last
@@ -159,35 +192,8 @@ class SimpleTree
     public function addEnum($path)
     {
         $this->walk($path, function ($last, &$walking) {
-            $walking[$last] = array('idNode' => $last);
+            $walking[] = array('idNode' => $last);
         });
-    }
-
-    public function addImportedTree($importedtree, $prefixPath)
-    {
-
-        $this->walk($prefixPath, function ($last, &$walking) use ($importedtree, $prefixPath) {
-            if ($prefixPath == '') {
-                $walking['childs'] = $importedtree;
-                return;
-            }
-
-            $intersect = EnumsUtils::areAnyKeysRepeated($importedtree, $walking[$last]['childs']);
-            if (count($intersect) > 0) {
-                $overlapedNodes = '';
-
-                foreach ($intersect as $value) {
-                    $overlapedNodes .= $walking[$last][$value]['text'] . ', ';
-                }
-                $overlapedNodes = substr($overlapedNodes, 0, -1);
-                throw new EnumException("No se puede importar en el &aacute;rbol en la ruta dada, pu&eacute;s los nodos 
-                '$overlapedNodes' se van a sobreescribir");
-            }
-
-            $walking[$last]['childs'] = array_merge($walking[$last]['childs'], $importedtree);
-
-        });
-
     }
 
     public function delRank($path)
@@ -197,10 +203,12 @@ class SimpleTree
         $this->walk($path, function ($last, &$walking) use ($self) {
             $enums = Enums::getInstance($self->enumInstance);
 
-            $self->canRemoveEnums($walking[$last], $enums);
-            $self->removeEnums($walking[$last], $enums);
+            $node = &$this->findNodeWithId($last, $walking);
+            $self->canRemoveEnums($node, $enums);
+            $self->removeEnums($node, $enums);
 
-            unset($walking[$last]);
+            $key = $this->findKeyFromNodeWithId($last, $walking);
+            unset($walking[$key]);
         });
 
     }
@@ -250,7 +258,10 @@ class SimpleTree
     public function removeTreeNode($path)
     {
         $this->walk($path, function ($last, &$walking) {
-            unset($walking[$last]);
+            $nodeKey = $this->findKeyFromNodeWithId($last,$walking);
+            if(is_null($nodeKey))
+                throw new EnumException('No se puede borrar un nodo del arbol de categorias q no existe');
+            unset($walking[$nodeKey]);
         });
     }
 
@@ -258,19 +269,16 @@ class SimpleTree
     {
         $this->walkAllNodes($this->simpleTree, function (&$child) use ($enumArray) {
             if (isset($child['childs'])) {
-                foreach ($enumArray as $value) {
-                    if (isset($child['childs'][$value]) && !isset($child['childs'][$value]['childs'])) {
-                        unset($child['childs'][$value]);
+                foreach ($enumArray as $key=> $value) {
+                    $node = &$this->findNodeWithId($value,$child['childs']);
+                    $nodeKey = &$this->findKeyFromNodeWithId($value,$child['childs']);
+                    if(!is_null($nodeKey) && !isset($node['childs'])){
+                        unset($child['childs'][$nodeKey]);
+                        unset($enumArray[$key]);
                     }
                 }
             }
         });
-    }
-
-    public static function removeFromSimpleTree(&$item, $key, $enumArray)
-    {
-        unset($item);
-
     }
 
     public function removeAll()
@@ -279,52 +287,58 @@ class SimpleTree
 
     }
 
-    public static function moveNode($enumInstance, $previousPath, $point, $newPath, $targetPos)
+    public function moveNode( $previousPath, $point, $newPath, $targetPos)
     {
-        $simpleT = SimpleTree::getInstance($enumInstance);
 
         $nodeToMove = null;
-        $simpleT->walk($previousPath, function ($last, $walking) use (&$nodeToMove) {
-            $nodeToMove = $walking[$last];
+        $this->walk($previousPath, function ($last, $walking) use (&$nodeToMove) {
+            $nodeToMove = $this->findNodeWithId($last, $walking);
         });
 
-        $simpleT->removeTreeNode($previousPath);
+        $this->removeTreeNode($previousPath);
         $newPath = explode('/', $newPath);
         array_splice($newPath, 0, 2);
         $targetPos = explode('/', $targetPos);
         $targetPos = $targetPos[count($targetPos) - 1];
-        $tree = self::setNode($simpleT->simpleTree['childs'], $newPath, $targetPos, $point, $nodeToMove);
-        $simpleT->simpleTree['childs'] = $tree;
-        $simpleT->saveSimpleTree($enumInstance);
+        $tree = $this->setNode($this->simpleTree['childs'], $newPath, $targetPos, $point, $nodeToMove);
+        $this->simpleTree['childs'] = $tree;
+        $this->saveSimpleTree();
 
     }
 
-    public static function setNode($currentTree, $newPathExploded, $targetPosLastWord, $point, $nodeToMove)
+    public function setNode($currentTree, $newPathExploded, $targetPosLastWord, $point, $nodeToMove)
     {
         if (count($newPathExploded) == 1) {
             $tree = array();
+            $targetPosLastkey = $this->findKeyFromNodeWithId($targetPosLastWord,$currentTree);
+            $plus = 0;
             foreach ($currentTree as $key => $value) {
-                if ($key == $targetPosLastWord) {
+                if ($key == $targetPosLastkey) {
                     if ($point == 'above') {
-                        $tree[$newPathExploded[0]] = $nodeToMove;
-                        $tree[$key] = $value;
+                        $tree[$targetPosLastkey] = $nodeToMove;
+                        $plus ++;
+                        $tree[$key+$plus] = $value;
                     } else if ($point == 'below') {
                         $tree[$key] = $value;
-                        $tree[$newPathExploded[0]] = $nodeToMove;
+                        $plus ++;
+                        $tree[$targetPosLastkey+$plus] = $nodeToMove;
                     }
                 } else {
-                    $tree [$key] = $value;
+                    $tree [$key+$plus] = $value;
                 }
             }
             return $tree;
         } else {
             $tree = $currentTree;
             $word = $newPathExploded[0];
+            $word_key = $this->findKeyFromNodeWithId($word, $tree);
             array_splice($newPathExploded, 0, 1);
             if (count($newPathExploded) == 1 && $point == 'append') {
-                $tree[$word]['childs'][$newPathExploded[0]] = $nodeToMove;
+                $cTree = &$tree[$word_key]['childs'];
+                $newPathExplodedKey = $this->findKeyFromNodeWithId($newPathExploded[0], $cTree);
+                $cTree[$newPathExplodedKey] = $nodeToMove;
             } else {
-                $tree[$word]['childs'] = self::setNode($currentTree[$word]['childs'], $newPathExploded,
+                $tree[$word_key]['childs'] = $this->setNode($currentTree[$word_key]['childs'], $newPathExploded,
                     $targetPosLastWord, $point, $nodeToMove);
             }
             return $tree;

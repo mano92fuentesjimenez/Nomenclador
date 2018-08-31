@@ -333,6 +333,7 @@
                     text: '',
                     handler : function(pBtn,pEv){
                         var wdw = new nom.dataSourcesList({
+                            managing:true,
                             enumInstance:self.enumInstance,
                             width:'60%',
                             plugins : self.dataSourcesPanelPlugins ? self.dataSourcesPanelPlugins._map_(function(pV){
@@ -366,6 +367,7 @@
             return !!(node.isRoot || node.attributes._type_ == 'category');
         },
 		initializeEvents:function(){
+	        var self = this;
         	this.on('contextmenu', this.showMenuOptions, this);
         	this.on('afterrender',function(panel){
 
@@ -378,7 +380,7 @@
                 });
             }, this);
             this.on("render", function () {
-                toolTip = new Ext.ToolTip({
+                new Ext.ToolTip({
                     target: this.body,
                     delegate: ".enum_tree_node",
                     trackMouse: true,

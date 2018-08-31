@@ -322,7 +322,7 @@
 	});
 
 	nom.dataSourcesList = AjaxPlugins.Ext3_components.grid.dynamicListWindow._createSubClass_({
-
+        managing:false,
 		dataProxy : function(pCallback){
             var self = this;
 			nom.request('getDbConfigs',{enumInstance:this.enumInstance},function (r) {
@@ -336,6 +336,9 @@
 		},
 		constructor : function(pCfg){
 			this._apply_(pCfg);
+			if(this.managing ===true){
+				this.showButtons = false;
+			}
 
 			var cb = this._default_(this.callback, function(){});
 
