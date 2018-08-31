@@ -6,7 +6,6 @@
 		nom = AjaxPlugins.Nomenclador,
 		enums = nom.enums,
 		utils = Genesig.Utils;
-
 	nom.nomencladorTree = Ext.tree.TreePanel._createSubClass_({
 		showFields :false,
 		showEnums :true,
@@ -125,7 +124,7 @@
 			        pNds._each_(function(v){
                         root.appendChild(v);
                         root.expand(false, false);
-                        nom.execute(pCallback,pScope);
+                        nom.execute(pCallback,[],pScope);
                         indexer.nodeEachChild(root, function (v){
                             indexer.nodeLocate(v, false, true);
                         }, this, false);
