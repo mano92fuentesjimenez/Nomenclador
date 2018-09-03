@@ -316,7 +316,7 @@ class Enum
      */
     public function getTotalRecords($where){
         $actionM = ActionManager::getInstance($this->enumInstance);
-        $c = $actionM->callCountActions($where);
+        $c = $actionM->callCountActions($this, $where);
         if(is_numeric($c)){
             return $c;
         }
@@ -380,7 +380,7 @@ class Enum
         //filtrar los fields a coger de base de datos quitando los que no se guardan en bd
         $fieldsToGet = $this->getFieldsSavedInBD($fieldsWithDep);
 
-        if($actionM->callPreLoadActions($offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where) == ActionManager::STOP){
+        if($actionM->callPreLoadActionsForEnum($this,$offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where) == ActionManager::STOP){
             return array();
         }
 
@@ -395,7 +395,7 @@ class Enum
         if (!is_null($fields)) {
             $data = $this->filterData($data, $fields);
         }
-        $actionM->callPostLoadActions($data);
+        $actionM->callPostLoadActionsForEnum($this,$data);
 
         return $data;
     }
