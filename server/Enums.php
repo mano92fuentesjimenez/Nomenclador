@@ -241,7 +241,7 @@ class EnumsRequests
         $msg = '';
         $ids = null;
 
-        $actionsM->callPreSubmitActions($data);
+        $actionsM->callPreSubmitActionsForEnum($enum,$data);
 
 
         //$conn->beginTransaction();
@@ -269,7 +269,7 @@ class EnumsRequests
             }
         }
 
-        $actionsM->callPostAddActions($data['add']);
+        $actionsM->callPostAddActions($enum,$data['add']);
 
         //modificar
         if (count($data['mod']) > 0) {
