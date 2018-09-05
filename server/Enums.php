@@ -241,7 +241,7 @@ class EnumsRequests
         $msg = '';
         $ids = null;
 
-        $actionsM->callPreSubmitActions($data);
+        $actionsM->callPreSubmitActionsForEnum($enum,$data);
 
 
         //$conn->beginTransaction();
@@ -269,7 +269,7 @@ class EnumsRequests
             }
         }
 
-        $actionsM->callPostAddActions($data['add']);
+        $actionsM->callPostAddActions($enum,$data['add']);
 
         //modificar
         if (count($data['mod']) > 0) {
@@ -741,6 +741,7 @@ class Enums
         //Inconsistencias:
         //   No exista el campo ni el nomenclador referenciado por este.
         //   Si este nomenclador se esta modificando, se puede crear un ciclo infinito
+        //   Otro nomenclador tenga el mismo nombre del q se esta adicionando.
 
 
         foreach ($enum->getFields() as $value) {
@@ -756,7 +757,13 @@ class Enums
                 $type::validateDependencies($enumInstance,$enum, $field);
             }
         }
-
+        //
+        $enums = Enums::getInstance($enumInstance);
+        foreach ($enums->getEnums() as $key){
+            $enum2 = $enums->getEnum($key);
+            if($enum->getName() == $enum2->getName() && $enum->getId() != $enum2->getId())
+                throw new EnumException('Este nomenclador ya fue creado por otra persona, por favor recargue el &aacute;rbol de nomencladores.');
+        }
         return true;
     }
 

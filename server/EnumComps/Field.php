@@ -81,4 +81,7 @@ class Field
         }
         return false;
     }
+    public function isEnum(){
+        return $this->getType() == 'DB_Enum';
+    }
 }

@@ -316,7 +316,7 @@ class Enum
      */
     public function getTotalRecords($where){
         $actionM = ActionManager::getInstance($this->enumInstance);
-        $c = $actionM->callCountActions($where);
+        $c = $actionM->callCountActions($this, $where);
         if(is_numeric($c)){
             return $c;
         }
@@ -380,7 +380,7 @@ class Enum
         //filtrar los fields a coger de base de datos quitando los que no se guardan en bd
         $fieldsToGet = $this->getFieldsSavedInBD($fieldsWithDep);
 
-        if($actionM->callPreLoadActions($offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where) == ActionManager::STOP){
+        if($actionM->callPreLoadActionsForEnum($this,$offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where) == ActionManager::STOP){
             return array();
         }
 
@@ -395,7 +395,7 @@ class Enum
         if (!is_null($fields)) {
             $data = $this->filterData($data, $fields);
         }
-        $actionM->callPostLoadActions($data);
+        $actionM->callPostLoadActionsForEnum($this,$data);
 
         return $data;
     }
@@ -458,8 +458,8 @@ class Enum
                 //si hay un enum que apunta a una tabla que ya se referencio, se cogen sus datos en un segundo paso
                 //si hay un enum que apunta a un campo que depende de otros valores de su tabla y que se calcula en el
                 //servidor, sus datos se cogen en la segunda ronda.
-                if ($first && (is_null($multiField) || !$isMulti )) {
-                    if ($field->getType() == "DB_Enum") {
+                if ($first && (is_null($multiField) || !($isMulti && $field->isEnum()))) {
+                    if ($field->isEnum()) {
                         $ds2 = $currentReferencedEnum->getDataSource();
 
                         //si el campo del enum depende de otros campos, no se puede coger el valor con un join de bd.
@@ -534,7 +534,7 @@ class Enum
                 }
                 else {
                     //unir esta tabla con los otros enum que pertenecen a otros datasources
-                    if ($field->getType() != "DB_Enum") {
+                    if (!$field->isEnum()) {
                         throw new Exception('Esto nunca debe pasaaaaar');
                     }
                     $enumField = $currentReferencedEnum->getField($prop['field']);

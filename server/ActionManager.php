@@ -67,34 +67,35 @@ class ActionManager
         $this->actions = $actions;
     }
 
-    public function callPreLoadActions(&$offset, &$limit, &$idRow, &$fieldsToGet, &$inData, &$loadAllData, &$where){
+    public function callPreLoadActionsForEnum($enum, &$offset, &$limit, &$idRow, &$fieldsToGet, &$inData, &$loadAllData, &$where){
         $r = null;
         $actions = $this->getActions('load','pre');
 
         foreach ($actions as $action) {
             $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($this, $offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where);
-            if($r==self::STOP)
+            $r = $p['server']->{$p['action']}($enum, $offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where);
+
+            if($r instanceof ActionManagerResult && $r->type == self::STOP)
                 break;
         }
         return $r;
     }
-    public function callPostLoadActions(&$data){
+    public function callPostLoadActionsForEnum($enum, &$data){
         $actions = $this->getActions('load','post');
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($this, $data);
+            $p['server']->{$p['action']}($enum, $data);
         }
     }
-    public function callPreSubmitActions(&$data){
+    public function callPreSubmitActionsForEnum($enum,&$data){
 
         //del
         $actions = $this->getActions('del','pre');
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-
-            if($p['server']->{$p['action']}($this, $data['del']) == self::STOP){
+            $r = $p['server']->{$p['action']}($enum, $data['del']);
+            if($r instanceof ActionManagerResult && $r->type == self::STOP){
                 unset($data['del']);
                 break;
             }
@@ -105,17 +106,19 @@ class ActionManager
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
 
-            $r = $p['server']->{$p['action']}($this, $data['mod']);
+            $r = $p['server']->{$p['action']}($enum, $data['mod']);
 
-            if($r == self::CONVERT_TO_ADD){
-                foreach ($data['mod'] as $record){
-                    unset($record[PrimaryKey::ID]);
-                    $data['add'][] = $record;
+            if($r instanceof ActionManagerResult) {
+                if ($r->type == self::CONVERT_TO_ADD) {
+                    foreach ($data['mod'] as $record) {
+                        unset($record[PrimaryKey::ID]);
+                        $data['add'][] = $record;
+                    }
                 }
-            }
-            if($r == self::STOP || $r == self::CONVERT_TO_ADD){
-                unset($data['mod']);
-                break;
+                if ($r->type == self::STOP || $r->type == self::CONVERT_TO_ADD) {
+                    unset($data['mod']);
+                    break;
+                }
             }
         }
 
@@ -123,27 +126,29 @@ class ActionManager
         $actions = $this->getActions('add','pre');
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            if($p['server']->{$p['action']}($this, $data['mod']) == self::STOP)
+            $r = $p['server']->{$p['action']}($enum, $data['mod']);
+            if($r instanceof ActionManagerResult && $r->type == self::STOP) {
                 break;
+            }
         }
 
     }
-    public function callCountActions(&$where){
+    public function callCountActions($enum, &$where){
         $actions = $this->getActions('count','pre');
         $r = null;
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($this, $where);
+            $r = $p['server']->{$p['action']}($enum, $where);
         }
         return $r;
     }
-    public function callPostAddActions(&$data){
+    public function callPostAddActions($enum, &$data){
         $actions = $this->getActions('add','post');
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($this,$data);
+            $p['server']->{$p['action']}($enum,$data);
         }
     }
 
@@ -151,9 +156,9 @@ class ActionManager
         $actions = $this->getActions('addEnum','pre');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $v = $p['server']->{$p['action']}(self,$enum);
-            if($v ==Enum::STOP)
-                throw new Exception("La adicion del nomenclador ha sido refutada por el plugin {$p['plugin']}");
+            $r = $p['server']->{$p['action']}($this->enumInstance,$enum);
+            if($r instanceof ActionManagerResult && $r->type == self::STOP)
+                $this->throwException($r,$p['plugin']);
         }
 
     }
@@ -168,9 +173,9 @@ class ActionManager
         $actions = $this->getActions('modEnum','pre');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $v = $p['server']->{$p['action']}($this->enumInstance,$enum);
-            if($v ==Enum::STOP)
-                throw new Exception("La modificacion del nomenclador ha sido refutada por el plugin {$p['server']}");
+            $r = $p['server']->{$p['action']}($this->enumInstance,$enum);
+            if($r instanceof ActionManagerResult && $r->type == self::STOP)
+                $this->throwException($r,$p['plugin']);
         }
 
     }
@@ -186,9 +191,9 @@ class ActionManager
         $actions = $this->getActions('remEnum','pre');
         foreach ($actions as $action) {
             $p = self::getPlugin($action);
-            $v = $p['server']->{$p['action']}($this->enumInstance, $enum);
-            if ($v == Enum::STOP)
-                throw new EnumActionRejected("La modificacion del nomenclador ha sido refutada por el plugin {$p['server']}");
+            $r = $p['server']->{$p['action']}($this->enumInstance, $enum);
+            if($r instanceof ActionManagerResult && $r->type == self::STOP)
+               $this->throwException($r,$p['plugin']);
 
         }
     }
@@ -222,5 +227,22 @@ class ActionManager
             $p['server']->{$p['action']}($this->enumInstance, $compInitializing);
         }
     }
+    public function throwException($actionResult, $pluginServer){
+        $s = "La modificacion del nomenclador ha sido refutada por el plugin {$pluginServer}";
+        if(isset($actionResult->message) && $actionResult->message !='')
+            $s = $actionResult->message;
+        throw new EnumActionRejected($s);
+    }
 
+}
+class ActionManagerResult
+{
+    public $type;
+    public $message;
+
+    public function __constructor($type, $message)
+    {
+        $this->type = $type;
+        $this->message = $message;
+    }
 }
