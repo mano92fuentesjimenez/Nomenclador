@@ -11,7 +11,8 @@ create table mod_nomenclador.enums(
 id serial primary key,
 v  text,
 proj  text,
-enum_instance text
+enum_instance text,
+revision int default 0
 );
 create table mod_nomenclador.refs(
 id serial primary key,
