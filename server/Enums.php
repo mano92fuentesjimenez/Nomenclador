@@ -727,7 +727,7 @@ class Enums
         $projName = EnumsUtils::getProjectName();
         $data = json_encode($this->enums);
 
-        $sql = "update mod_nomenclador.enums set v='$data', revision=revision+1 where proj= '$projName' and enum_instance = '{$this->enumInstance}'";
+        $sql = "update mod_nomenclador.enums set v='$data' where proj= '$projName' and enum_instance = '{$this->enumInstance}'";
         $conn->simpleQuery($sql);
     }
 
