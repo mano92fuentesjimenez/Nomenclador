@@ -355,10 +355,14 @@
                     text: '',
                     handler : function(pBtn,pEv){
                         self.initValues();
+                        self.fireEvent('refreshEnumTree');
                     }
                 })
             ];
-
+            this.addEvents({
+                //Evento q se lanza cuando se refresca el arbol de nomencladores.
+                refreshEnumTree:true
+            });
             nom.treeEditorPanel.superclass.constructor.call(this,cfg);
             this.initializeEvents();
 
