@@ -175,7 +175,7 @@
         eachEnumField: function (enumInstance,enumId, pFn, scope){
             this.getEnumById(enumInstance,enumId).fields._each_(function (fld, fieldId){
                 if (fieldId !== nom.Type.PrimaryKey.UNIQUE_ID) {
-                    pFn.call(scope, fld, fieldId, this);
+                    return pFn.call(scope, fld, fieldId, this);
                 }
             });
         },
@@ -209,6 +209,20 @@
             return this.defaultFields;
         },
 
+        getDenomField:function(enumInstance,_enum){
+
+            var denomField = null;
+            if(!utils.isString(_enum))
+                _enum = _enum.id;
+
+            this.eachEnumField(enumInstance,_enum,function (field) {
+                if(field.isDenom){
+                    denomField = field;
+                    return null;
+                }
+            }, this);
+            return denomField;
+        },
         getFieldsIdFromEnum:function(_enum){
             return _enum.fields._map_(function(v, k){
                 return k;

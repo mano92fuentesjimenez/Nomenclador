@@ -360,7 +360,11 @@
     exp.getActionManager = function (enumInstance) {};
     addService('getActionManager', function () {
 		return nom.enums.getActionManager();
-    })
+    });
 
+	exp.getDenomField = function(enumInstance,_enum){};
+    addService('getDenomField',function(enumInstance,_enum){
+    	return nom.enums.getDenomField(enumInstance, _enum);
+	});
 
 })();
