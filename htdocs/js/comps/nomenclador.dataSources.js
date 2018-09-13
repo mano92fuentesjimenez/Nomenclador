@@ -322,7 +322,7 @@
 	});
 
 	nom.dataSourcesList = AjaxPlugins.Ext3_components.grid.dynamicListWindow._createSubClass_({
-        managing:false,
+        managing:true,
 		dataProxy : function(pCallback){
             var self = this;
 			nom.request('getDbConfigs',{enumInstance:this.enumInstance},function (r) {
@@ -336,39 +336,39 @@
 		},
 		constructor : function(pCfg){
 			this._apply_(pCfg);
-			if(this.managing ===true){
-				this.showButtons = false;
-			}
+
+			this.managing = Genesig.Tools.checkToolAccess(null,'nomenclador_ds_manager') && this.managing;
+			var tbar =[
+                new buttons.btnAdicionar({
+                    handler : this.addDataSource,
+                    scope:this,
+                    tooltip:'Adicionar fuente de datos'
+                }),
+                new buttons.btnModificar({
+                    handler: this.modDataSource,
+                    scope:this,
+                    tooltip:'Modificar fuente de datos'
+                }),
+                new buttons.btnDelete({
+                    handler:this.delDataSource,
+                    scope:this,
+                    tooltip:'Eliminar fuente de datos'
+                }),
+                new comps.Button({
+                    text: 'Clonar',
+                    iconCls : 'gis_cambiar',
+                    handler: this.cloneDataSource,
+                    scope:this,
+                    tooltip:'Clonar fuente de datos'
+                }),
+                '->'
+            ];
 
 			var cb = this._default_(this.callback, function(){});
 
 			this._parent_({
 				title:'Gestionar fuentes de datos',
-				tbar:[
-					new buttons.btnAdicionar({
-						handler : this.addDataSource,
-						scope:this,
-						tooltip:'Adicionar fuente de datos'
-					}),
-					new buttons.btnModificar({
-						handler: this.modDataSource,
-						scope:this,
-						tooltip:'Modificar fuente de datos'
-					}),
-					new buttons.btnDelete({
-						handler:this.delDataSource,
-						scope:this,
-						tooltip:'Eliminar fuente de datos'
-					}),
-                    new comps.Button({
-                        text: 'Clonar',
-                        iconCls : 'gis_cambiar',
-                        handler: this.cloneDataSource,
-                        scope:this,
-                        tooltip:'Clonar fuente de datos'
-                    }),
-					'->'
-				],
+				tbar:this.managing ? tbar:undefined,
 				width:'60%',
 				gridConfig : {
 					store : new Ext.data.JsonStore({
