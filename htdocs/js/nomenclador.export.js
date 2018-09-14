@@ -367,4 +367,6 @@
     	return nom.enums.getDenomField(enumInstance, _enum);
 	});
 
+    exp.eachEnumFields = nom.enums.eachEnumField;
+
 })();
