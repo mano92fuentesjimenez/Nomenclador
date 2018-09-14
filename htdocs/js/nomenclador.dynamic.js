@@ -172,7 +172,7 @@
         hasLoaded: function (enumInstance){
             return this.loaded[enumInstance];
         },
-        eachEnumField: function (enumInstance,enumId, pFn, scope){
+        eachEnumFieldSync: function (enumInstance, enumId, pFn, scope){
             this.getEnumById(enumInstance,enumId).fields._each_(function (fld, fieldId){
                 if (fieldId !== nom.Type.PrimaryKey.UNIQUE_ID) {
                     return pFn.call(scope, fld, fieldId, this);
@@ -215,7 +215,7 @@
             if(!utils.isString(_enum))
                 _enum = _enum.id;
 
-            this.eachEnumField(enumInstance,_enum,function (field) {
+            this.eachEnumFieldSync(enumInstance,_enum,function (field) {
                 if(field.isDenom){
                     denomField = field;
                     return null;
@@ -458,7 +458,7 @@
         var enumDetails = enums.getEnumById(enumInstance, pEnumId),
             fields = [];
 
-        enums.eachEnumField(enumInstance,pEnumId, function (pFld, pFldId){
+        enums.eachEnumFieldSync(enumInstance,pEnumId, function (pFld, pFldId){
             var isEnum = pFld.type === 'DB_Enum',
                 nd = pFld._clone_();
             if (Ext.isFunction(filterFn)) {

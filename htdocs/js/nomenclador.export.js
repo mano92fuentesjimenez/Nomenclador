@@ -367,9 +367,9 @@
     	return nom.enums.getDenomField(enumInstance, _enum);
 	});
 
-    exp.eachEnumField = function () {
+    exp.eachEnumFieldSync = function () {
     	var enums = nom.enums;
-    	return enums.eachEnumField.apply(enums,arguments);
+    	return enums.eachEnumFieldSync.apply(enums,arguments);
     }
 
 })();
