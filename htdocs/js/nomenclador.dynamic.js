@@ -172,10 +172,10 @@
         hasLoaded: function (enumInstance){
             return this.loaded[enumInstance];
         },
-        eachEnumField: function (enumInstance,enumId, pFn, scope){
+        eachEnumFieldSync: function (enumInstance, enumId, pFn, scope){
             this.getEnumById(enumInstance,enumId).fields._each_(function (fld, fieldId){
                 if (fieldId !== nom.Type.PrimaryKey.UNIQUE_ID) {
-                    pFn.call(scope, fld, fieldId, this);
+                    return pFn.call(scope, fld, fieldId, this);
                 }
             });
         },
@@ -209,6 +209,20 @@
             return this.defaultFields;
         },
 
+        getDenomField:function(enumInstance,_enum){
+
+            var denomField = null;
+            if(!utils.isString(_enum))
+                _enum = _enum.id;
+
+            this.eachEnumFieldSync(enumInstance,_enum,function (field) {
+                if(field.isDenom){
+                    denomField = field;
+                    return null;
+                }
+            }, this);
+            return denomField;
+        },
         getFieldsIdFromEnum:function(_enum){
             return _enum.fields._map_(function(v, k){
                 return k;
@@ -444,7 +458,7 @@
         var enumDetails = enums.getEnumById(enumInstance, pEnumId),
             fields = [];
 
-        enums.eachEnumField(enumInstance,pEnumId, function (pFld, pFldId){
+        enums.eachEnumFieldSync(enumInstance,pEnumId, function (pFld, pFldId){
             var isEnum = pFld.type === 'DB_Enum',
                 nd = pFld._clone_();
             if (Ext.isFunction(filterFn)) {
@@ -914,8 +928,8 @@
         if(isCat) {
             children = this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK) {
                 return 'childs' in pV || (
-                    (!toExclude || (utils.isObject(toExclude) ? !(pK in toExclude) : pK != toExclude))
-                    && (!toInclude || toInclude.id == pK)
+                    (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode != toExclude))
+                    && (!toInclude || toInclude.id == pV.idNode)
                     && (config.showEnums && !('childs' in pV))
                 );
             }, this, true)._map_(function (pV, pK) {

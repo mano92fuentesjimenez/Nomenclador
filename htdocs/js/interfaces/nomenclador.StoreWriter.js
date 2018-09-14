@@ -83,7 +83,6 @@
                             var selection = self.getSelection();
                             if(selection._length_()> 0 )
                                 self.modifyRecord(selection._first_());
-                            self.fireEvent('recordModified',selection);
                         }
                     },
                     rmBtn:{

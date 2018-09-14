@@ -357,6 +357,7 @@
                     text: '',
                     handler : function(pBtn,pEv){
                         self.initValues();
+                        self.fireEvent('refreshEnumTree');
                     }
                 })
             ])._map_(function(v){
@@ -368,7 +369,10 @@
                     };
                 return v;
             },this, false);
-
+            this.addEvents({
+                //Evento q se lanza cuando se refresca el arbol de nomencladores.
+                refreshEnumTree:true
+            });
             nom.treeEditorPanel.superclass.constructor.call(this,cfg);
             this.initializeEvents();
 
