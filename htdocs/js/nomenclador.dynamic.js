@@ -928,8 +928,8 @@
         if(isCat) {
             children = this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK) {
                 return 'childs' in pV || (
-                    (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode != toExclude))
-                    && (!toInclude || toInclude.id == pV.idNode)
+                    (!toExclude || (utils.isObject(toExclude) ? !(pK in toExclude) : pK != toExclude))
+                    && (!toInclude || toInclude.id == pK)
                     && (config.showEnums && !('childs' in pV))
                 );
             }, this, true)._map_(function (pV, pK) {

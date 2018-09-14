@@ -319,11 +319,12 @@
             this._apply_(cfg);
 
             this.initializeMenu();
-            this.tbar=[
+            this.tbar=([
                 '->',
                 {
                     iconCls:'gis_adicionar',
                     text: '',
+                    toolGroup:'nomenclador_manager',
                     handler : function(pBtn,pEv){
                         self.showMenuOptions(self.getSelectionModel().getSelectedNode(),pEv);
                     }
@@ -331,6 +332,7 @@
                 {
                     iconCls:'layerposgis',
                     text: '',
+                    toolGroup:'nomenclador_ds_manager',
                     handler : function(pBtn,pEv){
                         var wdw = new nom.dataSourcesList({
                             managing:true,
@@ -358,7 +360,15 @@
                         self.fireEvent('refreshEnumTree');
                     }
                 })
-            ];
+            ])._map_(function(v){
+                if(!(utils.isString(v) || v.toolGroup === undefined))
+                    v.listeners = {
+                        afterrender : function (){
+                            Genesig.Tools.verifyToolButton(this);
+                        }
+                    };
+                return v;
+            },this, false);
             this.addEvents({
                 //Evento q se lanza cuando se refresca el arbol de nomencladores.
                 refreshEnumTree:true
@@ -409,6 +419,7 @@
                     {
                         text: 'Adicionar '+ this.addRankButtonText ,
                         iconCls : 'gis_adicionar',
+                        toolGroup:'nomenclador_manager',
                         handler: this.proccessAction._delegate_('add_category',this, true)
                     }
                 ],
@@ -420,11 +431,13 @@
                     {
                         text: 'Renombrar '+ this.addRankButtonText,
                         iconCls : 'gis_modificar',
+                        toolGroup:'nomenclador_manager',
                         handler: this.proccessAction._delegate_('mod_category',this, true)
                     },
                     {
                         text: 'Eliminar '+this.addRankButtonText,
                         iconCls : 'gis_eliminar',
+                        toolGroup:'nomenclador_manager',
                         handler: this.proccessAction._delegate_('rem_category',this, true)
                     }
                 ],
@@ -436,11 +449,13 @@
                     {
                         text: 'Modificar '+ this.entityType,
                         iconCls : 'gis_modificar',
+                        toolGroup:'nomenclador_manager',
                         handler: this.proccessAction._delegate_('mod_enum',this, true)
                     },
                     {
                         text: 'Eliminar '+this.entityType,
                         iconCls : 'gis_eliminar',
+                        toolGroup:'nomenclador_manager',
                         handler: this.proccessAction._delegate_('rem_enum',this, true)
                     }
                     //                    ,{
@@ -466,6 +481,7 @@
                     {
                         text: 'Adicionar '+this.entityType,
                         iconCls : 'gis_adicionar',
+                        toolGroup:'nomenclador_manager',
                         handler: this.proccessAction._delegate_(['add_enum','default'],this, true),
                         menu:addEnumMenu
                     }
