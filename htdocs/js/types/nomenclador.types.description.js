@@ -10,7 +10,7 @@
         addType =nom.Type.Utils.addType;
 
     addType('DB_Description',Ext.extend(nom.Type.ValueType, {
-        nameToShow :"Descripcion",
+        nameToShow :"Descripci\u00F3n",
         getValueEditExtComp :function (enumInstance, field){
             var fld = new fields.fieldDescripcion({
                 allowBlank :!field.needed,
