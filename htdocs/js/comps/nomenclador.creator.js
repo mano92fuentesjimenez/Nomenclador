@@ -13,7 +13,7 @@
 
 	nom.nomencladorCreator = Ext.extend(Ext.Window, {
 		entityType:'nomenclador',
-		width: 700,
+		width: 800,
 		height: 600,
 		modal: true,
 		_enum: null,
