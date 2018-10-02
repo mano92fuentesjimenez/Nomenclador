@@ -248,7 +248,9 @@ class DBConnProxy extends  DBConn
 
     public function setDefaultValueForColumn($tableName, $schema, $fieldName, $value)
     {
-        return $this->dbConn->setDefaultValueForColumn($tableName, $schema, $fieldName, $value);
+        if(!is_null($value))
+            return $this->dbConn->setDefaultValueForColumn($tableName, $schema, $fieldName, $value);
+        return true;
     }
 
     public function getFieldValuesFilteredWithPrimaryKey($tableName, $schema, $fieldName, $fieldToFilter, $filterValue, $offset = null, $limit = null)
