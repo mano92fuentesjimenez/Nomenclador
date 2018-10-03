@@ -3,7 +3,7 @@
  * @type {{UI: {}, handleResponse: AjaxPlugins.Nomenclador.handleResponse, init: AjaxPlugins.Nomenclador.init, nomencladorWindowCaller: AjaxPlugins.Nomenclador.nomencladorWindowCaller}}
  */
 
-_define_('nomenclador',['ext3*','layersWindows','queryBuilder','nomenclador']);
+_define_('nomenclador',['ext3*','layersWindows','QueryBuilder','nomenclador']);
 
 AjaxPlugins.Nomenclador = {
     
