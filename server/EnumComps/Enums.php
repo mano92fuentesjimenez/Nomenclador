@@ -466,28 +466,29 @@ class Enum
                         $fieldRef = $currentReferencedEnum->getField($prop['field']);
                         $fieldRefType = $fieldRef->getType();
 
+                        //Este caso ya no deberia pasar
                         //si se repite la tabla o depende de otros igual se llena la tabla.
-                        if (isset($enumsVisited[$currentReferencedEnum->getId()]) || $fieldRefType::dependsOnOtherFields($currentReferencedEnum, $fieldRef)) {
-
-                            if($isMulti) {
-                                $multiField = $field;
-                                if(is_null($from))
-                                    $from ='';
-                                $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
-
-                                $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(),
-                                    $ds->getSchema(),$currentReferencedEnum->getId(),$multiName,$from);
-
-                                $select = $conn->continueSelect($this->getDataSource()->getSchema(), $multiName,$currentReferencedEnum->getId(),$key,$select);
-                            }
-                            else {
-                                $selectSubq = $conn->continueSelect($this->getDataSource()->getSchema(), $this->getId(), $key,
-                                    $key, $selectSubq);
-                                $select = $conn->continueSelect(null, null, $key,
-                                    $key, $select, true);
-                            }
-                            continue;
-                        }
+//                        if (isset($enumsVisited[$currentReferencedEnum->getId()]) || $fieldRefType::dependsOnOtherFields($currentReferencedEnum, $fieldRef)) {
+//
+//                            if($isMulti) {
+//                                $multiField = $field;
+//                                if(is_null($from))
+//                                    $from ='';
+//                                $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
+//
+//                                $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(),
+//                                    $ds2->getSchema(),$currentReferencedEnum->getId(),$multiName,$from);
+//
+//                                $select = $conn->continueSelect($ds2->getSchema(), $multiName,$currentReferencedEnum->getId(),$key,$select);
+//                            }
+//                            else {
+//                                $selectSubq = $conn->continueSelect($ds2->getSchema(), $this->getId(), $key,
+//                                    $key, $selectSubq);
+//                                $select = $conn->continueSelect(null, null, $key,
+//                                    $key, $select, true);
+//                            }
+//                            continue;
+//                        }
 
                         //coger los valores de esta tabla que para poder unir con los de las otras.
                         if ($ds2->distinctDs($ds)) {
