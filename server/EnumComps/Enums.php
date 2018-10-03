@@ -534,20 +534,21 @@ class Enum
                             $key, $select, true);
                     }
                 }
-                else {
-                    //unir esta tabla con los otros enum que pertenecen a otros datasources
-                    if (!$field->isEnum()) {
-                        throw new Exception('Esto nunca debe pasaaaaar');
-                    }
-                    $enumField = $currentReferencedEnum->getField($prop['field']);
-
-                    $inData = $this->getInData($data, $field);
-
-                    $dataToAdd = $this->getEnumData(null, null, $loadAllData, null, $field->getId(), $field->getId(), null, null,
-                        null, $inData);
-                    $this->mixData($data, $dataToAdd, $field, $enumField);
-
-                }
+//                else {
+//                    //esto nunca debe pasar
+//                    //unir esta tabla con los otros enum que pertenecen a otros datasources
+////                    if (!$field->isEnum()) {
+////                        throw new Exception('Esto nunca debe pasaaaaar');
+////                    }
+////                    $enumField = $currentReferencedEnum->getField($prop['field']);
+////
+////                    $inData = $this->getInData($data, $field);
+////
+////                    $dataToAdd = $this->getEnumData(null, null, $loadAllData, null, $field->getId(), $field->getId(), null, null,
+////                        null, $inData);
+////                    $this->mixData($data, $dataToAdd, $field, $enumField);
+//
+//                }
                 unset($fields[$key]);
             }
             if ($first) {
