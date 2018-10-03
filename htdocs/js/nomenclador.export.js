@@ -88,11 +88,7 @@
 	 */
 	exp.getEnumDataPanel=function(enumInstance, _enum, config){};
 	addService('getEnumDataPanel',function(enumInstance, _enum, config){
-		var _enum = _enum._isString_() ? nom.enums.getEnumById(enumInstance, _enum):_enum,
-			_interface = config && config['enumInstanceConfig'] &&config['enumInstanceConfig']['enumDataEditor'],
-			_interface = _interface ? _interface : nom.GridDataEditor;
-
-		return nom.addMenuHandler(enumInstance, _enum, _interface, config);
+		return nom.getEnumDataPanel.apply(arguments);
 	});
 	
 	/**

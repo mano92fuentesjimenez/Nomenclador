@@ -66,6 +66,7 @@
         actionManager:null,
         constructor: function (config){
             this._apply_(config);
+            this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
             var self = this;
 
             this.initializeConfig();

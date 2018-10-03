@@ -54,9 +54,11 @@
 		frame :true,
 		editorComponent :null,
 		enumInstance:null,
+		enumInstanceConfig,
         enableTabScroll:true,
 		constructor :function (){
 			nom.dataEditorTabPanel.superclass.constructor.apply(this, arguments);
+			this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
 			this.tabs = {};
 			this.addEvents({'saved' :true});
 		},
@@ -100,8 +102,8 @@
                 },
 				self = this;
 
-            if (this.enumInstanceConfig && this.enumInstanceConfig.enumDataEditor)
-                controller = new this.enumInstanceConfig.enumDataEditor(config);
+            if (this.enumInstanceConfig.getEnumDataEditor(_enum.tpl))
+                controller = new this.enumInstanceConfig.getEnumDataEditor(_enum.tpl);
             else controller = new nom.GridDataEditor(config);
 
             controller.destroyUI = controller.destroyUI.createSequence(function(){
