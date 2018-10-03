@@ -259,16 +259,21 @@
         existTpl:function(tplName){
             return utils.isObject(this.tpl) && utils.isObject(this.tpl[tplName]);
         },
-        getDefaultTpl:function(){
+        getDefaultTplName:function(){
             return 'default';
         },
-        getTplConfig:function(tplName){
-            var tplConfig = null;
+        getTpl:function(tplName){
+            var tplConfig = new nom.Tpl();
             if(this.tpl)
-                tplConfig = this.tpl[tplName];
+                tplConfig = new nom.Tpl(this.tpl[tplName]);
             return tplConfig;
-
         }
+    });
+    nom.Tpl = function(config) {
+        this._apply_(config);
+    };
+    nom.Tpl = Ext.extend(nom.Tpl,{
+
     });
 
     nom.refs = function (){
@@ -1082,10 +1087,11 @@
      *                       enumDataEditor: Debe contener el prototipo de la clase que se va a usar como interfaz para
      *                                      visualizar los datos. Debe heredar de EnumStoreWriter si esta interfaz va a
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
-    *            tpl: "nombre Tpl":
+    *            tpl: "id":
      *                       defaultFields: Listado de campos por defectos que se deben mostrar cada vez q se cree un nomenclador
      *                                      Es de la forma  [field] donde cada field es de la misma forma en q se guarda
      *                                      en el servidor los cada campo de un nomenclador.
+    *                        header:        Nombre a mostrar en el tpl
     *                        dataTypes: Objeto de la forma { dataTypeId:true}
     *                        extraProps: Objeto q contiene un listado de propiedades extras en una entidad, La llave es
     *                                  el identificador de la propiedad. El valor debe ser un input admisible por formValidator.

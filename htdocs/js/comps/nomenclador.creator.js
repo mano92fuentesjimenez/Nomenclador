@@ -23,8 +23,8 @@
 
 		//nombre del tpl q se va a usar para crear el nomenclador
 		tpl:'default',
-		//configuraciones de todos los tpl en esta instancia de nomenclador.
-		tplConfigs:undefined,
+		//configuracion de tpl de nomenclador.
+		tplConfig:undefined,
 		//Si tiene valor, es el identificador de un dataSource q se va a usar para
 		defaultDataSource:null,
 
@@ -183,7 +183,7 @@
 				}
 			];
 			var northHeigth = 150;
-			var tpl = ((this.tplConfigs || {})[this.tpl] ||{});
+			var tpl = this.tplConfig;
 			if( (tpl.extraProps||{})._length_()>0 )
 			{
 				this.extraProps = [];
@@ -266,7 +266,7 @@
 			var dataArray = [];
 			var types = nom.Type.Utils.getTypesDict();
 			var no_enum = Object.keys(enums.getEnums(this.enumInstance)).length;
-			var configDataTypes = ((this.tplConfigs ||{})[this.tpl] || {}).dataTypes;
+			var configDataTypes = this.tplConfig.dataTypes;
 
 			for (var type in types){
 				/**

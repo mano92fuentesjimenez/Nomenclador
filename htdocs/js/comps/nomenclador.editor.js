@@ -450,7 +450,7 @@
                         text: 'Modificar '+ this.entityType,
                         iconCls : 'gis_modificar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_(['mod_enum',this.enumInstanceConfig.getDefaultTpl()],this, true)
+                        handler: this.proccessAction._delegate_(['mod_enum',this.enumInstanceConfig.getDefaultTplName()],this, true)
                     },
                     {
                         text: 'Eliminar '+this.entityType,
@@ -470,7 +470,7 @@
                 return k !== 'default';
             },this,true)._map_(function(v,k){
                 return {
-                    text:k,
+                    text:v.header,
                     handler:this.proccessAction._delegate_(['add_enum',k],this, true)
                 };
             },this,false);
@@ -482,7 +482,7 @@
                         text: 'Adicionar '+this.entityType,
                         iconCls : 'gis_adicionar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_(['add_enum',this.enumInstanceConfig.getDefaultTpl()],this, true),
+                        handler: this.proccessAction._delegate_(['add_enum',this.enumInstanceConfig.getDefaultTplName()],this, true),
                         menu:addEnumMenu
                     }
                 ],
@@ -544,7 +544,7 @@
                     enumInstance:self.enumInstance,
                     entityType:self.entityType,
                     tpl:tpl,
-                    tplConfigs:self.enumInstanceConfig.tpl || {},
+                    tplConfig:self.enumInstanceConfig.getTpl(tpl),
                     defaultDataSource: self.enumInstanceConfig.defaultDataSource || {}
                 })).show();
             });
@@ -647,7 +647,7 @@
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
                             tpl:tpl,
-                            tplConfigs: self.enumInstanceConfig.tpl || {}
+                            tplConfig: self.enumInstanceConfig.getTpl(tpl)
                         }).show();
                     });
                 };
