@@ -350,7 +350,7 @@ class Postgree_9_1 extends DBConn
 
     public function continueFrom($enumSchema, $enumTableName,$currentSchema, $currentTableName, $currentField, $query)    {
 
-        $r = "INNER JOIN \"$currentSchema\".\"$currentTableName\" on \"$enumSchema\".\"$enumTableName\".\"$currentField\"";
+        $r = "left JOIN \"$currentSchema\".\"$currentTableName\" on \"$enumSchema\".\"$enumTableName\".\"$currentField\"";
         $r.= "=\"$currentSchema\".\"$currentTableName\".".PrimaryKey::ID." ";
         return $query.$r;
 

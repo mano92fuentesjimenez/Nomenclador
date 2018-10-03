@@ -14,7 +14,7 @@
 		constructor :function (){
 			types.DB_MathFormula.superclass.constructor.apply(this, arguments);
 		},
-		nameToShow :'F&oacute;rmula Matem&aacute;tica'._parse2Unicode_(),
+		nameToShow :'F\u00F3rmula Matem\u00E1tica'._parse2Unicode_(),
 		getPropertiesExtComp :function (enumInstance,_enumId, fieldId, fields){
 			var fields = this.getValidFields(enumInstance,fields)._map_(function (v){
 				return {

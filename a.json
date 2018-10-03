@@ -1,44 +1,109 @@
 {
-  "a-977508": {
-    "name": "a",
-    "id": "a-977508",
-    "description": "a",
+  "ds-716714": {
+    "name": "ds",
+    "id": "ds-716714",
+    "description": "ffafafafafafaf",
     "fields": {
-      "dd": {
+      "denominacion": {
         "type": "DB_String",
         "needed": true,
-        "id": "dd",
+        "id": "denominacion",
         "header": "Denominaci&oacute;n",
-        "_enumId": "a-977508",
+        "_enumId": "ds-716714",
         "isDefault": true,
-        "isDenom": true
+        "isDenom": true,
+        "order": 0
+      },
+      "f_1": {
+        "type": "DB_Table",
+        "needed": false,
+        "id": "f_1",
+        "properties": {
+          "_enum": {
+            "id": "fieldsMode",
+            "fields": {
+              "denominacion": {
+                "type": "DB_String",
+                "needed": true,
+                "id": "denominacion",
+                "header": "Denominaci&oacute;n",
+                "_enumId": "fieldsMode",
+                "isDefault": true,
+                "isDenom": true,
+                "order": 0
+              },
+              "f_1": {
+                "type": "DB_Description",
+                "needed": false,
+                "id": "f_1",
+                "header": "d",
+                "_enumId": "fieldsMode",
+                "order": 1
+              },
+              "id_enum_1100": {
+                "type": "PrimaryKey",
+                "id": "id_enum_1100"
+              }
+            },
+            "tpl": "default"
+          },
+          "refs": [],
+          "filter": ""
+        },
+        "header": "t",
+        "_enumId": "ds-716714",
+        "order": 1
       },
       "id_enum_1100": {
         "type": "PrimaryKey",
         "id": "id_enum_1100"
       }
     },
-    "dataSource": "genesig"
+    "dataSource": "Genesig"
   },
-  "b-591101": {
+  "a-733402": {
+    "name": "a",
+    "id": "a-733402",
+    "description": "f",
+    "fields": {
+      "denominacion": {
+        "type": "DB_String",
+        "needed": true,
+        "id": "denominacion",
+        "header": "Denominaci&oacute;n",
+        "_enumId": "a-733402",
+        "isDefault": true,
+        "isDenom": true,
+        "order": 0
+      },
+      "id_enum_1100": {
+        "type": "PrimaryKey",
+        "id": "id_enum_1100"
+      }
+    },
+    "dataSource": "Genesig",
+    "tpl": "default"
+  },
+  "b-560509": {
     "name": "b",
-    "id": "b-591101",
+    "id": "b-560509",
     "description": "b",
     "fields": {
-      "dd": {
+      "denominacion": {
         "type": "DB_String",
         "needed": true,
-        "id": "dd",
+        "id": "denominacion",
         "header": "Denominaci&oacute;n",
-        "_enumId": "b-591101",
+        "_enumId": "b-560509",
         "isDefault": true,
-        "isDenom": true
+        "isDenom": true,
+        "order": 0
       },
       "id_enum_1100": {
         "type": "PrimaryKey",
         "id": "id_enum_1100"
       }
     },
-    "dataSource": "genesig"
+    "dataSource": "Genesig"
   }
 }

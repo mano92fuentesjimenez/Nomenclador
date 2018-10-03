@@ -31,7 +31,7 @@ class DB_Enum extends BaseType
     }
 
     public static function getValueFromDB($enumInstance, $record, $value, $field, $connType){
-        if($value == -1) {
+        if($value == null) {
             return -1;
         }
         $enums = Enums::getInstance($enumInstance);
@@ -71,7 +71,7 @@ class DB_Enum extends BaseType
     }
     public static function getDefaultValue($connType,$typeProperties )
     {
-        return -1;
+        return null;
     }
     public static function compareProperties($val1, $val2)
     {

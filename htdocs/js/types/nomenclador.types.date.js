@@ -9,7 +9,7 @@
         fields = comps.fields;
 
     addType('DB_Date',Ext.extend(nom.Type.ValueType, {
-            nameToShow :'fecha',
+            nameToShow :'Fecha',
             getValueEditExtComp :function (enumInstance, field) {
                 return new fields.DateField({
                     fieldLabel:field.header,
