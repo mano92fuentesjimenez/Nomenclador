@@ -236,6 +236,31 @@
         }
     });
 
+    nom.InstanceConfigClass = function(config){
+        if(config instanceof nom.InstanceConfigClass)
+            return config;
+        this._apply_(config);
+    };
+    nom.InstanceConfigClass = Ext.extend(nom.InstanceConfigClass, {
+        getEnumDataEditor: function(tplName){
+            return this.getObjectFromTpl('enumDataEditor', tplName);
+        },
+        getFormDataEditor: function(tplName){
+            return this.getObjectFromTpl('formDataEditor',tplName);
+        },
+        getObjectFromTpl:function(objName, tplName){
+            var obj = null;
+            if(this[objName])
+                obj = this[objName];
+            if(this.existTpl(tplName) && utils.isObject(this.tpl[tplName][objName]))
+                obj = this.tpl[tplName][objName];
+            return obj;
+        },
+        existTpl:function(tplName){
+            return utils.isObject(this.tpl) && utils.isObject(this.tpl[tplName]);
+        }
+    });
+
     nom.refs = function (){
         this.referenced = {};
         this.addReference = {};
@@ -483,6 +508,14 @@
 
         return fields;
     };
+    nom.getEnumDataPanel=function(enumInstance, _enum, config){
+        var _enum = _enum._isString_() ? nom.enums.getEnumById(enumInstance, _enum):_enum,
+            config = new nom.InstanceConfigClass((config || {}).enumInstanceConfig),
+            _interface = config.getEnumDataEditor(),
+            _interface = _interface ? _interface : nom.GridDataEditor;
+
+        return nom.addMenuHandler(enumInstance, _enum, _interface, config);
+    };
 
     nom.showEnumTree = function (enumInstance, showEnums, callBack, title){
         var tree = new nom.nomencladorTree({
@@ -578,6 +611,8 @@
         constructor:function (config) {
             nom.enumInput.superclass.constructor.apply(this,arguments);
 
+            this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
+
             this._enum = utils.isString(this._enum)? enums.getEnumById(this.enumInstance, this._enum):this._enum;
             this.referencedField = this._enum.fields[this._fieldId];
             this.selector_columns = (this.selector_columns  || enums.getFieldsIdFromEnum(this._enum));
@@ -611,8 +646,8 @@
                     excludeEnums: this.getExclusion(),
                     maskObj:panel
                 }._apply_(this.getFilterObj()),
-                tab = (this.enumInstanceConfig && this.enumInstanceConfig.enumDataEditor ) ?
-                    this.enumInstanceConfig.enumDataEditor : nom.GridDataEditor,
+                tab = this.enumInstanceConfig.getEnumDataEditor(this._enum.tpl) ?
+                    this.enumInstanceConfig.getEnumDataEditor(this._enum.tpl) : nom.GridDataEditor,
                 tab = new tab(config),
                 self = this;
 
@@ -1056,16 +1091,18 @@
         nom.getUI(enumInstance, config).show();
     };
     nom.getUI = function(enumInstance, config){
+        config = new nom.InstanceConfigClass(config);
         enumInstance = enumInstance? enumInstance : nom.export.DEFAULT_INSTANCE;
         if(!nom.UIDict[enumInstance]) {
             nom.UIDict[enumInstance] = new nom.nomencladorEditor({
                 enumInstance: enumInstance,
+                enumInstanceConfig:config,
                 listeners: {
                     close: function () {
                         AjaxPlugins.Nomenclador.removeUI(this.enumInstance);
                     }
                 }
-            }._apply_({enumInstanceConfig:config ? config: false }));
+            });
             AjaxPlugins.Location.registerWindows(nom.UIDict[enumInstance]);
         }
         return nom.UIDict[enumInstance];
