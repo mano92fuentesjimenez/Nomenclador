@@ -54,7 +54,7 @@
 		frame :true,
 		editorComponent :null,
 		enumInstance:null,
-		enumInstanceConfig,
+		enumInstanceConfig:null,
         enableTabScroll:true,
 		constructor :function (){
 			nom.dataEditorTabPanel.superclass.constructor.apply(this, arguments);
