@@ -258,6 +258,16 @@
         },
         existTpl:function(tplName){
             return utils.isObject(this.tpl) && utils.isObject(this.tpl[tplName]);
+        },
+        getDefaultTpl:function(){
+            return 'default';
+        },
+        getTplConfig:function(tplName){
+            var tplConfig = null;
+            if(this.tpl)
+                tplConfig = this.tpl[tplName];
+            return tplConfig;
+
         }
     });
 

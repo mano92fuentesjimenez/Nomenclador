@@ -450,7 +450,7 @@
                         text: 'Modificar '+ this.entityType,
                         iconCls : 'gis_modificar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_('mod_enum',this, true)
+                        handler: this.proccessAction._delegate_(['mod_enum',this.enumInstanceConfig.getDefaultTpl()],this, true)
                     },
                     {
                         text: 'Eliminar '+this.entityType,
@@ -482,7 +482,7 @@
                         text: 'Adicionar '+this.entityType,
                         iconCls : 'gis_adicionar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_(['add_enum','default'],this, true),
+                        handler: this.proccessAction._delegate_(['add_enum',this.enumInstanceConfig.getDefaultTpl()],this, true),
                         menu:addEnumMenu
                     }
                 ],
