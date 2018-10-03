@@ -492,7 +492,8 @@ class Enum
 
                         //coger los valores de esta tabla que para poder unir con los de las otras.
                         if ($ds2->distinctDs($ds)) {
-                            continue;
+                            throw new EnumException('2 nomencladores no pueden ser referenciados desde datasources distintos');
+                            //continue;
                         }
                         else {
                             $enumsVisited[$currentReferencedEnum->getId()] = true;
@@ -503,7 +504,7 @@ class Enum
 
                                 $multiField = $field;
                                 $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
-                                $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(), $ds->getSchema(),$currentReferencedEnum->getId(),$multiName,$from);
+                                $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(), $ds2->getSchema(),$currentReferencedEnum->getId(),$multiName,$from);
                                 //poner el valor verdadero del enum en $key (id del campo)
                                 $select = $conn->continueSelect($this->getDataSource()->getSchema(), $multiName, $currentReferencedEnum->getId(),
                                     $key, $select);
@@ -511,7 +512,7 @@ class Enum
                             }
                             else {
 
-                                $fromSubq = $conn->continueFrom($this->getDataSource()->getSchema(), $this->getId(), $ds->getSchema(),
+                                $fromSubq = $conn->continueFrom($this->getDataSource()->getSchema(), $this->getId(), $ds2->getSchema(),
                                     $currentReferencedEnum->getId(), $key, $fromSubq);
                                 //poner el valor verdadero del enum en $key (id del campo)
                                 $select = $conn->continueSelect($this->getDataSource()->getSchema(), $this->getId(), $key,
@@ -522,7 +523,7 @@ class Enum
                                 $selectSubq = $conn->continueSelect($this->getDataSource()->getSchema(), $this->getId(), $key,
                                     $key, $selectSubq);
                                 //poner el valor del enum en $key.BaseType::REF_TYPE_VALUE_HEADER
-                                $selectSubq = $conn->continueSelect($currentReferencedEnum->getDataSource()->getSchema(),$currentReferencedEnum->getId(),$prop['field'],
+                                $selectSubq = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getId(),$prop['field'],
                                     $key . BaseType::REF_TYPE_VALUE_HEADER, $selectSubq);
                             }
                         }
