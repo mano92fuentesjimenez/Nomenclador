@@ -102,6 +102,10 @@
                 },
 				self = this;
 
+            var tpl = this.enumInstanceConfig.getTpl(_enum.tpl);
+            if(tpl.isReadOnly())
+            	config.manageEnum= false;
+
             if (this.enumInstanceConfig.getEnumDataEditor(_enum.tpl))
                 controller = new this.enumInstanceConfig.getEnumDataEditor(_enum.tpl);
             else controller = new nom.GridDataEditor(config);

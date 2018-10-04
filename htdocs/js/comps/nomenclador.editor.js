@@ -412,7 +412,8 @@
             }, this);
         },
         initializeMenu : function(){
-            var mn = this.menuOptions = new comps.MenuDynamic(false);
+            var mn = this.menuOptions = new comps.MenuDynamic(false),
+                self =this;
 
             mn.registerItem(
                 [
@@ -467,7 +468,8 @@
             );
 
             var addEnumMenu = (this.enumInstanceConfig.tpl || {})._queryBy_(function(v,k){
-                return k !== 'default';
+                var tpl = self.enumInstanceConfig.getTpl(k);
+                return k !== 'default' && !tpl.isReadOnly() && !tpl.isHidden();
             },this,true)._map_(function(v,k){
                 return {
                     text:v.header,
@@ -650,7 +652,12 @@
                             tplConfig: self.enumInstanceConfig.getTpl(tpl)
                         }).show();
                     });
-                };
+                },
+                tpl = this.enumInstanceConfig.getTpl(_enum.tpl);
+            if(tpl.isReadOnly()){
+                infoMsg('Este '+this.entityType+' no se puede modificar porque es de solo lectura');
+                return;
+            }
             if(this.askToChangeEnum == null)
                 f();
             else
@@ -676,8 +683,13 @@
         },
         removeNomenclador: function (node) {
             var mask = Genesig.Utils.mask(this,'Eliminando '+this.entityType+': '+node.attributes._text_+'.'),
-                self = this;
-
+                _enum = enums.getEnumByName(this.enumInstance,node.attributes._text_),
+                self = this,
+                tpl = this.enumInstanceConfig.getTpl(_enum.tpl);
+            if(tpl.isReadOnly()){
+                infoMsg('Este '+this.entityType+' no se puede eliminar porque es de solo lectura');
+                return;
+            }
 
             AjaxPlugins.Ext3_components.Messages.MessageBox.confirm("Confirmaci&oacute;n","&iquest;Est&aacute; seguro que desea eliminar el "+this.entityType+": "+node.attributes._text_+'?',function(b){
 

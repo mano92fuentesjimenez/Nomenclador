@@ -271,7 +271,12 @@
         this._apply_(config);
     };
     nom.Tpl = Ext.extend(nom.Tpl,{
-
+        isReadOnly: function(){
+            return this.readOnly;
+        },
+        isHidden:function(){
+            return this.hidden;
+        }
     });
 
     nom.refs = function (){
@@ -957,9 +962,10 @@
      *     nodesEvaluator {function}  Funcion q dice si un nodo va a formar parte del arbol o no
      * @returns {*}
      */
-    nom.treeNodesProxy = function (pAtrs, config){
+    nom.treeNodesProxy = function (pAtrs, config, instanceConfig){
         //Si config no es un objeto o string, entonces q de error.
         var config = utils.isString(config) ? {enumInstance:config}: config,
+            enumInstance = config.enumInstance,
             toExclude = config.excludeEnum,
             toInclude = config.includeEnum,
             typ = pAtrs._type_ || ('childs' in pAtrs ? 'category' : 'enum'),
@@ -975,8 +981,13 @@
             ) : [];
         if(isCat) {
             children = this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK) {
+                var _enum = nom.enums.getEnumById(enumInstance, pV.idNode),
+                    tplName = _enum.tpl,
+                    tplConfig = instanceConfig.getTpl(tplName);
+
                 return 'childs' in pV || (
                     (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode != toExclude))
+                    && tplConfig.isHidden()
                     && (!toInclude || toInclude.id == pV.idNode)
                     && (config.showEnums && !('childs' in pV))
                 );
@@ -1086,6 +1097,9 @@
      *                                      visualizar los datos. Debe heredar de EnumStoreWriter si esta interfaz va a
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
     *            tpl: "id":
+    *                        readOnly:   Los nomencladores q tengan esto en su tpl, no pueden ser modificados desde nomencladores,
+    *                                    Ni pueden ser creados o modificados desde nomencladores
+    *                        hidden:     No se van a mostrar los nomencladores en el arbol de nomencladores q tengan este tpl.
      *                       defaultFields: Listado de campos por defectos que se deben mostrar cada vez q se cree un nomenclador
      *                                      Es de la forma  [field] donde cada field es de la misma forma en q se guarda
      *                                      en el servidor los cada campo de un nomenclador.
