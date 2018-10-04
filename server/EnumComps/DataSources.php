@@ -43,10 +43,10 @@ class DataSources
         $dataSources = $this->getData($conn);
         if(count($dataSources) == 0){
             $defaultValue = json_encode($this->getDefaultValue());
-            $conn->simpleQuery("insert into mod_nomenclador.dataSources(v,proj,enum_instance) values ('$defaultValue', '$projName','$enumInstance')");
-
             $actions = ActionManager::getInstance($this->enumInstance);
             $actions->callInstanceAddingActions($this);
+
+            $conn->simpleQuery("insert into mod_nomenclador.dataSources(v,proj,enum_instance) values ('$defaultValue', '$projName','$enumInstance')");
             $dataSources = $this->getData($conn);
         }
         $dataSources = reset($dataSources);
