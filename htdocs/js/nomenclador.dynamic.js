@@ -237,8 +237,6 @@
     });
 
     nom.InstanceConfigClass = function(config){
-        if(config instanceof nom.InstanceConfigClass)
-            return config;
         this._apply_(config);
     };
     nom.InstanceConfigClass = Ext.extend(nom.InstanceConfigClass, {
