@@ -151,9 +151,8 @@
 		constructor: function () {
 
 			this.enumInstance = arguments[0].enumInstance;
-			this.enumInstanceConfig = arguments[0].enumInstanceConfig;
-			if( this.enumInstanceConfig == null)
-			    this.enumInstanceConfig = {};
+			this.enumInstanceConfig = new nom.InstanceConfigClass(arguments[0].enumInstanceConfig);
+			arguments[0].enumInstanceConfig = this.enumInstanceConfig;
 
 			this.treePanel = new nom.treeEditorPanel({
 				region:'center',
@@ -314,9 +313,9 @@
         constructor: function (cfg) {
 
             var self = this;
-            this.enumInstance = arguments[0].enumInstance;
-            this.enumInstanceConfig = arguments[0].enumInstanceConfig || {};
             this._apply_(cfg);
+
+            this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
 
             this.initializeMenu();
             this.tbar=([
