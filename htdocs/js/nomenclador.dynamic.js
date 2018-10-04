@@ -987,7 +987,7 @@
 
                 return 'childs' in pV || (
                     (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode != toExclude))
-                    && tplConfig.isHidden()
+                    && !tplConfig.isHidden()
                     && (!toInclude || toInclude.id == pV.idNode)
                     && (config.showEnums && !('childs' in pV))
                 );

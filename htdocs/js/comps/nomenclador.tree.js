@@ -17,6 +17,8 @@
 		nodesEvaluator :null,
 		checked:null,
         plgIndexer:null,
+		enumInstance:null,
+		enumInstanceConfig:null,
 		constructor :function (pCfg){
 			var indexer = this.indexedTreePlg = new comps.plugins.tree.indexedTree,
 				plgSearch = new comps.plugins.tree.indexTreeSearch({
@@ -160,7 +162,7 @@
 				showEnums:this.showEnums
 			};
 
-			return nom.treeNodesProxy(attr,config);
+			return nom.treeNodesProxy(attr,config, this.enumInstanceConfig);
 		}
 
 	});
