@@ -316,6 +316,7 @@
             this._apply_(cfg);
 
             this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
+            cfg.enumInstanceConfig = this.enumInstanceConfig;
 
             this.initializeMenu();
             this.tbar=([
