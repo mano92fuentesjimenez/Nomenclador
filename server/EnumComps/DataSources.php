@@ -44,9 +44,15 @@ class DataSources
         if(count($dataSources) == 0){
             $defaultValue = json_encode($this->getDefaultValue());
             $actions = ActionManager::getInstance($this->enumInstance);
-            $actions->callInstanceAddingActions($this);
-
             $conn->simpleQuery("insert into mod_nomenclador.dataSources(v,proj,enum_instance) values ('$defaultValue', '$projName','$enumInstance')");
+            try {
+                $actions->callInstanceAddingActions($this);
+            }
+            catch (Exception $e){
+                $conn->simpleQuery("delete from mod_nomenclador.dataSources where proj like '$projName' and enum_instance like '$enumInstance'");
+                throw $e;
+            }
+
             $dataSources = $this->getData($conn);
         }
         $dataSources = reset($dataSources);
