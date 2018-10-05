@@ -960,6 +960,8 @@
      *     checked      {array[string]}  Si este arreglo existe, muestra checkboxes en los nodos de los nomencladores
      *                        Y esta checked si el identificador del nomenclador esta en el arreglo
      *     nodesEvaluator {function}  Funcion q dice si un nodo va a formar parte del arbol o no
+     *     allowReferencing  {bool}   Dice si este renderizador fue llamado por el tipo enum para hacer refenrencias entre
+     *                         nomencladores.
      * @returns {*}
      */
     nom.treeNodesProxy = function (pAtrs, config, instanceConfig){
@@ -987,7 +989,7 @@
 
                 return 'childs' in pV || (
                     (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode != toExclude))
-                    && !tplConfig.isHidden()
+                    && (!tplConfig.isHidden() || (tplConfig.allowReferencing && config.allowReferencing))
                     && (!toInclude || toInclude.id == pV.idNode)
                     && (config.showEnums && !('childs' in pV))
                 );
@@ -1103,6 +1105,8 @@
      *                       defaultFields: Listado de campos por defectos que se deben mostrar cada vez q se cree un nomenclador
      *                                      Es de la forma  [field] donde cada field es de la misma forma en q se guarda
      *                                      en el servidor los cada campo de un nomenclador.
+    *                        allowReferencing: Permite que aunque no se muestren los enum con este tpl, puedan ser referenciados
+    *                                    por los nomencladores de otros tpl q si se muestran
     *                        header:        Nombre a mostrar en el tpl
     *                        dataTypes: Objeto de la forma { dataTypeId:true}
     *                        extraProps: Objeto q contiene un listado de propiedades extras en una entidad, La llave es
