@@ -467,12 +467,11 @@
                 'nomenclador'
             );
 
-            var addEnumMenu = (this.enumInstanceConfig.tpl || {})._queryBy_(function(v,k){
-                var tpl = self.enumInstanceConfig.getTpl(k);
-                return k !== 'default' && !tpl.isReadOnly() && !tpl.isHidden();
-            },this,true)._map_(function(v,k){
+            var addEnumMenu = this.enumInstanceConfig.getAllTpl(true)._queryBy_(function(tpl){
+                return !tpl.isReadOnly() && !tpl.isHidden();
+            },this,true)._map_(function(tpl,k){
                 return {
-                    text:v.header,
+                    text:tpl.getHeader(),
                     handler:this.proccessAction._delegate_(['add_enum',k],this, true)
                 };
             },this,false);
