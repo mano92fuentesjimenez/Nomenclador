@@ -368,8 +368,8 @@
     	return enums.eachEnumFieldSync.apply(enums,arguments);
     };
 
-    exp.getInstanceConfigSync = function () {
-		return nom.instanceConfigs;
+    exp.getInstanceConfigClassSync = function () {
+		return nom.InstanceConfigClass;
     }
 
 })();
