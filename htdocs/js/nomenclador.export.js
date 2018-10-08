@@ -366,6 +366,10 @@
     exp.eachEnumFieldSync = function () {
     	var enums = nom.enums;
     	return enums.eachEnumFieldSync.apply(enums,arguments);
+    };
+
+    exp.getInstanceConfigSync = function () {
+		return nom.instanceConfigs;
     }
 
 })();
