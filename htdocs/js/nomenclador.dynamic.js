@@ -262,27 +262,27 @@
             return utils.isObject(this.tpl) && utils.isObject(this.tpl[tplName]);
         },
         getDefaultTplName:function(){
-            return utils.isString(this.defaultTpl)? this.defaultTpl:nom.Tpl.default;
+            return utils.isString(this.defaultTpl)? this.defaultTpl:nom.tplDefaultId;
         },
         getAllTpl:function(skipDefautl){
             var self = this;
             if(!skipDefautl)
                 return this.tpl;
             return this.tpl._queryBy_(function(v,k){
-                return k !== self.getDefaultTplName() && k !== nom.Tpl.default ;
-            })
+                return k !== self.getDefaultTplName() && k !== nom.tplDefaultId ;
+            },this, true)
         },
         getTpl:function(tplName){
             var tplConfig = new nom.Tpl();
             if(this.tpl)
-                tplConfig = this.tpl[tplName];
+                tplConfig = new nom.Tpl(this.tpl[tplName]);
             return tplConfig;
         }
     });
     nom.Tpl = function(config) {
         this._apply_(config);
     };
-    nom.Tpl.default ='default';
+    nom.tplDefaultId ='default';
     nom.Tpl = Ext.extend(nom.Tpl,{
         isReadOnly: function(){
             return this.readOnly;
