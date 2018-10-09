@@ -239,7 +239,7 @@ class EnumsRequests
         $conn = EnumsUtils::getDBConnection($enum);
         $error = array();
         $msg = '';
-        $ids = null;
+        $addedData = null;
 
         $actionsM->callPreSubmitActionsForEnum($enum,$data);
 
@@ -253,7 +253,7 @@ class EnumsRequests
             if(!$conn->insertData($enum->getId(), $fieldsOrder, $enum->getDataSource()->getSchema(), $addData, true)){
                 throw new EnumException($conn->getLastError());
             }
-            $ids = $conn->fetchData(false);
+            $addedData = $conn->fetchData(false);
             foreach ($enum->getFields() as $value){
                 $field = new Field($value);
                 $type = $field->getType();
@@ -261,7 +261,7 @@ class EnumsRequests
                 if($type =='DB_Enum' && $props['multiSelection']){
                     $enum_ref = $enums->getEnum($props['_enum']);
                     $multiTable = DB_Enum::getMultiTableName($enum, $enum_ref);
-                    $data = $enum->getMultiValueField($data['add'],$field->getId(),$ids);
+                    $data = $enum->getMultiValueField($data['add'],$field->getId(),$addedData);
                     if(!$conn->insertData($multiTable,array($enum->getId(),$enum_ref->getId()),$enum->getDataSource()->getSchema(),$data)) {
                         throw new EnumException($conn->getLastError());
                     }
@@ -269,7 +269,8 @@ class EnumsRequests
             }
         }
 
-        $actionsM->callPostAddActions($enum,$data['add']);
+
+        $actionsM->callPostAddActions($enum,$addedData);
 
         //modificar
         if (count($data['mod']) > 0) {
@@ -334,7 +335,7 @@ class EnumsRequests
         //$conn->commitTransaction();
 
 
-        return array('delMsg' => $msg, 'add'=>$ids);
+        return array('delMsg' => $msg, 'add'=>$addedData);
     }
 
     public static function removeEnum($enumInstance, $enumId, $path)
