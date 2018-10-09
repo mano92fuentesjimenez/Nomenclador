@@ -52,6 +52,7 @@
 				}
 
 			});
+			this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
 			this.on('nodedragover', this.nodeDragOverFunc, this);
 			this.on('nodedrop', this.nodeDropFunc, this);
 			this.on('beforeclick',function(nd){
