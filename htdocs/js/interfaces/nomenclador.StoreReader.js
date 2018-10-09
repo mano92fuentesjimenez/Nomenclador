@@ -411,7 +411,7 @@
             this.actionManager.addAction(this.enumInstance,when,which,action);
         },
         getActions: function(){
-            return this.actionManager.getActions(this.enumInstance);
+            return this.actionManager.getActions(this.enumInstance)._clone_()._rapply_(enums.getActionManager().getActions(this.enumInstance));
         },
 
         //Filtering methods
