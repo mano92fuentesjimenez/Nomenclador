@@ -59,21 +59,19 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'getModels': {
-                    $enums = Enums::getInstance($enumInstance);
-                    $enumResult->resp = $enums->enums;
+                    $enumResult->resp = $this->getModels($enumInstance,null);
                 }
                     break;
                 case 'getModel': {
-                    $enums = Enums::getInstance($enumInstance);
                     $modelId = $requ->value['model_id'];
-                    $enum = $enums->getEnum($modelId);
-                    if(!isset($enum)){
+                    try{
+                        $enum = $this->getModels($enumInstance,$modelId);
+                        $enumResult->resp = $enum;
+                    }catch(Exception $e){
                         $enumResult->error = array(
                             'code'=>404,
-                            'message'=>"Model: \"$modelId\", doesn't exists"
+                            'message'=>$e->getMessage()
                         );
-                    }else{
-                        $enumResult->resp = $enum->enum_tree;
                     }
                 } break;
                 case 'addEnum': {
@@ -481,6 +479,27 @@ class ServerNomenclador extends ClientResponderAdapter
     static $conn =null;
     public static function getConn(){
         return self::$conn;
+    }
+
+    private function getModels($enumInstance,$modelId){
+        $enums = Enums::getInstance($enumInstance);
+
+        require_once('ModelsWrapper.php');
+
+        if(isset($modelId)){
+            $enum = $enums->getEnum($modelId);
+            if(!isset($enum)){
+                throw new Exception("Model: \"$modelId\", doesn't exists");
+            }else{
+                return ModelsWrapper::parseEnum($enum->enum_tree);
+            }
+        }else{
+            $enums_ = array();
+            foreach ($enums->enums as $enumId=>$enum){
+                $enums_[$enumId]=ModelsWrapper::parseEnum($enum);
+            }
+            return $enums_;
+        }
     }
 
 }
