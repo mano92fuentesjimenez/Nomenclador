@@ -322,7 +322,7 @@
 
 	exp.addAction = function(enumInstance,when, actionType, action){};
     addService('addAction', function(){
-        nom.enums.addAction.apply(nom.enums,arguments);
+        nom.enums.getActionManager().addAction.apply(nom.enums,arguments);
     });
 	exp.getEnumManagerTreeProto = function(){};
 	addService('getEnumManagerTreeProto', function(){
