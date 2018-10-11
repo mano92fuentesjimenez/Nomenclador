@@ -58,20 +58,22 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumResult->resp = $this->getSeverHeaders($requ->value['enumInstance']);
                 }
                     break;
-                case 'getServerHeadersRest': {
-                    $enumResult->resp = $this->getSeverHeaders($requ->value['enumInstance'])['enums'];
+                case 'getModels': {
+                    $enums = Enums::getInstance($enumInstance);
+                    $enumResult->resp = $enums->enums;
                 }
                     break;
-                case 'getServerEnumHeaders': {
-                    $headers = $this->getSeverHeaders($requ->value['enumInstance']);
+                case 'getModel': {
+                    $enums = Enums::getInstance($enumInstance);
                     $modelId = $requ->value['model_id'];
-                    if(!array_key_exists($modelId,$headers['enums'])){
+                    $enum = $enums->getEnum($modelId);
+                    if(isset($enum)){
                         $enumResult->error = array(
                             'code'=>404,
-                            'message'=>"Model: \"$modelId\", doesn exists"
+                            'message'=>"Model: \"$modelId\", doesn't exists"
                         );
                     }else{
-                        $enumResult->resp = $headers['enums'][$modelId];
+                        $enumResult->resp = $enum->enum_tree;
                     }
                 } break;
                 case 'addEnum': {

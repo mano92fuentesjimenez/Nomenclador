@@ -4,7 +4,7 @@ services:
       get:
         description: "Load all models headers"
         out: "text/json"
-        action: "getServerHeadersRest"
+        action: "getModels"
         arguments:
           instance:
             description: "Instancia o dominio de trabajo"
@@ -14,7 +14,7 @@ services:
       get:
         description: "Load model header"
         out: "text/json"
-        action: "getServerEnumHeaders"
+        action: "getModel"
         arguments:
           instance:
             description: "Instancia o dominio de trabajo"
