@@ -67,7 +67,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enums = Enums::getInstance($enumInstance);
                     $modelId = $requ->value['model_id'];
                     $enum = $enums->getEnum($modelId);
-                    if(isset($enum)){
+                    if(!isset($enum)){
                         $enumResult->error = array(
                             'code'=>404,
                             'message'=>"Model: \"$modelId\", doesn't exists"
