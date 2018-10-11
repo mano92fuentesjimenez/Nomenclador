@@ -58,6 +58,22 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumResult->resp = $this->getSeverHeaders($requ->value['enumInstance']);
                 }
                     break;
+                case 'getServerHeadersRest': {
+                    $enumResult->resp = $this->getSeverHeaders($requ->value['enumInstance'])['enums'];
+                }
+                    break;
+                case 'getServerEnumHeaders': {
+                    $headers = $this->getSeverHeaders($requ->value['enumInstance']);
+                    $modelId = $requ->value['model_id'];
+                    if(!array_key_exists($modelId,$headers['enums'])){
+                        $enumResult->error = array(
+                            'code'=>404,
+                            'message'=>"Model: \"$modelId\", doesn exists"
+                        );
+                    }else{
+                        $enumResult->resp = $headers['enums'][$modelId];
+                    }
+                } break;
                 case 'addEnum': {
                     EnumsRequests::addEnum(
                         $requ->value['enumInstance'],
@@ -454,6 +470,10 @@ class ServerNomenclador extends ClientResponderAdapter
         $enum = $enums->getEnum($enumId);
 
         return $enum->queryEnum($pageOffset,$pageSize,$loadAll, $idRow,$fieldLazyToEval,$fields,$where,$inData );
+    }
+
+    public function test(){
+        return 'joderererererer';
     }
 
     static $conn =null;
