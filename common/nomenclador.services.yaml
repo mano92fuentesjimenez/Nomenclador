@@ -1,0 +1,55 @@
+services:
+  getModel:
+    /:
+      get:
+        description: "Load all models headers"
+        out: "text/json"
+        action: "getServerHeadersRest"
+        arguments:
+          instance:
+            description: "Instancia o dominio de trabajo"
+            default: "system"
+
+    /{model_id}:
+      get:
+        description: "Load model header"
+        out: "text/json"
+        action: "getServerEnumHeaders"
+        arguments:
+          instance:
+            description: "Instancia o dominio de trabajo"
+            default: "system"
+
+  getModelRecords:
+    /{enum}:
+      get:
+        description: "Load model records"
+        out: "text/json"
+        action: "getEnumData"
+        arguments:
+          instance:
+            description: "Instancia o dominio de trabajo"
+            default: "system"
+          enumLoadEnums:
+            default: true
+          enumLoadPageOffset:
+          enumLoadPageSize:
+          enumLoadIdRow:
+          enumLoadColumns:
+          enumLoadWhere:
+
+    /{enum}/{enumLoadIdRow}:
+      get:
+        description: "Load model records"
+        out: "text/json"
+        action: "getEnumData"
+        arguments:
+          instance:
+            description: "Instancia o dominio de trabajo"
+            default: "system"
+          enumLoadEnums:
+            default: true
+          enumLoadPageOffset:
+          enumLoadPageSize:
+          enumLoadColumns:
+          enumLoadWhere:

@@ -350,7 +350,7 @@
 
     exp.showUI = function(enumInstance, config){};
     addService('showUI', function(enumInstance, config){
-        nom.showUI(enumInstance);
+        nom.showUI(enumInstance, config);
     });
 
     exp.getActionManager = function (enumInstance) {};
