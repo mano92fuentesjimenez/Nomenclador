@@ -489,12 +489,12 @@ class ServerNomenclador extends ClientResponderAdapter
             if(!isset($enum)){
                 throw new Exception("Model: \"$modelId\", doesn't exists");
             }else{
-                return ModelsWrapper::parseEnum($enum->enum_tree);
+                return $enum->enum_tree;
             }
         }else{
             $enums_ = array();
             foreach ($enums->enums as $enumId=>$enum){
-                $enums_[$enumId]=ModelsWrapper::parseEnum($enum);
+                $enums_[$enumId]=$enum;
             }
             return $enums_;
         }
