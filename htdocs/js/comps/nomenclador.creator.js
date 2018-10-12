@@ -982,7 +982,8 @@
 			nomenclador.fields = fields;
 			nomenclador.dataSource = this.isDefaultDS() ? this.defaultDataSource : this.dataSourceSelector.getValue();
 
-			var order = 0;
+			var order = 0,
+				denomField = null;
 			this.gridEditor.getStore().each(function (record){
 
 				var id = record.get("id"),
@@ -999,6 +1000,9 @@
 					properties = properties.getValue();
 				if (Ext.isObject(properties))
 					properties['filter'] = filter;
+
+				if (record.isDenom && denomField===null)
+					denomField = id;
 
 				if(t.canBeMultiple)
 					properties = (properties || {})._apply_({multiSelection:multi});
@@ -1021,6 +1025,7 @@
 			});
 			//adicionando las propiedades extras de la entidad.
 			nomenclador.tpl= this.tpl;
+			nomenclador.denomField =denomField;
 			if(this.extraProps) {
 				nomenclador.extraProps = {};
 				this.extraProps._each_(function (v) {
