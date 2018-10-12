@@ -52,6 +52,13 @@
     nom.ActionManager = Ext.extend(nom.ActionManager,{
 
         addAction:function(enumInstance, when, actionType, action){
+
+            if(action === undefined){
+                action = actionType;
+                actionType = when;
+                when = 'pre';
+            }
+
             if(this.actions[enumInstance] == null)
                 this.actions[enumInstance] = {};
             if(!utils.isObject(this.actions[enumInstance][actionType]))
