@@ -484,8 +484,6 @@ class ServerNomenclador extends ClientResponderAdapter
     private function getModels($enumInstance,$modelId){
         $enums = Enums::getInstance($enumInstance);
 
-        require_once('ModelsWrapper.php');
-
         if(isset($modelId)){
             $enum = $enums->getEnum($modelId);
             if(!isset($enum)){
