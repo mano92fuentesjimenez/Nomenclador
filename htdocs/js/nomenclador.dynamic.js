@@ -210,18 +210,10 @@
         },
 
         getDenomField:function(enumInstance,_enum){
-
-            var denomField = null;
-            if(!utils.isString(_enum))
+            if(utils.isObject(_enum))
                 _enum = _enum.id;
 
-            this.eachEnumFieldSync(enumInstance,_enum,function (field) {
-                if(field.isDenom){
-                    denomField = field;
-                    return null;
-                }
-            }, this);
-            return denomField;
+            return this.getEnumById(enumInstance,_enum).denomField;
         },
         getFieldsIdFromEnum:function(_enum){
             return _enum.fields._map_(function(v, k){
