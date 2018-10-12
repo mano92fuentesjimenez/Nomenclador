@@ -152,35 +152,37 @@
 				this.addFields(enums.getDefaultFields(self.enumInstance,self.tpl));
 			}
 			var items = [
-				{
-					title :"Datos generales",
-					layout :"column",
-					anchor :"100%",
-					region:'center',
-					defaults : {
-						labelAlign: "top",
-						columnWidth: .5,
-						anchor: '100%',
-						layout :'form',
-						bodyStyle: 'padding:0 10px 0 10px',
-						defaults: {
-							anchor: "100%"
-						}
-					},
-					items:[
-						{
-							items :[
-								this.nameTextField,
-								this.dataSourceSelector
-							]
-						},
-						{
-							items :[
-								this.descriptionTextArea
-							]
-						},
-					]
-				}
+                {
+                    title: "Datos generales",
+                    layout: "column",
+                    anchor: "100%",
+                    region: 'center',
+                    xtype: 'fieldset',
+                    defaults: {
+                        labelAlign: "top",
+                        columnWidth: .5,
+                        anchor: '100%',
+                        layout: 'form',
+                        bodyStyle: 'padding:0 10px 0 10px',
+                        defaults: {
+                            anchor: "100%"
+                        }
+                    },
+                    items: [
+                        {
+                            items: [
+                                this.nameTextField,
+                                this.dataSourceSelector
+                            ],
+
+                        },
+                        {
+                            items: [
+                                this.descriptionTextArea
+                            ]
+                        },
+                    ]
+                }
 			];
 			var northHeigth = 150;
 			var tpl = this.tplConfig;
@@ -205,8 +207,7 @@
 				items.push({
 					layout: 'column',
 					title: 'Propiedades',
-					region: 'south',
-					height: 100,
+					region: 'center',
 					autoScroll: true,
 					split: true,
 					xtype:'fieldset',
@@ -229,6 +230,8 @@
 						}
 					]
 				});
+				items[0].region = 'north';
+				items[0].height = 150;
 				northHeigth +=100;
 			}
 
