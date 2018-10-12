@@ -481,7 +481,7 @@ class ServerNomenclador extends ClientResponderAdapter
         return self::$conn;
     }
 
-    private function getModels($enumInstance,$modelId){
+    public function getModels($enumInstance,$modelId){
         $enums = Enums::getInstance($enumInstance);
 
         if(isset($modelId)){
