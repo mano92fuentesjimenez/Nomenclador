@@ -193,7 +193,8 @@
 				var itemsR = [];
 
 				extraProps._each_(function(v,k){
-					var input = new v({propId:k});
+					var input = new v();
+					input.__propId__ = k;
 					if(i%2 ===0)
 						itemsL.push(input);
 					else
@@ -1029,7 +1030,7 @@
 			if(this.extraProps) {
 				nomenclador.extraProps = {};
 				this.extraProps._each_(function (v) {
-					nomenclador.extraProps[v.propId] = v.getValue();
+					nomenclador.extraProps[v.__propId__] = v.getValue();
 				});
 			}
 
