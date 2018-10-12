@@ -110,6 +110,11 @@ class DataSources
 
     public function getSource($sourceName)
     {
+        if(!array_key_exists($sourceName, $this->dataSources)){
+            $actionM = ActionManager::getInstance($this->enumInstance);
+            $actionM->callUndefinedExistDataSourceActions($sourceName);
+        }
+
         return new DataSource($this->enumInstance,$this->dataSources[$sourceName]);
     }
 
