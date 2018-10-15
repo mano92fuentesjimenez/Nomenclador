@@ -186,51 +186,57 @@
 			];
 			var northHeigth = 150;
 			var tpl = this.tplConfig;
-			if( (tpl.extraProps||{})._length_()>0 )
-			{
-				this.extraProps = [];
-				var extraProps = tpl.getExtraProps();
-				var divisions = tpl.getExtraPropsDivisions();
-				var i = 0,
-					propsItems = {};
+			if( (tpl.extraProps||{})._length_()>0 ) {
+                this.extraProps = [];
+                var extraProps = tpl.getExtraProps();
+                var divisions = tpl.getExtraPropsDivisions();
+                var i = 0,
+                    propsItems = {},
+                    propsInputs = {};
 
-				extraProps._each_(function(v,k){
+                extraProps._each_(function (v, k) {
                     var input = new v(),
-						pos = i % divisions;
-					input.__propId__ = k;
+                        pos = i % divisions;
+                    input.__propId__ = k;
 
-					if(propsItems[pos] === undefined)
-						propsItems[pos] = [];
-					propsItems[pos].push(input);
+                    if (propsItems[pos] === undefined)
+                        propsItems[pos] = [];
+                    propsItems[pos].push(input);
+                    propsInputs[k] = input;
+                    self.extraProps.push(input);
+                    i++;
+                });
+                items.push({
+                    layout: 'column',
+                    title: 'Propiedades',
+                    region: 'center',
+                    autoScroll: true,
+                    split: true,
+                    xtype: 'fieldset',
+                    defaults: {
+                        labelAlign: "top",
+                        columnWidth: Math.floor(1 / divisions * 100) / 100,
+                        anchor: '100%',
+                        layout: 'form',
+                        bodyStyle: 'padding:0 10px 0 10px',
+                        defaults: {
+                            anchor: "100%"
+                        }
+                    },
+                    items: propsItems._map_(function (v, k) {
+                        return {items: v};
+                    }, this, false)
+                });
+                items[0].region = 'north';
+                items[0].height = 150;
+                northHeigth += 100;
 
-					self.extraProps.push(input);
-					i++;
-				});
-				items.push({
-					layout: 'column',
-					title: 'Propiedades',
-					region: 'center',
-					autoScroll: true,
-					split: true,
-					xtype:'fieldset',
-					defaults: {
-						labelAlign: "top",
-						columnWidth: Math.floor(1/divisions *100)/100,
-						anchor: '100%',
-						layout: 'form',
-						bodyStyle: 'padding:0 10px 0 10px',
-						defaults: {
-							anchor: "100%"
-						}
-					},
-					items: propsItems._map_(function(v,k){
-                        return {items:v};
-					},this,false)
-				});
-				items[0].region = 'north';
-				items[0].height = 150;
-				northHeigth +=100;
-			}
+                if (!this.creating) {
+                    this._enum.extraProps._each_(function (v,k) {
+                        propsInputs[k].setValue(v);
+                    })
+                }
+            }
 
 			this.items=[];
 			var defaults ={};
