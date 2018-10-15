@@ -190,17 +190,19 @@
 			{
 				this.extraProps = [];
 				var extraProps = tpl.extraProps;
-				var i = 0;
-				var itemsL =[];
-				var itemsR = [];
+				var divisions = 2;
+				var i = 0,
+					propsItems = {};
 
 				extraProps._each_(function(v,k){
-					var input = new v();
+                    var input = new v(),
+						pos = i % divisions;
 					input.__propId__ = k;
-					if(i%2 ===0)
-						itemsL.push(input);
-					else
-						itemsR.push(input);
+
+					if(propsItems[pos] === undefined)
+						propsItems[pos] = [];
+					propsItems[pos].push(input);
+
 					self.extraProps.push(input);
 					i++;
 				});
@@ -213,7 +215,7 @@
 					xtype:'fieldset',
 					defaults: {
 						labelAlign: "top",
-						columnWidth: .5,
+						columnWidth: Math.floor(1/divisions *100)/100,
 						anchor: '100%',
 						layout: 'form',
 						bodyStyle: 'padding:0 10px 0 10px',
@@ -221,14 +223,9 @@
 							anchor: "100%"
 						}
 					},
-					items: [
-						{
-							items: itemsL
-						},
-						{
-							items: itemsR
-						}
-					]
+					items: propsItems._map_(function(v,k){
+						items:v
+					},this,false)
 				});
 				items[0].region = 'north';
 				items[0].height = 150;
