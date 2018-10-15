@@ -224,7 +224,7 @@
 						}
 					},
 					items: propsItems._map_(function(v,k){
-						items:v
+                        return {items:v};
 					},this,false)
 				});
 				items[0].region = 'north';
