@@ -295,7 +295,7 @@
         getExtraProps:function(){
             return this.extraProps._queryBy_(function (v,k) {
                 return k !=='divisions';
-            });
+            },this,true);
         },
         getExtraPropsDivisions:function () {
             return this.extraProps.divisions? this.extraProps.divisions : 2;
