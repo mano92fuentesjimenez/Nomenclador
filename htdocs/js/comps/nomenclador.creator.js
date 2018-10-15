@@ -191,6 +191,11 @@
 				this.extraProps = [];
 				var extraProps = tpl.extraProps;
 				var divisions = 2;
+				if(extraProps['divisions']){
+					extraProps = extraProps._clone_();
+					divisions = extraProps.divisions;
+					delete extraProps.divisions;
+				}
 				var i = 0,
 					propsItems = {};
 
