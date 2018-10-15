@@ -451,7 +451,7 @@
                         text: 'Modificar '+ this.entityType,
                         iconCls : 'gis_modificar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_(['mod_enum',this.enumInstanceConfig.getDefaultTplName()],this, true)
+                        handler: this.proccessAction._delegate_(['mod_enum'],this, true)
                     },
                     {
                         text: 'Eliminar '+this.entityType,
@@ -511,7 +511,7 @@
                         this.removeRank(pN);
                     },
                     mod_enum : function(pN){
-                        this.modNomenclador(pN, tpl);
+                        this.modNomenclador(pN);
                     },
                     rem_enum : function(pN){
                         this.removeNomenclador(pN)
@@ -631,8 +631,10 @@
 
             });
         },
-        modNomenclador: function (node, tpl) {
+        modNomenclador: function (node) {
             var _enum = enums.getEnumByName(this.enumInstance,node.text),
+                tpl = _enum.tpl,
+                tplConfig = this.enumInstanceConfig.getTpl(tpl),
                 self = this,
                 f = function(){
                     nom.request('modEnumData',{ enumId:_enum.id, enumInstance:self.enumInstance},function (response) {
@@ -648,12 +650,12 @@
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
                             tpl:tpl,
-                            tplConfig: self.enumInstanceConfig.getTpl(tpl)
+                            tplConfig: tplConfig
                         }).show();
                     });
-                },
-                tpl = this.enumInstanceConfig.getTpl(_enum.tpl);
-            if(tpl.isReadOnly()){
+                };
+
+            if(tplConfig.isReadOnly()){
                 infoMsg('Este '+this.entityType+' no se puede modificar porque es de solo lectura');
                 return;
             }
