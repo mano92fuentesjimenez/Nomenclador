@@ -291,6 +291,14 @@
         },
         getHeader:function() {
             return this.header;
+        },
+        getExtraProps:function(){
+            return this.extraProps._queryBy_(function (v,k) {
+                return k !=='divisions';
+            });
+        },
+        getExtraPropsDivisions:function () {
+            return this.extraProps.divisions? this.extraProps.divisions : 2;
         }
     });
 
