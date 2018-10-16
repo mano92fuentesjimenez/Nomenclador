@@ -639,16 +639,16 @@ class Enums
     public function getDefaultValue(){
         return array();
     }
-    public static $instance;
+    public static $instance = array();
 
     public static function getInstance($enumInstance)
     {
         if(!$enumInstance)
             throw new Exception();
-        if (!self::$instance) {
-            self::$instance = new Enums($enumInstance);
+        if (!array_key_exists($enumInstance, self::$instance)) {
+            self::$instance[$enumInstance] = new Enums($enumInstance);
         }
-        return self::$instance;
+        return self::$instance[$enumInstance];
     }
 
     public static function getEnumsPath()

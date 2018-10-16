@@ -69,7 +69,7 @@ class DataSources
         return $dataSources;
     }
 
-    private static $instance;
+    private static $instance = array();
 
     private function getDefaultValue(){
         return array();
@@ -79,10 +79,10 @@ class DataSources
     {
         if(!$enumInstance)
             throw new Exception();
-        if (!self::$instance) {
-            self::$instance = new DataSources($enumInstance);
+        if (!array_key_exists($enumInstance, self::$instance)) {
+            self::$instance[$enumInstance] = new DataSources($enumInstance);
         }
-        return self::$instance;
+        return self::$instance[$enumInstance];
     }
 
     public static function getDataSourcePath()

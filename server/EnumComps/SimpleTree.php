@@ -68,13 +68,12 @@ class SimpleTree
 
     public static function getInstance($enumInstance)
     {
-        if(!isset($enumInstance))
+        if(!$enumInstance)
             throw new Exception();
-
-        if (!self::$instance) {
-            self::$instance = new SimpleTree($enumInstance);
+        if (!array_key_exists($enumInstance, self::$instance)) {
+            self::$instance[$enumInstance] = new SimpleTree($enumInstance);
         }
-        return self::$instance;
+        return self::$instance[$enumInstance];
     }
 
     public function walk($path, $f)
