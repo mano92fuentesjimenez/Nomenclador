@@ -172,26 +172,11 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumInstance = $requ->value['enumInstance'];
                     $enumId = $params['enum'];
 
-                    $loadAll = $params['enumLoadEnums'] ? true : false;
-
-                    $fields = array();
-                    $ids = $this->queryEnum(
+                    $enumResult->resp = $this->queryEnumsIds(
                         $enumInstance,
                         $enumId,
-                        array_key_exists('enumLoadPageOffset',$params) ? $params['enumLoadPageOffset'] : null,
-                        array_key_exists('enumLoadPageSize',$params) ? $params['enumLoadPageSize']: null,
-                        $loadAll,
-                        array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadIdRow'] : null,
-                        null,
-                        $fields,
-                        array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null,
-                        null
+                        array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null
                     );
-                    $resp = array();
-                    foreach ($ids as $id){
-                        $resp[] = $id[PrimaryKey::ID];
-                    }
-                    $enumResult->resp = $resp;
                 }
                     break;
                 case 'getTotalRecordsFromEnum':{
@@ -522,6 +507,26 @@ class ServerNomenclador extends ClientResponderAdapter
             }
             return $enums_;
         }
+    }
+
+    public function queryEnumsIds($enumInstance, $enumId, $where){
+        $ids = $this->queryEnum(
+            $enumInstance,
+            $enumId,
+            null,
+            null,
+            true,
+            null,
+            null,
+            array(),
+            $where,
+            null
+        );
+        $resp = array();
+        foreach ($ids as $id){
+            $resp[] = $id[PrimaryKey::ID];
+        }
+        return $resp;
     }
 
 }
