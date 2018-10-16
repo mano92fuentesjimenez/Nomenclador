@@ -494,6 +494,7 @@ class ServerNomenclador extends ClientResponderAdapter
         }else{
             $enums_ = array();
             foreach ($enums->enums as $enumId=>$enum){
+                $enum['idField'] = PrimaryKey::ID;
                 $enums_[$enumId]=$enum;
             }
             return $enums_;
