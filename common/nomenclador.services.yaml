@@ -20,6 +20,24 @@ services:
             description: "Instancia o dominio de trabajo"
             default: "system"
 
+  getModelRecordsIds:
+    /{enum}:
+      get:
+        description: "Load model records ids"
+        out: "text/json"
+        action: "getEnumDataIds"
+        arguments:
+          instance:
+            description: "Instancia o dominio de trabajo"
+            default: "system"
+          enumLoadEnums:
+            default: true
+          enumLoadPageOffset:
+          enumLoadPageSize:
+          enumLoadIdRow:
+          enumLoadColumns:
+          enumLoadWhere:
+
   getModelRecords:
     /{enum}:
       get:
