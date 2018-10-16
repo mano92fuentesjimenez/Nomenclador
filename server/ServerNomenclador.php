@@ -156,15 +156,42 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumResult->resp = $this->queryEnum(
                         $enumInstance,
                         $enumId,
-                        $params['enumLoadPageOffset'],
-                        $params['enumLoadPageSize'],
+                        array_key_exists('enumLoadPageOffset',$params) ? $params['enumLoadPageOffset'] : null,
+                        array_key_exists('enumLoadPageSize',$params) ? $params['enumLoadPageSize']: null,
                         $loadAll,
-                        $params['enumLoadIdRow'],
+                        array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadIdRow'] : null,
                         null,
-                        $params['enumLoadColumns'],
-                        $params['enumLoadWhere'],
+                        array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadColumns'] : null,
+                        array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null,
                         null
                         );
+                }
+                    break;
+                case 'getEnumDataIds': {
+                    $params = $requ->value;
+                    $enumInstance = $requ->value['enumInstance'];
+                    $enumId = $params['enum'];
+
+                    $loadAll = $params['enumLoadEnums'] ? true : false;
+
+                    $fields = array();
+                    $ids = $this->queryEnum(
+                        $enumInstance,
+                        $enumId,
+                        array_key_exists('enumLoadPageOffset',$params) ? $params['enumLoadPageOffset'] : null,
+                        array_key_exists('enumLoadPageSize',$params) ? $params['enumLoadPageSize']: null,
+                        $loadAll,
+                        array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadIdRow'] : null,
+                        null,
+                        $fields,
+                        array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null,
+                        null
+                    );
+                    $resp = array();
+                    foreach ($ids as $id){
+                        $resp[] = $id[PrimaryKey::ID];
+                    }
+                    $enumResult->resp = $resp;
                 }
                     break;
                 case 'getTotalRecordsFromEnum':{
@@ -520,5 +547,4 @@ class EnumRestMethods{
         return $enum->queryEnum($offset,$limit,false,null,null,array($columnId=>$columnId));
     }
 }
-
 
