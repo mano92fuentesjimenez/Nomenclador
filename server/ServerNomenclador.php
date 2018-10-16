@@ -499,10 +499,6 @@ class ServerNomenclador extends ClientResponderAdapter
         return $enum->queryEnum($pageOffset,$pageSize,$loadAll, $idRow,$fieldLazyToEval,$fields,$where,$inData );
     }
 
-    public function test(){
-        return 'joderererererer';
-    }
-
     static $conn =null;
     public static function getConn(){
         return self::$conn;
