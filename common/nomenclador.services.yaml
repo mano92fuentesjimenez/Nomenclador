@@ -1,73 +1,91 @@
 services:
   getModel:
-    /:
-      get:
-        description: "Load all models headers"
-        out: "text/json"
-        action: "getModels"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
+    description: "Interfaz para obtener las definiciones de los modelos"
+    urls:
+      /:
+        methods:
+          get:
+            description: "Load all models headers"
+            out: "text/json"
+            action: "getModels"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
 
-    /{model_id}:
-      get:
-        description: "Load model header"
-        out: "text/json"
-        action: "getModel"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
+      /{model_id}:
+        methods:
+          get:
+          description: "Load model header"
+          out: "text/json"
+          action: "getModel"
+          arguments:
+            instance:
+              description: "Instancia o dominio de trabajo"
+              default: "system"
 
   getModelRecordsIds:
-    /{enum}:
-      get:
-        description: "Load model records ids"
-        out: "text/json"
-        action: "getEnumDataIds"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
-          enumLoadEnums:
-            default: true
-          enumLoadPageOffset:
-          enumLoadPageSize:
-          enumLoadIdRow:
-          enumLoadColumns:
-          enumLoadWhere:
+    description: "Obtener los identificadores de los records de los modelos"
+    urls:
+      /{enum}:
+        description:
+          enum: "Identificador del modelo"
+        methods:
+          get:
+            description: "Load model records ids"
+            out: "text/json"
+            action: "getEnumDataIds"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+              enumLoadEnums:
+                default: true
+              enumLoadPageOffset:
+              enumLoadPageSize:
+              enumLoadIdRow:
+              enumLoadColumns:
+              enumLoadWhere:
 
   getModelRecords:
-    /{enum}:
-      get:
-        description: "Load model records"
-        out: "text/json"
-        action: "getEnumData"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
-          enumLoadEnums:
-            default: true
-          enumLoadPageOffset:
-          enumLoadPageSize:
-          enumLoadIdRow:
-          enumLoadColumns:
-          enumLoadWhere:
+    description: """Interfaz para la interaciion con los records de los modelos"
+    urls:
+      /{enum}:
+        description:
+          enum: "Identificador del modelo"
+        methods:
+          get:
+            description: "Load model records"
+            out: "text/json"
+            action: "getEnumData"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+              enumLoadEnums:
+                default: true
+              enumLoadPageOffset:
+              enumLoadPageSize:
+              enumLoadIdRow:
+              enumLoadColumns:
+              enumLoadWhere:
 
-    /{enum}/{enumLoadIdRow}:
-      get:
-        description: "Load model records"
-        out: "text/json"
-        action: "getEnumData"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
-          enumLoadEnums:
-            default: true
-          enumLoadPageOffset:
-          enumLoadPageSize:
-          enumLoadColumns:
-          enumLoadWhere:
+      /{enum}/{enumLoadIdRow}:
+        description:
+          enum: "Identificador del modelo"
+          enumLoadIdRow: "Identificador del record"
+        methods:
+          get:
+            description: "Load model records"
+            out: "text/json"
+            action: "getEnumData"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+              enumLoadEnums:
+                default: true
+              enumLoadPageOffset:
+              enumLoadPageSize:
+              enumLoadColumns:
+              enumLoadWhere:
