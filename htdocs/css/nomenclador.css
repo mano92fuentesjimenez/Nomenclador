@@ -293,10 +293,12 @@
 }
 .gis_grow_hover .gis_grow_button{
     display:block !important;
-    background-color: red;
+
     width: 10px;
     height:10px;
     position: absolute;
     right: 10px;
     top:10px;
+    font-size:15px;
+    cursor:pointer;
 }

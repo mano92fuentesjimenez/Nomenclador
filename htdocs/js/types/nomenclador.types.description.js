@@ -35,7 +35,7 @@
 				var wrap = fld.el.wrap({
 					children:[{
 						id: id,
-						cls:'gis_grow_button'
+						cls:'gis_grow_button gisIconColorTheme gisTtfIcon_flaticon-increase-size-option'
 					}]
 				});
 				fld.wrap = wrap;
