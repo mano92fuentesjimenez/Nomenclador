@@ -547,7 +547,7 @@ class ServerNomenclador extends ClientResponderAdapter
                 'model_id'=>$isModel ? $node['idNode'] : null,
                 'name'=>null
             );
-            $arr[]=$nd;
+            $arr[$id]=$nd;
             if(!$isModel && count($node['childs'])){
                 $this->parseTree(
                     $node['childs'],
