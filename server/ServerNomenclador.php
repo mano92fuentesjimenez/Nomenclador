@@ -529,6 +529,35 @@ class ServerNomenclador extends ClientResponderAdapter
         return $resp;
     }
 
+    //todo esto es temporal para pasar del amacenamiento de nomencladores al estandart definido para REST
+    private function parseTree($roots,$parent=null,&$arr=null){
+        $arr = isset($arr) ? $arr : array();
+        foreach ($roots as $node){
+            $isModel = !array_key_exists('childs',$node);
+            $arr[]=array(
+                'id'=>$node['idNode'],
+                'parent_id'=>isset($parent) ? $parent : 0,
+                'model_id'=>$isModel ? $node['idNode'] : null,
+                'name'=>null
+            );
+            if(!$isModel && count($node['childs'])){
+                $this->parseTree(
+                    $node['childs'],
+                    $node['idNode'],
+                    $arr
+                );
+            }
+        }
+        return $arr;
+    }
+    public function getStandartTree($instance){
+        $tree = $this->getSeverHeaders($instance)['simpleTree'];
+
+        $treeArr = $this->parseTree($tree['childs']);
+
+        return $treeArr;
+    }
+
 }
 class EnumRestMethods{
 
