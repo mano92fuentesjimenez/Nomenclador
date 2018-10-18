@@ -18,13 +18,13 @@ services:
           model_id: "Identificador del modelo"
         methods:
           get:
-          description: "Load model header"
-          out: "application/json"
-          action: "getModel"
-          arguments:
-            instance:
-              description: "Instancia o dominio de trabajo"
-              default: "system"
+            description: "Load model header"
+            out: "application/json"
+            action: "getModel"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
 
   getModelRecordsIds:
     description: "Obtener los identificadores de los records de los modelos"
