@@ -29,6 +29,8 @@
                             this.currentValue = v;
                             v = v.displayField;
                         }
+                        else if(v ==='')
+                            this.currentValue = undefined;
                         fields.triggerField.prototype.setValue.call(this, v);
                         this.fireEvent('datachanged');
                     },
