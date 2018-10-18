@@ -545,7 +545,7 @@ class ServerNomenclador extends ClientResponderAdapter
                 '_id'=>$node['idNode'],
                 '_parent_id'=>isset($parent) ? null : $parent['_id'],
                 'model_id'=>$isModel ? $node['idNode'] : null,
-                'name'=>null
+                'name'=>$node['text']
             );
             $arr[$id]=$nd;
             if(!$isModel && count($node['childs'])){
