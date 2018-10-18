@@ -58,19 +58,12 @@ class Enum
 
     public function getDefaulField()
     {
-
-        foreach ($this->enum_tree['fields'] as $field) {
-            if ($field['isDefault'] && $field['isDenom']) {
-                return new Field($field);
-            }
-        }
-        return null;
+        return new Field($this->enum_tree['fields'][$this->getDefaultFieldId()]);
     }
 
     public function getDefaultFieldId()
     {
-        $r = $this->getDefaulField();
-        return $r->getId();
+        return $this->enum_tree['denomField'];
     }
 
 
