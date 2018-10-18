@@ -14,14 +14,14 @@ class DB_EnumChooser extends BaseType{
     }
 
     public static function getValueToDB($record, $value, $field, $connType){
-       if($value)
-           return "'".$value['valueField']."'";
-
+       if($value) {
+           return "'" . $value['valueField'] . "'";
+       }
     }
 
     public static function getValueFromDB($enumInstance, $record, $value, $field, $connType){
 
-        if($value){
+        if( is_string($value) && $value !== 'null'){
             $enums = Enums::getInstance($enumInstance);
             $enum = $enums->getEnum($value);
             return array('displayField'=>$enum->getName(), 'valueField'=>$enum->getId());
