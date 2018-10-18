@@ -50,7 +50,7 @@ services:
               enumLoadWhere:
 
   getModelRecords:
-    description: """Interfaz para la interaciion con los records de los modelos"
+    description: "Interfaz para la interaciion con los records de los modelos"
     urls:
       /{enum}:
         description:
