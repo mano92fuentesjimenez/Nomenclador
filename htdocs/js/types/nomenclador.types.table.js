@@ -37,41 +37,35 @@
 				return ui;
 			},
 			getPropertiesExtComp: function (enumInstance, _enumId, fieldId, fields) {
-				var f = function () {
-					var args = [].slice.call(arguments);
-				};
-				var creator = new nom.nomencladorCreator({
-					enumInstance: enumInstance,
-					entityType: 'Tabla',
-					closeAction: 'hide',
-					fieldsMode: true,
-					tplConfigs: {
-						default: {
-							defaultFields: {},
-							dataTypes: {
-								'DB_Bool': true,
-								'DB_String': true,
-								'DB_Number': true,
-								'DB_Description': true,
-							}
-						}
-					},
-					listeners: {
-						"finishedCreation": f,
-						'cancel': function () {
-							this.fireEvent('propertynotsetted');
-						}
-					},
-					getValue: function () {
-						return this.getNomenclador();
-					},
-					setValue: function (enumInstance, obj) {
-						this._enum = obj._enum;
-						this.gridStore.removeAll();
-						this.setEnum();
-					},
-				});
-				return creator;
+                 return new nom.nomencladorCreator({
+                    enumInstance: enumInstance,
+                    entityType: 'Tabla',
+                    closeAction: 'hide',
+                    fieldsMode: true,
+                    tpl: 'default',
+                    tplConfig: new nom.Tpl({
+                        defaultFields: {},
+                        dataTypes: {
+                            'DB_Bool': true,
+                            'DB_String': true,
+                            'DB_Number': true,
+                            'DB_Description': true,
+                        }
+                    }),
+                    listeners: {
+                        'cancel': function () {
+                            this.fireEvent('propertynotsetted');
+                        }
+                    },
+                    getValue: function () {
+                        return this.getNomenclador();
+                    },
+                    setValue: function (enumInstance, obj) {
+                        this._enum = obj._enum;
+                        this.gridStore.removeAll();
+                        this.setEnum();
+                    },
+                });
 			},
 			gridRender: function (value) {
 
