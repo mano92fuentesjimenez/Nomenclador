@@ -362,6 +362,9 @@
     addService('getDenomField',function(enumInstance,_enum){
     	return nom.enums.getDenomField(enumInstance, _enum);
 	});
+    exp.getDenomFieldSync = function(enumInstance, _enum){
+    	return nom.enums.getDenomField(enumInstance, _enum);
+	};
 
     exp.eachEnumFieldSync = function () {
     	var enums = nom.enums;
