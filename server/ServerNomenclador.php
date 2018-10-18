@@ -172,26 +172,11 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumInstance = $requ->value['enumInstance'];
                     $enumId = $params['enum'];
 
-                    $loadAll = $params['enumLoadEnums'] ? true : false;
-
-                    $fields = array();
-                    $ids = $this->queryEnum(
+                    $enumResult->resp = $this->queryEnumsIds(
                         $enumInstance,
                         $enumId,
-                        array_key_exists('enumLoadPageOffset',$params) ? $params['enumLoadPageOffset'] : null,
-                        array_key_exists('enumLoadPageSize',$params) ? $params['enumLoadPageSize']: null,
-                        $loadAll,
-                        array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadIdRow'] : null,
-                        null,
-                        $fields,
-                        array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null,
-                        null
+                        array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null
                     );
-                    $resp = array();
-                    foreach ($ids as $id){
-                        $resp[] = $id[PrimaryKey::ID];
-                    }
-                    $enumResult->resp = $resp;
                 }
                     break;
                 case 'getTotalRecordsFromEnum':{
@@ -522,6 +507,63 @@ class ServerNomenclador extends ClientResponderAdapter
             }
             return $enums_;
         }
+    }
+
+    public function queryEnumsIds($enumInstance, $enumId, $where){
+        $ids = $this->queryEnum(
+            $enumInstance,
+            $enumId,
+            null,
+            null,
+            true,
+            null,
+            null,
+            array(),
+            $where,
+            null
+        );
+        $resp = array();
+        foreach ($ids as $id){
+            $resp[] = $id[PrimaryKey::ID];
+        }
+        return $resp;
+    }
+
+    //todo esto es temporal para pasar del amacenamiento de nomencladores al estandart definido para REST
+    private function parseTree($roots,$parent=null,&$arr=null){
+        $root = !isset($arr);
+        $arr = !$root ? $arr : array();
+        $id = $root ? 1 : $parent['id'];
+        foreach ($roots as $node){
+            $isModel = !array_key_exists('childs',$node);
+            if(!$root)
+                $id++;
+
+            $nd = array(
+                'id'=>$id,
+                'parent_id'=>$root ? 0 : $parent['id'],
+                '_id'=>$node['idNode'],
+                '_parent_id'=>isset($parent) ? null : $parent['_id'],
+                'model_id'=>$isModel ? $node['idNode'] : null,
+                'name'=>null
+            );
+            $arr[$id]=$nd;
+            if(!$isModel && count($node['childs'])){
+                $this->parseTree(
+                    $node['childs'],
+                    $nd,
+                    $arr
+                );
+            }
+        }
+        return $arr;
+    }
+    public function getStandartTree($instance){
+        $tree = $this->getSeverHeaders($instance)['simpleTree'];
+
+        $treeArr = $this->parseTree($tree['childs']);
+
+        return $treeArr;
     }
 
 }
