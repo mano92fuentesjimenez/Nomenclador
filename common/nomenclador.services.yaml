@@ -14,6 +14,8 @@ services:
                 default: "system"
 
       /{model_id}:
+        description:
+          model_id: "Identificador del modelo"
         methods:
           get:
           description: "Load model header"
