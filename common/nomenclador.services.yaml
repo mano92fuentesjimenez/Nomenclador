@@ -42,6 +42,8 @@ services:
                 description: "Instancia o dominio de trabajo"
                 default: "system"
               enumLoadEnums:
+                description: "Define si se cargaran todos los ids de todos los modelos"
+                type: "bool"
                 default: true
               enumLoadPageOffset:
               enumLoadPageSize:
