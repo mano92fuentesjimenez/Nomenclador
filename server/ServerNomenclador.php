@@ -565,6 +565,49 @@ class ServerNomenclador extends ClientResponderAdapter
 
         return $treeArr;
     }
+    public function getCategoryModelDefinition($id){
+        return array(
+            'name'=>'Categorías',
+            'id'=>$id,
+            'description'=>'',
+            'denomField'=>'name',
+            'fields'=>array(
+                'id'=>array (
+                    'type' => 'PrimaryKey',
+                    'needed'=>true,
+                    'header'=>'id',
+                    'order'=>1,
+                    'id' => 'id',
+                ),
+                'parent_id'=>array(
+                    'type'=>'DB_Number',
+                    'needed'=>false,
+                    'properties'=>array(
+                        'field'=>'id',
+                        '_enum'=>$id
+                    ),
+                    'header'=>'parent_id',
+                    'order'=>2,
+                    'id'=>'parent_id'
+                ),
+                'name'=>array(
+                    'type'=>'DB_String',
+                    'needed'=>true,
+                    'header'=>'Nombre',
+                    'order'=>3,
+                    'id'=>'name'
+                ),
+                'model_id'=>array(
+                    'type'=>'DB_EnumChoser',
+                    'needed'=>true,
+                    'header'=>'model_id',
+                    'order'=>4,
+                    'id'=>'model_id'
+                )
+            ),
+            'idField'=>'id'
+        );
+    }
 
 }
 class EnumRestMethods{
