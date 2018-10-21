@@ -530,14 +530,13 @@ class ServerNomenclador extends ClientResponderAdapter
     }
 
     //todo esto es temporal para pasar del amacenamiento de nomencladores al estandart definido para REST
-    private function parseTree($roots,$parent=null,&$arr=null){
+    private function parseTree($roots,$parent=null,&$arr=null,&$id = 0){
         $root = !isset($arr);
         $arr = !$root ? $arr : array();
-        $id = $root ? 1 : $parent['id'];
         foreach ($roots as $node){
             $isModel = !array_key_exists('childs',$node);
-            if(!$root)
-                $id++;
+
+            $id++;
 
             $nd = array(
                 'id'=>$id,
@@ -547,13 +546,16 @@ class ServerNomenclador extends ClientResponderAdapter
                 'model_id'=>$isModel ? $node['idNode'] : null,
                 'name'=>$node['text']
             );
-            $arr[$id]=$nd;
+            $arr[]=$nd;
             if(!$isModel && count($node['childs'])){
                 $this->parseTree(
                     $node['childs'],
                     $nd,
-                    $arr
+                    $arr,
+                    $id
                 );
+
+                //$id = end($arr)['id'];
             }
         }
         return $arr;
