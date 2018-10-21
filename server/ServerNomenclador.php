@@ -610,6 +610,21 @@ class ServerNomenclador extends ClientResponderAdapter
             'idField'=>'id'
         );
     }
+    public function getCategoryRecordById($instance,$idRecord){
+        $tree = $this->getStandartTree($instance);
+        $id = ((float)$idRecord)-1;
+        if(!isset($tree[$id]))
+            throw new Exception('Record doesnt exists');
+
+        $rec = $tree[$id];
+
+        if(isset($rec['model_id'])){
+            $modelDef = $this->getModels($instance,$rec['model_id']);
+            $rec['name']=$modelDef['name'];
+        }
+
+        return $rec;
+    }
 
 }
 class EnumRestMethods{
