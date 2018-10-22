@@ -321,8 +321,8 @@
 	});
 
 	exp.addAction = function(enumInstance,when, actionType, action){};
-    addService('addAction', function(){
-        nom.enums.getActionManager().addAction.apply(nom.enums,arguments);
+    addService('addAction', function(enumInstance){
+        nom.enums.getActionManager(enumInstance).addAction.apply(nom.enums,arguments);
     });
 	exp.getEnumManagerTreeProto = function(){};
 	addService('getEnumManagerTreeProto', function(){
@@ -354,8 +354,8 @@
     });
 
     exp.getActionManager = function (enumInstance) {};
-    addService('getActionManager', function () {
-		return nom.enums.getActionManager();
+    addService('getActionManager', function (enumInstance) {
+		return nom.enums.getActionManager(enumInstance);
     });
 
 	exp.getDenomField = function(enumInstance,_enum){};

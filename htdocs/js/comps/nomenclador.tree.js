@@ -149,7 +149,7 @@
 				},
 				function (){
 					AjaxPlugins.Nomenclador.getUI(self.enumInstance).close();
-				},mask,this.enumInstanceConfig
+				},mask
 			);
 		},
         treeNodesProxy:function(attr){

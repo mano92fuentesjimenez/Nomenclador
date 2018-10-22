@@ -151,8 +151,6 @@
 		constructor: function () {
 
 			this.enumInstance = arguments[0].enumInstance;
-			this.enumInstanceConfig = new nom.InstanceConfigClass(arguments[0].enumInstanceConfig);
-			arguments[0].enumInstanceConfig = this.enumInstanceConfig;
 
 			this.treePanel = new nom.treeEditorPanel({
 				region:'center',
@@ -162,7 +160,6 @@
 				},
 				canMoveEnums:true,
 				enumInstance:this.enumInstance,
-				enumInstanceConfig:this.enumInstanceConfig,
                 maskObj: this
 			});
 
@@ -170,8 +167,7 @@
 				region: 'center',
 				editorComponent : this,
 				items: [],
-				enumInstance: this.enumInstance,
-				enumInstanceConfig:this.enumInstanceConfig
+				enumInstance: this.enumInstance
 			});
 
 			nom.nomencladorEditor.superclass.constructor.call(this, Ext.apply(arguments[0] || {}, {
@@ -308,15 +304,11 @@
         autoScroll: true,
         canMoveEnums:true,
         askToChangeEnum:null,
-        enumInstanceConfig:null,
         maskObj:null,
         constructor: function (cfg) {
 
             var self = this;
             this._apply_(cfg);
-
-            this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
-            cfg.enumInstanceConfig = this.enumInstanceConfig;
 
             this.initializeMenu();
             this.tbar=([

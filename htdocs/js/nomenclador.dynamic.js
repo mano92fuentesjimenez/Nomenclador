@@ -17,7 +17,7 @@
         this.defaultFields = {};
         this.loaded = {};
         this.simpleTree = {};
-        this.instanceConfigs ={};
+        this.instances ={};
         this.Events = [
             /**
              * Se lanza cuando se elimina un nomenclador que estuvo cargado
@@ -29,7 +29,7 @@
             'enumchanged'
             ];
         this.actions = {};
-        this.ActionManager = new nom.ActionManager();
+        this.instances = new nom.instanceManager();
     };
     nom.ActionManager = function(){
         /**
@@ -79,16 +79,20 @@
         simpleTree:null,
         dataSources:null,
         defaultFields:null,
-        instanceConfigs:null,
+        instances:null,
 
-        getActionManager:function(){
-            return this.ActionManager;
+        getActionManager:function(enumInstance,instanceModifier){
+            return this.getInstance(enumInstance,instanceModifier).getActionManager();
         },
         checkEnumInstance:function(enumInstance){
             if(!this.enums[enumInstance])
                 throw new Error('La instancia '+enumInstance+' no existe en nomencladores');
 
         },
+        getInstance:function(instanceName,instanceModifier){
+            return this.instances.getInstance(instanceName, instanceModifier);
+        },
+
         getEnumByName: function (enumInstance, name){
             this.checkEnumInstance(enumInstance);
             var _enum,
@@ -141,12 +145,10 @@
             }
             enums[_enum.id]._enum = _enum;
         },
-        load: function (enumInstance, callback, onError,mask,instanceConfig){
+        load: function (enumInstance, callback, onError,mask){
             var self =this;
             nom.request('getServerHeaders',{enumInstance:enumInstance},function (response, o){
                 self.loaded[enumInstance] = true;
-                self.instanceConfigs[enumInstance] = instanceConfig;
-
                 var enums = self.getEnums(enumInstance);
                 response.enums._each_(function (_enum){
                     if (enums[_enum.id] ) {
@@ -190,32 +192,6 @@
             this.checkEnumInstance(enumInstance);
             return this.simpleTree[enumInstance];
         },
-        getDefaultFields:function(enumInstance, tpl) {
-            this.checkEnumInstance(enumInstance);
-            var config = this.getConfigFromInstance(enumInstance, 'tpl'),
-                qb = function (v) {
-                    return v.isDenom
-                };
-            if(config === null)
-                config = {};
-
-            tpl = utils.isString(tpl) ? tpl: 'default';
-            config = (config[tpl] || {});
-            //if tpl:default == true
-            if(config === true)
-                config = this.defaultFields;
-            else
-                config = config.defaultFields;
-
-            if (config != null) {
-                if (config._queryBy_(qb)._length_() == 0)
-                    //esto es porque siempre siempre, un nomenclador tiene que tener un campo denominacion
-                    config['denom_rand_1254'] = this.defaultFields._queryBy_(qb)._first_();
-                return config;
-            }
-            return this.defaultFields;
-        },
-
         getDenomField:function(enumInstance,_enum){
             if(utils.isObject(_enum))
                 _enum = _enum.id;
@@ -226,14 +202,58 @@
             return _enum.fields._map_(function(v, k){
                 return k;
             },this, false)
-        },
-        getConfigFromInstance:function(enumInstance,configName) {
-            var configs = this.instanceConfigs[enumInstance];
-
-            return configs === undefined ? null :
-                ( configs[configName] === undefined ? null : configs[configName] )
         }
+
     });
+    nom.instanceManager = function(){
+        this.instances = {};
+        this.defaultInstance = 'default';
+        this.configs = {};
+    };
+    nom.instanceManager.prototype = {
+        //Configurations by instance-instanceModifiers (This is used for splitting UI features)
+        instances:null,
+        verifyInstance:function(instanceName, instanceModifier){
+            if(utils.isString(instanceModifier))
+                instanceModifier = this.defaultInstance;
+            var id = this.getInstanceId(instanceName, instanceModifier);
+            if(this.configs[id] === undefined)
+                this.configs[id] = new nom.instance(instanceName,instanceModifier);
+            return this.configs[id];
+
+        },
+        getInstance:function(instanceName, instanceModifier){
+            return this.verifyInstance(instanceName,instanceModifier);
+        },
+        getInstanceId:function(instanceName, instanceModifier){
+            return instanceName+'-'+instanceModifier;
+        }
+    };
+    nom.instance = function(name,instanceModifier){
+        this.name = name;
+        this.instanceModifier = instanceModifier;
+        this.actionManager = new nom.ActionManager();
+    };
+    nom.instance.prototype = {
+        //InstanceName (This is used for splitting groups of entities)
+        name:null,
+        instanceModifier:null,
+        getActionManager:function(){
+            return this.actionManager;
+        },
+        setInstanceConfig:function(config ){
+            this.config = new nom.InstanceConfigClass(config);
+        },
+        getInstanceConfig:function(){
+            return this.config;
+        },
+        getInstanceModifier:function(){
+            return this.instanceModifier;
+        },
+        getName: function(){
+            return this.name;
+        }
+    };
 
     nom.InstanceConfigClass = function(config){
         this._apply_(config);
@@ -320,7 +340,26 @@
         },
         getExtraPropsDivisions:function () {
             return this.extraProps.divisions? this.extraProps.divisions : 2;
-        }
+        },
+        getDefaultFields:function() {
+            var qb = function (v) {
+                    return v.isDenom
+                },
+                config = null;
+            //if tpl:default == true
+            if(utils.isArray(this.defaultFields))
+                config = this.defaultFields;
+            else
+                config = enums.defaultFields;
+
+            if (config != null) {
+                if (config._queryBy_(qb)._length_() == 0)
+                //esto es porque siempre siempre, un nomenclador tiene que tener un campo denominacion
+                    config['denom_rand_1254'] = this.defaultFields._queryBy_(qb)._first_();
+                return config;
+            }
+            return this.defaultFields;
+        },
     });
 
     nom.refs = function (){
@@ -1151,16 +1190,17 @@
     *                                    nomencladores de esta instancia.
      *
      */
-    nom.showUI = function (enumInstance, config){
-        nom.getUI(enumInstance, config).show();
+    nom.showUI = function (enumInstance, config, instanceModifier){
+        nom.getUI(enumInstance, config,instanceModifier).show();
     };
-    nom.getUI = function(enumInstance, config){
-        config = new nom.InstanceConfigClass(config);
+    nom.getUI = function(enumInstance, config, instanceModifier){
         enumInstance = enumInstance? enumInstance : nom.export.DEFAULT_INSTANCE;
+        var instance = enums.getInstance(enumInstance,instanceModifier);
+        instance.setInstanceConfig(config);
+
         if(!nom.UIDict[enumInstance]) {
             nom.UIDict[enumInstance] = new nom.nomencladorEditor({
-                enumInstance: enumInstance,
-                enumInstanceConfig:config,
+                enumInstance: instance,
                 listeners: {
                     close: function () {
                         AjaxPlugins.Nomenclador.removeUI(this.enumInstance);
@@ -1215,7 +1255,8 @@
         params['action'] =action;
 
         if(params.enumInstance) {
-            var actions = nom.enums.getActionManager().getActions(params.enumInstance);
+            params.enumInstance = params.enumInstance.name;
+            var actions = nom.enums.getActionManager(params.enumInstance).getActions(params.enumInstance);
             if(params['actions'])
                 params['actions']._apply_(actions);
             else
