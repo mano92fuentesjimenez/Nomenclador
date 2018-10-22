@@ -307,7 +307,7 @@ class DataSource
         $oDS = $this->dataSource;
         $dS = $dS->dataSource;
         return ($oDS['dataSource'] != $dS['dataSource']
-            || $oDS['host'] != $dS['host']
+            || gethostbyname($oDS['host']) != gethostbyname($dS['host'])
             || $oDS['dbname'] != $dS['dbname']
             || $oDS['port'] != $dS['port']);
 
