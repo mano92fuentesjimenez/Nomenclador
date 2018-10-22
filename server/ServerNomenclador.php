@@ -515,7 +515,7 @@ class ServerNomenclador extends ClientResponderAdapter
             $enumId,
             null,
             null,
-            true,
+            false,
             null,
             null,
             array(),
