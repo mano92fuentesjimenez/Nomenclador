@@ -468,7 +468,7 @@
             );
 
             var addEnumMenu = this.enumInstanceConfig.getAllTpl(true)._queryBy_(function(tpl){
-                return !tpl.isReadOnly() && !tpl.isHidden();
+                return !tpl.isReadOnly() && !tpl.isHidden() && self.enumInstanceConfig.getDefaultTplName() !== tpl.getHeader();
             },this,true)._map_(function(tpl,k){
                 return {
                     text:tpl.getHeader(),
