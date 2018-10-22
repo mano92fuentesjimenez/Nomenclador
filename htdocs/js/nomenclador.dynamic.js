@@ -282,6 +282,27 @@
         this._apply_(config);
     };
     nom.tplDefaultId ='default';
+
+    /**
+     * Tpl q define como es q se va a construir el nomenclador. Solo se usa a la hora de construccion, las validaciones
+     * no son contra esto. Tambien da una configuracion de como es q se va a mostrar en el arbol de nomencladores.
+     *
+     * readOnly:   Los nomencladores q tengan esto en su tpl, no pueden ser modificados desde nomencladores,
+     *                                    Ni pueden ser creados o modificados desde nomencladores
+     * hidden:     No se van a mostrar los nomencladores en el arbol de nomencladores q tengan este tpl.
+     * defaultFields: Listado de campos por defectos que se deben mostrar cada vez q se cree un nomenclador
+     *               Es de la forma  [field] donde cada field es de la misma forma en q se guarda
+     *               en el servidor los cada campo de un nomenclador.
+     * allowReferencing: Permite que aunque no se muestren los enum con este tpl, puedan ser referenciados
+     *                  por los nomencladores de otros tpl q si se muestran
+     * header:      Nombre a mostrar en el tpl
+     * dataTypes:   Objeto de la forma { dataTypeId:true}. Si el objeto es especificado se mustran los tipos en el objeto
+     *             Si el objeto no es especificado, se muestran todos los tipos.
+     * extraProps:  Objeto q contiene un listado de propiedades extras en una entidad, La llave es
+     *             el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
+     *              Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
+     *             el json del nomenclador q se construyo.
+     */
     nom.Tpl = Ext.extend(nom.Tpl,{
         isReadOnly: function(){
             return this.readOnly;
@@ -1123,20 +1144,7 @@
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
     *                        defaultTpl:  Identificador del tpl que va a mostrar por defecto.
     *            tpl: "id":
-    *                        readOnly:   Los nomencladores q tengan esto en su tpl, no pueden ser modificados desde nomencladores,
-    *                                    Ni pueden ser creados o modificados desde nomencladores
-    *                        hidden:     No se van a mostrar los nomencladores en el arbol de nomencladores q tengan este tpl.
-     *                       defaultFields: Listado de campos por defectos que se deben mostrar cada vez q se cree un nomenclador
-     *                                      Es de la forma  [field] donde cada field es de la misma forma en q se guarda
-     *                                      en el servidor los cada campo de un nomenclador.
-    *                        allowReferencing: Permite que aunque no se muestren los enum con este tpl, puedan ser referenciados
-    *                                    por los nomencladores de otros tpl q si se muestran
-    *                        header:        Nombre a mostrar en el tpl
-    *                        dataTypes: Objeto de la forma { dataTypeId:true}
-    *                        extraProps: Objeto q contiene un listado de propiedades extras en una entidad, La llave es
-    *                                  el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
-    *                                  Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
-    *                                  el json del nomenclador q se construyo.
+    *                        tplConfio: Ver Tpl
     *                 Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
     *                 instancia de nomencladores.
     *            defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
