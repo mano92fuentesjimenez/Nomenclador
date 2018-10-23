@@ -497,7 +497,9 @@ class ServerNomenclador extends ClientResponderAdapter
             if(!isset($enum)){
                 throw new Exception("Model: \"$modelId\", doesn't exists");
             }else{
-                return $enum->enum_tree;
+                $enum_ = $enum->enum_tree;
+                $enum_['idField'] = PrimaryKey::ID;
+                return $enum_;
             }
         }else{
             $enums_ = array();
