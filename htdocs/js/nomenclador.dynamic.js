@@ -281,7 +281,10 @@
     };
     nom.InstanceConfigClass = Ext.extend(nom.InstanceConfigClass, {
         getEnumDataEditor: function(tplName){
-            return this.getValueFromTpl('enumDataEditor', tplName);
+            var dataEditor = this.getValueFromTpl('enumDataEditor', tplName);
+            if(utils.isObject(dataEditor))
+                return dataEditor;
+            return nom.GridDataEditor;
         },
         getFormDataEditor: function(tplName){
             return this.getValueFromTpl('formDataEditor',tplName);
@@ -624,30 +627,27 @@
 
     nom.getEnumDataPanel=function(instanceName, _enum, config,instanceModifier){
         var _enum = _enum._isString_() ? nom.enums.getEnumById(instanceName, _enum):_enum,
-            config = new nom.InstanceConfigClass((config || {}).enumInstanceConfig),
-            _interface = config.getEnumDataEditor(),
-            _interface = _interface ? _interface : nom.GridDataEditor;
+            instance = enums.getInstance(instanceName,instanceModifier),
+            _interface = instance.getEnumDataEditor();
 
-
-
-    };
-    nom.addMenuHandler = function(instanceName, _enum, _interface, config) {
+        instance.setInstanceConfig((config || {}).enumInstanceConfig);
         var panel = new Ext.Panel({
                 layout: 'fit',
                 items: []
             }),
             c = {
                 _enum: _enum,
-                enumInstance: instanceName,
+                enumInstance: instance,
                 maskObj: panel
             },
-            tab = new _interface(c._apply_(config));
+            tab = new _interface(c._apply_(config || {}));
 
         panel.add(tab.getUI());
         panel.storeWriter = tab;
         panel.doLayout();
 
         return panel;
+
     };
 
     nom.showEnumTree = function (instanceName, showEnums, callBack, title, instanceModifier){
