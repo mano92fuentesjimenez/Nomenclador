@@ -128,7 +128,7 @@ class EnumsRequests
                 $oldEnum2 = $enums->getEnum($oldProps['_enum']);
                 $modEnum2 = $enums->getEnum($modProps['_enum']);
 
-                if($oldMulti && $modMulti && $oldProps['_enum'] == $modProps['_enum']){
+                if($oldMulti === $modMulti && $oldProps['_enum'] == $modProps['_enum']){
                     continue;
                 }
                 if($oldMulti) {
