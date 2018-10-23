@@ -585,22 +585,13 @@
         });
         return new Ext.grid.ColumnModel(cmFields);
     };
-    nom.columnHeaderOver = function (el){
-        var s = 4;
-    };
     nom.getDefaultColumnId = function (instanceName, enumId){
         var _enum = enums.getEnumById(instanceName, enumId);
-        var id = '';
-        _enum.fields._each_(function (value, key){
-            if (value.isDefault && value.isDenom) {
-                id = value.id;
-                return null;
-            }
-        });
-        return id;
+        return enums.getDenomField(instanceName,enumId);
     };
 
-    nom.getEnumStructure = function (instanceName, pEnumId, pReturnList, filterFn, scope){
+    //cosas de resumeView
+   /* nom.getEnumStructure = function (instanceName, pEnumId, pReturnList, filterFn, scope){
         var enumDetails = enums.getEnumById(instanceName, pEnumId),
             fields = [];
 
@@ -628,14 +619,35 @@
         }
 
         return fields;
-    };
-    nom.getEnumDataPanel=function(instanceName, _enum, config){
+    };*/
+
+
+    nom.getEnumDataPanel=function(instanceName, _enum, config,instanceModifier){
         var _enum = _enum._isString_() ? nom.enums.getEnumById(instanceName, _enum):_enum,
             config = new nom.InstanceConfigClass((config || {}).enumInstanceConfig),
             _interface = config.getEnumDataEditor(),
             _interface = _interface ? _interface : nom.GridDataEditor;
 
-        return nom.addMenuHandler(instanceName, _enum, _interface, config);
+
+
+    };
+    nom.addMenuHandler = function(instanceName, _enum, _interface, config) {
+        var panel = new Ext.Panel({
+                layout: 'fit',
+                items: []
+            }),
+            c = {
+                _enum: _enum,
+                enumInstance: instanceName,
+                maskObj: panel
+            },
+            tab = new _interface(c._apply_(config));
+
+        panel.add(tab.getUI());
+        panel.storeWriter = tab;
+        panel.doLayout();
+
+        return panel;
     };
 
     nom.showEnumTree = function (instanceName, showEnums, callBack, title, instanceModifier){
@@ -964,24 +976,7 @@
         }
     }));
 
-    nom.addMenuHandler = function(instanceName, _enum, _interface, config) {
-        var panel = new Ext.Panel({
-                layout: 'fit',
-                items: []
-            }),
-            c = {
-                _enum: _enum,
-                enumInstance: instanceName,
-                maskObj: panel
-            },
-            tab = new _interface(c._apply_(config));
 
-        panel.add(tab.getUI());
-        panel.storeWriter = tab;
-        panel.doLayout();
-
-        return panel;
-    };
 
 
     var enumSelector = Ext.extend(nom.enumInput,{
