@@ -29,7 +29,7 @@
             'enumchanged'
             ];
         this.actions = {};
-        this.instances = new nom.instanceManager();
+        this.instances = new nom.InstanceManager();
     };
 
     nom.enums = Ext.extend(nom.enums, {
@@ -51,10 +51,10 @@
             return this.instances.getInstance(instanceName, instanceModifier);
         },
 
-        getEnumByName: function (enumInstance, name){
-            this.checkEnumInstance(enumInstance);
+        getEnumByName: function (instanceName, name){
+            this.checkEnumInstance(instanceName);
             var _enum,
-                enums = this.getEnums(enumInstance);
+                enums = this.getEnums(instanceName);
 
             Object.keys(enums).map(function (key){
                 if (enums[key]._enum.name == name) {
@@ -64,20 +64,20 @@
             });
             return _enum;
         },
-        getEnumById: function (enumInstance,id){
-            this.checkEnumInstance(enumInstance);
-            var enums = this.getEnums(enumInstance);
+        getEnumById: function (instanceName,id){
+            this.checkEnumInstance(instanceName);
+            var enums = this.getEnums(instanceName);
             if (!enums[id])
                 return false;
             return enums[id]._enum;
         },
-        getObservableFromEnum: function (enumInstance,_enum){
-            this.checkEnumInstance(enumInstance);
-            return this.getEnums(enumInstance)[_enum.id];
+        getObservableFromEnum: function (instanceName,_enum){
+            this.checkEnumInstance(instanceName);
+            return this.getEnums(instanceName)[_enum.id];
         },
-        removeEnumByName: function (enumInstance, name){
-            this.checkEnumInstance(enumInstance);
-            var enums = this.getEnums(enumInstance);
+        removeEnumByName: function (instanceName, name){
+            this.checkEnumInstance(instanceName);
+            var enums = this.getEnums(instanceName);
             Object.keys(enums).map(function (key){
                 if (enums[key]._enum.name == name) {
                     enums[key].fireEvent('enumdeleted');
@@ -86,15 +86,15 @@
                 }
             })
         },
-        removeEnumById: function (enumInstance, id){
-            this.checkEnumInstance(enumInstance);
-            var enums = this.getEnums(enumInstance);
+        removeEnumById: function (instanceName, id){
+            this.checkEnumInstance(instanceName);
+            var enums = this.getEnums(instanceName);
             enums[id].fireEvent('enumdeleted');
             delete this.enums[id];
         },
-        add: function (enumInstance, _enum){
-            this.checkEnumInstance(enumInstance);
-            var enums = this.getEnums(enumInstance);
+        add: function (instanceName, _enum){
+            this.checkEnumInstance(instanceName);
+            var enums = this.getEnums(instanceName);
 
             if (enums[_enum.id])
                 enums[_enum.id].fireEvent('enumchanged', _enum);
@@ -103,11 +103,11 @@
             }
             enums[_enum.id]._enum = _enum;
         },
-        load: function (enumInstance, callback, onError,mask){
+        load: function (instanceName, callback, onError,mask){
             var self =this;
-            nom.request('getServerHeaders',{enumInstance:enumInstance},function (response, o){
-                self.loaded[enumInstance] = true;
-                var enums = self.getEnums(enumInstance);
+            nom.request('getServerHeaders',{enumInstance:instanceName},function (response, o){
+                self.loaded[instanceName] = true;
+                var enums = self.getEnums(instanceName);
                 response.enums._each_(function (_enum){
                     if (enums[_enum.id] ) {
                         if(JSON.stringify(_enum) !== JSON.stringify(enums[_enum.id]._enum))
@@ -126,35 +126,35 @@
                 });
 
                 self.defaultFields = response.defaultFields;
-                self.simpleTree[enumInstance] = response.simpleTree;
+                self.simpleTree[instanceName] = response.simpleTree;
                 nom.execute(callback);
 
             },onError,mask);
         },
-        getEnums: function(enumInstance){
-            if(!this.enums[enumInstance])
-                this.enums[enumInstance] = {};
-            return this.enums[enumInstance];
+        getEnums: function(instanceName){
+            if(!this.enums[instanceName])
+                this.enums[instanceName] = {};
+            return this.enums[instanceName];
         },
-        hasLoaded: function (enumInstance){
-            return this.loaded[enumInstance];
+        hasLoaded: function (instanceName){
+            return this.loaded[instanceName];
         },
-        eachEnumFieldSync: function (enumInstance, enumId, pFn, scope){
-            this.getEnumById(enumInstance,enumId).fields._each_(function (fld, fieldId){
+        eachEnumFieldSync: function (instanceName, enumId, pFn, scope){
+            this.getEnumById(instanceName,enumId).fields._each_(function (fld, fieldId){
                 if (fieldId !== nom.Type.PrimaryKey.UNIQUE_ID) {
                     return pFn.call(scope, fld, fieldId, this);
                 }
             });
         },
-        getSimpleTree:function(enumInstance){
-            this.checkEnumInstance(enumInstance);
-            return this.simpleTree[enumInstance];
+        getSimpleTree:function(instanceName){
+            this.checkEnumInstance(instanceName);
+            return this.simpleTree[instanceName];
         },
-        getDenomField:function(enumInstance,_enum){
+        getDenomField:function(instanceName,_enum){
             if(utils.isObject(_enum))
                 _enum = _enum.id;
 
-            return this.getEnumById(enumInstance,_enum).denomField;
+            return this.getEnumById(instanceName,_enum).denomField;
         },
         getFieldsIdFromEnum:function(_enum){
             return _enum.fields._map_(function(v, k){
@@ -206,12 +206,12 @@
             return {};
         },
     });
-    nom.instanceManager = function(){
+    nom.InstanceManager = function(){
         this.instances = {};
         this.defaultInstance = 'default';
         this.configs = {};
     };
-    nom.instanceManager.prototype = {
+    nom.InstanceManager.prototype = {
         //Configurations by instance-instanceModifiers (This is used for splitting UI features)
         instances:null,
         verifyInstance:function(instanceName, instanceModifier){
@@ -219,7 +219,7 @@
                 instanceModifier = this.defaultInstance;
             var id = this.getInstanceId(instanceName, instanceModifier);
             if(this.configs[id] === undefined)
-                this.configs[id] = new nom.instance(instanceName,instanceModifier);
+                this.configs[id] = new nom.EnumInstance(instanceName,instanceModifier);
             return this.configs[id];
 
         },
@@ -230,18 +230,23 @@
             return instanceName+'-'+instanceModifier;
         }
     };
-    nom.instance = function(name,instanceModifier){
+    //Representa una instancia de nomenclador, una configuracion por cada instancia.
+    nom.EnumInstance = function(name,instanceModifier){
         this.name = name;
         this.instanceModifier = instanceModifier;
         this.actionManager = new nom.ActionManager();
     };
-    nom.instance.prototype = {
+    nom.EnumInstance.prototype = {
         //InstanceName (This is used for splitting groups of entities)
         name:null,
         instanceModifier:null,
         getActionManager:function(){
             return this.actionManager;
         },
+        /**
+         * Sobrescribe la configuracion para esta instancia de nomencladores.
+         * @param config  Objeto de la misma forma q se especifica en InstanceConfigClass
+         */
         setInstanceConfig:function(config ){
             this.config = new nom.InstanceConfigClass(config);
         },
