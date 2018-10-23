@@ -1143,12 +1143,13 @@
      *                                      visualizar los datos. Debe heredar de EnumStoreWriter si esta interfaz va a
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
     *                        defaultTpl:  Identificador del tpl que va a mostrar por defecto.
+    *                        defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
+    *                                    nomencladores de esta instancia.
     *            tpl: "id":
     *                        tplConfio: Ver Tpl
     *                 Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
     *                 instancia de nomencladores.
-    *            defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
-    *                                    nomencladores de esta instancia.
+    *
      *
      */
     nom.showUI = function (enumInstance, config){
