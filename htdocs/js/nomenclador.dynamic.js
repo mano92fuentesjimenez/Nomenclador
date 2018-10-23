@@ -281,18 +281,18 @@
     };
     nom.InstanceConfigClass = Ext.extend(nom.InstanceConfigClass, {
         getEnumDataEditor: function(tplName){
-            return this.getObjectFromTpl('enumDataEditor', tplName);
+            return this.getValueFromTpl('enumDataEditor', tplName);
         },
         getFormDataEditor: function(tplName){
-            return this.getObjectFromTpl('formDataEditor',tplName);
+            return this.getValueFromTpl('formDataEditor',tplName);
         },
-        getObjectFromTpl:function(objName, tplName){
-            var obj = null;
+        getValueFromTpl:function(objName, tplName){
+            var value = null;
             if(this[objName])
-                obj = this[objName];
-            if(this.existTpl(tplName) && utils.isObject(this.tpl[tplName][objName]))
-                obj = this.tpl[tplName][objName];
-            return obj;
+                value = this[objName];
+            if(this.existTpl(tplName) && this.tpl[tplName][objName] !== undefined)
+                value = this.tpl[tplName][objName];
+            return value;
         },
         existTpl:function(tplName){
             return utils.isObject(this.tpl) && utils.isObject(this.tpl[tplName]);
@@ -300,8 +300,8 @@
         getDefaultTplName:function(){
             return utils.isString(this.defaultTpl)? this.defaultTpl:nom.tplDefaultId;
         },
-        getDefaultDataSource:function(){
-            return this.defaultDataSource || {};
+        getDefaultDataSource:function(tplName){
+            return this.getValueFromTpl('defaultDataSource',tplName);
         },
         getAllTpl:function(skipDefautl){
             var self = this;
