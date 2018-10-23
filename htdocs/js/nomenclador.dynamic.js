@@ -263,6 +263,12 @@
         getDefaultTplName:function(){
             return utils.isString(this.defaultTpl)? this.defaultTpl:nom.tplDefaultId;
         },
+        getDefaultDataSource:function(tplName){
+            var ds = this.getTpl(tplName).getDefaultDataSource();
+            if(utils.isString(ds))
+                return ds;
+            return this.defaultDataSource || {};
+        },
         getAllTpl:function(skipDefautl){
             var self = this;
             if(!skipDefautl)
@@ -302,6 +308,7 @@
      *             el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
      *              Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
      *             el json del nomenclador q se construyo.
+     * defaultDataSource: Id del dataSource q se va a tomar por defecto.
      */
     nom.Tpl = Ext.extend(nom.Tpl,{
         isReadOnly: function(){
@@ -320,6 +327,9 @@
         },
         getExtraPropsDivisions:function () {
             return this.extraProps.divisions? this.extraProps.divisions : 2;
+        },
+        getDefaultDataSource :function(){
+            return this.defaultDataSource;
         }
     });
 

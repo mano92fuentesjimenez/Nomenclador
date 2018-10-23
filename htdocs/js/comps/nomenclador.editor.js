@@ -546,7 +546,7 @@
                     entityType:self.entityType,
                     tpl:tpl,
                     tplConfig:self.enumInstanceConfig.getTpl(tpl),
-                    defaultDataSource: self.enumInstanceConfig.defaultDataSource || {}
+                    defaultDataSource: self.enumInstanceConfig.getDefaultDataSource(tpl)
                 })).show();
             });
 
