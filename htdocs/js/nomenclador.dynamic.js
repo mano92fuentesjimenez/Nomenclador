@@ -31,49 +31,7 @@
         this.actions = {};
         this.instances = new nom.instanceManager();
     };
-    nom.ActionManager = function(){
-        /**
-         * actions =
-         * {
-         *   enumInstance:{
-         *      actionType :{
-         *         when :[action, ...]
-         *      }
-         *   }
-         * }
-         *
-         * actionType = [enumInstanceAdding,addEnum, removeEnum, modEnum]
-         * when = [pre, post]
-         * action = pluginName.Action
-         */
-        this.actions = {};
 
-    };
-    nom.ActionManager = Ext.extend(nom.ActionManager,{
-
-        addAction:function(enumInstance, when, actionType, action){
-
-            if(action === undefined){
-                action = actionType;
-                actionType = when;
-                when = 'pre';
-            }
-
-            if(this.actions[enumInstance] == null)
-                this.actions[enumInstance] = {};
-            if(!utils.isObject(this.actions[enumInstance][actionType]))
-                this.actions[enumInstance][actionType]={};
-            if(!utils.isArray(this.actions[enumInstance][actionType][when]))
-                this.actions[enumInstance][actionType][when] = [];
-
-            this.actions[enumInstance][actionType][when].push(action);
-        },
-        getActions:function(enumInstance){
-            if(this.actions[enumInstance])
-                return this.actions[enumInstance];
-            return {};
-        },
-    });
     nom.enums = Ext.extend(nom.enums, {
         loaded: null,
         simpleTree:null,
@@ -204,6 +162,49 @@
             },this, false)
         }
 
+    });
+    nom.ActionManager = function(){
+        /**
+         * actions =
+         * {
+         *   enumInstance:{
+         *      actionType :{
+         *         when :[action, ...]
+         *      }
+         *   }
+         * }
+         *
+         * actionType = [enumInstanceAdding,addEnum, removeEnum, modEnum]
+         * when = [pre, post]
+         * action = pluginName.Action
+         */
+        this.actions = {};
+
+    };
+    nom.ActionManager = Ext.extend(nom.ActionManager,{
+
+        addAction:function(enumInstance, when, actionType, action){
+
+            if(action === undefined){
+                action = actionType;
+                actionType = when;
+                when = 'pre';
+            }
+
+            if(this.actions[enumInstance] == null)
+                this.actions[enumInstance] = {};
+            if(!utils.isObject(this.actions[enumInstance][actionType]))
+                this.actions[enumInstance][actionType]={};
+            if(!utils.isArray(this.actions[enumInstance][actionType][when]))
+                this.actions[enumInstance][actionType][when] = [];
+
+            this.actions[enumInstance][actionType][when].push(action);
+        },
+        getActions:function(enumInstance){
+            if(this.actions[enumInstance])
+                return this.actions[enumInstance];
+            return {};
+        },
     });
     nom.instanceManager = function(){
         this.instances = {};
