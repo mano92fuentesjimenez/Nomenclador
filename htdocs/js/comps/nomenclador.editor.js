@@ -541,7 +541,7 @@
                     entityType:self.entityType,
                     tpl:tpl,
                     tplConfig:instanceConfig.getTpl(tpl),
-                    defaultDataSource: instanceConfig.getDefaultDataSource()
+                    defaultDataSource: instanceConfig.getDefaultDataSource(tpl)
                 })).show();
             });
 
