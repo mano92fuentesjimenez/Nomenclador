@@ -540,7 +540,7 @@
         store.sort(nom.Type.PrimaryKey.UNIQUE_ID, "ASC");
         return store;
     };
-    nom.getColumnModelFromEnum = function (instanceName, _enum, showHeadInfo,columns){
+    nom.getColumnModelFromEnum = function (enumInstance, _enum, showHeadInfo,columns){
         var cmFields = [],
             fields = _enum.fields;
         if(columns)
@@ -579,7 +579,7 @@
                 renderer: type.gridRender,
                 _fieldDetails_: field,
                 _enumDetails_: _enum,
-                _enumInstance_:instanceName,
+                _enumInstance_:enumInstance,
                 sortable: true
             })
         });
