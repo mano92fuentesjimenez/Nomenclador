@@ -76,7 +76,7 @@ class EnumsRequests
                 $enum2 = $enums->getEnum($props['_enum']);
                 $addType::createMultiTable($newEnum, $enum2, $conn);
             }
-            else if (!$conn->addColumn($newEnum->getId(), $schema, $key, $addType::getDBTypeCreation($newEnum->enumInstance, $connType, $addfield->getProperties(), $newEnum)) ||
+            else if (!$conn->addColumn($newEnum->getId(), $schema, $key, $addType::getDBTypeCreation($newEnum->enumInstance, $connType, $addfield->getProperties(), $newEnum),$addfield->getHeader()) ||
                 !$conn->setDefaultValueForColumn($newEnum->getId(), $schema, $key, $addType::getDefaultValue($connType, $addfield->getProperties()))
             ) {
                 throw new EnumException("Hubo un error a&ntilde;adiendo la columna");
@@ -99,7 +99,7 @@ class EnumsRequests
                     $enum2 = $enums->getEnum($modProps['_enum']);
                     $modType::createMultiTable($newEnum, $enum2, $conn);
                 }
-                else if (!$conn->addColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum)) ||
+                else if (!$conn->addColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum), $modField->getHeader()) ||
                     !$conn->setDefaultValueForColumn($newEnum->getId(), $schema, $key, $modType::getDefaultValue($connType, $modField->getProperties()))
                 ) {
                     throw new EnumException("Hubo un error modificando la columna");
@@ -116,7 +116,7 @@ class EnumsRequests
                 }
             }
             else if ($oldEnum->getField($key)->getType() != $modType || $modType != 'DB_Enum') {
-                if (!$conn->modColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum)) ||
+                if (!$conn->modColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum), $modField->getHeader()) ||
                     !$conn->setDefaultValueForColumn($newEnum->getId(), $schema, $key, $modType::getDefaultValue($connType, $modField->getProperties()))
                 ) {
                     throw new EnumException("Hubo un error modificando la columna");
@@ -140,7 +140,7 @@ class EnumsRequests
                 if($modMulti){
                     $modType::createMultiTable($newEnum, $modEnum2, $conn);
                 }
-                else if(!$conn->addColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum)) ||
+                else if(!$conn->addColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum), $modField->getHeader()) ||
                     !$conn->setDefaultValueForColumn($newEnum->getId(), $schema, $key, $modType::getDefaultValue($connType, $modField->getProperties()))
                 ) {
                     throw new EnumException("Hubo un error modificando la columna");

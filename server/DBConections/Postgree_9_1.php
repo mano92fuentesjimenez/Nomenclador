@@ -75,6 +75,11 @@ class Postgree_9_1 extends DBConn
         }
         $createStr.=");";
 
+        $comment = "comment on column \"$schema\".\"$tableName\" ";
+
+        foreach ($fields as $value){
+            $createStr.= "$comment.\"{$value['id']}\" is \'{$value['comm']}\'; ";
+        }
         return $this->query($createStr);
 
     }
@@ -245,16 +250,17 @@ class Postgree_9_1 extends DBConn
         return $this->query($query);
     }
 
-    public function addColumn($tableName, $schema, $fieldName, $columnType)
+    public function addColumn($tableName, $schema, $fieldName, $columnType, $comm)
     {
-        $query = "ALTER TABLE \"$schema\".\"$tableName\" ADD COLUMN \"$fieldName\" $columnType;";
+        $query = "ALTER TABLE \"$schema\".\"$tableName\" ADD COLUMN \"$fieldName\" $columnType; Comment on column \"$schema\".\"$tableName\".\"$fieldName\" is '$comm'";
+
         return $this->query($query);
     }
 
-    public function modColumn($tableName, $schema, $fieldName, $columnType)
+    public function modColumn($tableName, $schema, $fieldName, $columnType, $comm)
     {
         return($this->delColumn($tableName, $schema,$fieldName) &&
-        $this->addColumn($tableName, $schema, $fieldName, $columnType));
+        $this->addColumn($tableName, $schema, $fieldName, $columnType, $comm));
 
     }
 

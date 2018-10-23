@@ -87,6 +87,7 @@ class Enum
                 continue;
             $insert['type'] = $type::getDBTypeCreation($this->enumInstance, $connTypeStr, $prop, $this);
             $insert['default'] = $type::getDefaultValue($connTypeStr, $prop);
+            $insert['comm'] = $field->getHeader();
             $arr[] = $insert;
         }
         return $arr;
