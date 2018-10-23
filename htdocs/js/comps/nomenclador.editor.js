@@ -537,7 +537,7 @@
                         "finishedCreation": self.addEnumInServer,
                         scope: self
                     },
-                    enumInstance:self.enumInstance.getName(),
+                    enumInstance:self.enumInstance,
                     entityType:self.entityType,
                     tpl:tpl,
                     tplConfig:instanceConfig.getTpl(tpl),
@@ -642,7 +642,7 @@
                             },
                             _enum: _enum,
                             refs: response['refs'],
-                            enumInstance:self.enumInstance.getName(),
+                            enumInstance:self.enumInstance,
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
                             tpl:tpl,

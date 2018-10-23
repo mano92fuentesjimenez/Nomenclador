@@ -20,7 +20,7 @@
 				return "Dato no referenciado";
 			var field = this._fieldDetails_,
 				enumD = this._enumDetails_,
-				enumProps = AjaxPlugins.Nomenclador.enums.getEnumById(this._enumInstance_, field.properties._enum),
+				enumProps = AjaxPlugins.Nomenclador.enums.getEnumById(this._enumInstance_.getName(), field.properties._enum),
                 fieldClass = enumProps.fields[field.properties.field].type,
                 typeObj = new nom.Type.Utils.getType(fieldClass);
 
@@ -36,7 +36,7 @@
                         "enumId='{enumId}' " +
                         "enum_row='{enum_row}' " +
                         "enum_field='{enum_field}' " +
-                        "enum_instance='{enumInstance}'" +
+                        "instance_name='{instanceName}'" +
                         'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_Enum.getEnumRowData(this);" ' +
                         'class="gisTtfIcon_flaticon-information-button">' +
                         '</div>' +
@@ -45,7 +45,7 @@
                     enumId: enumD.id,
                     enum_row: pRec.get(nom.Type.PrimaryKey.UNIQUE_ID),
                     enum_field: field.id,
-                    enumInstance: this._enumInstance_
+                    enumInstance: this._enumInstance_.getName()
                 });
             }
             else{
@@ -56,13 +56,12 @@
 				return s.slice(0,-2);
 			}
 		},
-		getValueEditExtComp :function (enumInstance, field, _enum, enumInstanceConfig){
-			var referencedEnum = AjaxPlugins.Nomenclador.enums.getEnumById(enumInstance, field.properties._enum),
+		getValueEditExtComp :function (enumInstance, field, _enum){
+			var referencedEnum = AjaxPlugins.Nomenclador.enums.getEnumById(enumInstance.getName(), field.properties._enum),
 				referencedField = referencedEnum.fields[field.properties.field],
 				config = {
                     _enum:field.properties._enum,
                     enumInstance: enumInstance,
-                    enumInstanceConfig:enumInstanceConfig,
                     _fieldId:referencedField.id,
                     allowBlank:!field.needed,
                     fieldLabel:field.header,
@@ -100,17 +99,17 @@
 			return value['displayField'];
 		},
 		isLazy :function (enumInstance, field){
-			var _enum = nom.enums.getEnumById(enumInstance,field.properties._enum);
+			var _enum = nom.enums.getEnumById(enumInstance.getName(),field.properties._enum);
 			var f = _enum.fields[field.properties.field];
 			return nom.Type.Utils.getType(f.type).isLazy(f);
 		},
 		loadFunc :function (enumInstance,pEl, callback, field){
-			var _enum = nom.enums.getEnumById(enumInstance,field.properties._enum);
+			var _enum = nom.enums.getEnumById(enumInstance.getName(),field.properties._enum);
 			var f = _enum.fields[field.properties.field];
 			nom.Type.Utils.getType(f.type).loadFunc(enumInstance,pEl, callback, f);
 		},
 		getColumnTypeHeader :function (enumInstance, field){
-			var refEnum = nom.enums.getEnumById(enumInstance,field.properties._enum);
+			var refEnum = nom.enums.getEnumById(enumInstance.getName(),field.properties._enum);
 			var refField = refEnum.fields[field.properties.field];
 			var getType = AjaxPlugins.Nomenclador.Type.Utils.getType;
 			return ('<tr><td>Tipo</td><td>{type}</td></tr>' +
@@ -165,7 +164,7 @@
 			var enumId = pElement.getAttribute('enumId'),
 				enumRow = pElement.getAttribute('enum_row'),
 				enumField = pElement.getAttribute('enum_field'),
-				enumInstance = pElement.getAttribute('enum_instance'),
+				enumInstance = pElement.getAttribute('instance_name'),
 				el = this.getEnumRowDataContainer(pElement),
 				self = this;
 			nom.request('getRowFromEnumField',
@@ -343,8 +342,8 @@
 				type = sn.attributes._type_;
 			//el valor que se muestra en el arbol no es el id del nodo
 			if (type == 'field')
-				_enum = this.enums.getEnumByName(this.enumInstance, sn.parentNode.text);
-			else _enum = this.enums.getEnumByName(this.enumInstance, sn.text);
+				_enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.parentNode.text);
+			else _enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.text);
 			//el valor que se muestra en el arbol no es el id del nodo
 			Object.keys(_enum.fields).map(function (key){
 				var value = _enum.fields[key];
@@ -363,7 +362,7 @@
 			var self = this,
 				f = function (resp) {
                     self.obj = obj._clone_();
-                    self.tree.includeEnum = resp > 0 ? nom.enums.getEnumById(self.enumInstance, obj._enum) : null;
+                    self.tree.includeEnum = resp > 0 ? nom.enums.getEnumById(self.enumInstance.getName(), obj._enum) : null;
                     self.showed = true;
                     self.tree.initValues();
                     self.onLoadedHeaders(function () {
@@ -371,7 +370,7 @@
                         var indexed = self.tree.indexedTreePlg,
                             nd = indexed.nodeQueryChildsBy(null, function (pN) {
                                 var atrs = pN.attributes,
-                                    _enum2 = self.enums.getEnumById(self.enumInstance, obj._enum),
+                                    _enum2 = self.enums.getEnumById(self.enumInstance.getName(), obj._enum),
                                     valid = atrs._type_ == 'field' &&
                                         pN.parentNode &&
                                         pN.parentNode.attributes.idNode === _enum2.id &&

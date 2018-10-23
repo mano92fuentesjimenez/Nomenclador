@@ -27,7 +27,7 @@
 
             return s;
         },
-        getValueEditExtComp :function (enumInstance, field, _enum, enumInstanceConfig){
+        getValueEditExtComp :function (enumInstance, field, _enum){
             var invokeManageImages = function(cb,values){
                 manageImagesExport.ImageSelectorWindow(cb,values,{allowMultiSelection:field.properties.multiSelection});
             },

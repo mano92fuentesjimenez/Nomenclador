@@ -1,12 +1,10 @@
 (function() {
     var comps = AjaxPlugins.Ext3_components,
-        buttons = comps.buttons,
         utils = Genesig.Utils,
         nom = AjaxPlugins.Nomenclador,
-        errorMsg = comps.Messages.slideMessage.error,
         enums = nom.enums,
         types = nom.Type,
-        toolbars = comps.toolbars;
+        toolbars = comps.toolbars,
         addW = AjaxPlugins.Ext3_components.Windows.AddModWindow,
         _enumButtons = {
             goToFirstPage:'goToFirstPage',
@@ -29,7 +27,6 @@
         enumInstance:null,
 
         //config
-        enumInstanceConfig:null,
         fieldFilter: null,
         fieldFilterValue: null,
         pageSize: 10,
@@ -66,7 +63,6 @@
         actionManager:null,
         constructor: function (config){
             this._apply_(config);
-            this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
             var self = this;
 
             this.initializeConfig();
@@ -89,7 +85,7 @@
 
             nom.interfaces.EnumStoreReader.superclass.constructor.call(this, config);
             if(utils.isString(this._enum))
-                this._enum = enums.getEnumById(this.enumInstance, this._enum);
+                this._enum = enums.getEnumById(this.enumInstance.getName(), this._enum);
 
             this.initializeEnumEvents();
             this.columns = this.columns || nom.enums.getFieldsIdFromEnum(this._enum);
@@ -183,9 +179,9 @@
                 };
 
             if (Ext.isString(_enum))
-                this._enum = enums.getEnumById(this.enumInstance, _enum);
+                this._enum = enums.getEnumById(this.enumInstance.getName(), _enum);
 
-            enum_obs = enums.getObservableFromEnum(this.enumInstance, _enum);
+            enum_obs = enums.getObservableFromEnum(this.enumInstance.getName(), _enum);
             enum_obs.on('enumchanged', funcEnumChange,self);
             enum_obs.on('enumdeleted', funcEnumDeleted,self);
             this.title = _enum.name;
@@ -278,7 +274,7 @@
             var self = this;
             if(!this.offlineMode)
                 nom.getEnumData(
-                    this.enumInstance,
+                    this.enumInstance.getName(),
                     this._enum.id,
                     function (response, params) {
                         this.store.loadData(response);
@@ -411,7 +407,7 @@
             this.actionManager.addAction(this.enumInstance,when,which,action);
         },
         getActions: function(){
-            return this.actionManager.getActions(this.enumInstance)._clone_()._rapply_(enums.getActionManager(this.enumInstance.getName(), this.enumInstance.getInstanceModifier())
+            return this.actionManager.getActions(this.enumInstance)._clone_()._rapply_(enums.getActionManager(this.enumInstance.getName(), this.enumInstance.getInstanceNameModifier())
                 .getActions(this.enumInstance));
         },
 

@@ -231,7 +231,7 @@
         destroyProp:true,
         dependsOnOthersFields:true,
         getColumnTypeHeader:function(enumInstance, field){
-            var _enum = nom.enums.getEnumById(enumInstance, field._enumId);
+            var _enum = nom.enums.getEnumById(enumInstance.getName(), field._enumId);
             var fields= _enum.fields;
             var v = field.properties.raw.replace(/<(.*?)>/g, function (match, p1){
                 return fields[p1].header;

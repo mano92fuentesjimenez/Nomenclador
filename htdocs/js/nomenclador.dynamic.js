@@ -50,7 +50,9 @@
         getInstance:function(instanceName,instanceModifier){
             return this.instances.getInstance(instanceName, instanceModifier);
         },
-
+        getInstanceManager:function(){
+            return this.instances;
+        },
         getEnumByName: function (instanceName, name){
             this.checkEnumInstance(instanceName);
             var _enum,
@@ -206,7 +208,7 @@
             return {};
         },
     });
-    nom.InstanceManager = function(){
+    nom.InstanceManager = function() {
         this.instances = {};
         this.defaultInstance = 'default';
         this.configs = {};
@@ -215,8 +217,8 @@
         //Configurations by instance-instanceModifiers (This is used for splitting UI features)
         instances:null,
         verifyInstance:function(instanceName, instanceModifier){
-            if(utils.isString(instanceModifier))
-                instanceModifier = this.defaultInstance;
+
+            instanceModifier = this.getInstanceNameModifier(instanceModifier);
             var id = this.getInstanceId(instanceName, instanceModifier);
             if(this.configs[id] === undefined)
                 this.configs[id] = new nom.EnumInstance(instanceName,instanceModifier);
@@ -226,7 +228,13 @@
         getInstance:function(instanceName, instanceModifier){
             return this.verifyInstance(instanceName,instanceModifier);
         },
+        getInstanceNameModifier:function(instanceModifier){
+            if(utils.isString(instanceModifier))
+                instanceModifier = this.defaultInstance;
+            return instanceModifier;
+        },
         getInstanceId:function(instanceName, instanceModifier){
+            instanceModifier = this.getInstanceNameModifier(instanceModifier);
             return instanceName+'-'+instanceModifier;
         }
     };
@@ -253,11 +261,14 @@
         getInstanceConfig:function(){
             return this.config;
         },
-        getInstanceModifier:function(){
+        getInstanceNameModifier:function(){
             return this.instanceModifier;
         },
         getName: function(){
             return this.name;
+        },
+        getInstanceId: function(){
+            return enums.getInstanceManager().getInstanceId(this.name, this.instanceModifier);
         }
     };
 
@@ -488,7 +499,7 @@
      * @param [onError]        {function}      Funcion que se ejecuta cuando el pedido genera errors
      * @param [mask]           {function}      Funcion que cuando se ejecuta quita la mascara
      */
-    nom.getEnumData = function (enumInstance, enumId, callback, scope, enumDataLoadConfig, onError, mask){
+    nom.getEnumData = function (instanceName, enumId, callback, scope, enumDataLoadConfig, onError, mask){
         function proccessRequest (response, params){
             callback.call(scope,response, params);
         }
@@ -503,7 +514,7 @@
             });
 
         nom.request('getEnumData',{
-            enumInstance:enumInstance,
+            enumInstance:instanceName,
             enum: enumId,
             enumLoadPageSize: this._default_(enumDataLoadConfig.pageSize, 100000),
             enumLoadPageOffset: this._default_(enumDataLoadConfig.offset,0),
@@ -627,13 +638,14 @@
         return nom.addMenuHandler(instanceName, _enum, _interface, config);
     };
 
-    nom.showEnumTree = function (instanceName, showEnums, callBack, title){
-        var tree = new nom.nomencladorTree({
+    nom.showEnumTree = function (instanceName, showEnums, callBack, title, instanceModifier){
+        var enumInstance = enums.getInstance(instanceName,instanceModifier),
+            tree = new nom.nomencladorTree({
             showFields: false,
             showEnums: showEnums,
             autoLoadTree: true,
             autoScroll: true,
-            enumInstance:instanceName
+            enumInstance:enumInstance
         });
         tree.getSelectionModel()._apply_({
             getValue: function (){
@@ -1197,18 +1209,22 @@
     *                 instancia de nomencladores.
     *            defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
     *                                    nomencladores de esta instancia.
+    *  @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
+    *                                    agrupa configuraciones de UI.
      *
      */
     nom.showUI = function (instanceName, config, instanceModifier){
         nom.getUI(instanceName, config,instanceModifier).show();
     };
     nom.getUI = function(instanceName, config, instanceModifier){
-        instanceName = instanceName? instanceName : nom.export.DEFAULT_INSTANCE;
-        var instance = enums.getInstance(instanceName,instanceModifier);
+        instanceName = instanceName ? instanceName : nom.export.DEFAULT_INSTANCE;
+        var instance = enums.getInstance(instanceName,instanceModifier),
+            instanceId = instance.getInstanceId();
         instance.setInstanceConfig(config);
 
-        if(!nom.UIDict[instanceName]) {
-            nom.UIDict[instanceName] = new nom.nomencladorEditor({
+
+        if(!nom.UIDict[instanceId]) {
+            nom.UIDict[instanceId] = new nom.nomencladorEditor({
                 enumInstance: instance,
                 listeners: {
                     close: function () {
@@ -1216,9 +1232,9 @@
                     }
                 }
             });
-            AjaxPlugins.Location.registerWindows(nom.UIDict[instanceName]);
+            AjaxPlugins.Location.registerWindows(nom.UIDict[instanceId]);
         }
-        return nom.UIDict[instanceName];
+        return nom.UIDict[instanceId];
     };
     nom.eachUI = function(callBack){
         nom.UIDict._each_(callBack);

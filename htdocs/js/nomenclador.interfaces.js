@@ -35,7 +35,7 @@
                 enum_fields = this.getEnumFields(),
                 fields = enum_fields._map_(function (pField) {
                     var type = pField.typeInstance,
-                        field = type.getValueEditExtComp(this.enumInstance, pField, this._enum, this.enumInstanceConfig);
+                        field = type.getValueEditExtComp(this.enumInstance, pField, this._enum);
                     if (field) {
                         if (field.isGrid)
                             gridItems.push(field);
@@ -58,7 +58,7 @@
                 if (!data)
                     currentField.disable();
 
-                nom.makeFilter(self.enumInstance, currentField, dependsField, !!data)
+                nom.makeFilter(self.enumInstance.getName(), currentField, dependsField, !!data)
 
             }, this);
             var config = [{
@@ -194,7 +194,7 @@
                         var cells = gridBody.querySelectorAll('.x-grid3-td-' + columnId + ' .nomenclador_asyncLoad');
                         menu.hide();
                         cells._asyncEach_(function (pEl, key, arr, callback){
-                            nom.Type.Utils.getType(field.type).asynLoad(self.enumInstance,pEl, field, callback);
+                            nom.Type.Utils.getType(field.type).asynLoad(self.enumInstance.getName(),pEl, field, callback);
                         });
                     }
                 });
@@ -203,7 +203,7 @@
                     var cm = self.gridEditor.getColumnModel();
                     var getType = nom.Type.Utils.getType;
                     var field = cm.getColumnAt(column)._fieldDetails_;
-                    button.setDisabled(!getType(field.type).isLazy(self.enumInstance, field));
+                    button.setDisabled(!getType(field.type).isLazy(self.enumInstance.getName(), field));
                 };
                 var menu = this.gridEditor.getView().hmenu;
                 menu.addSeparator();
@@ -268,7 +268,7 @@
         columnHeaderHandler :function (el, mouseEvent){
             var enumId = el.getAttribute('enum_id'),
                 fieldId = el.getAttribute('field_id'),
-                enumInstance = el.getAttribute('enum_instance'),
+                instanceName = el.getAttribute('enum_instance'),
                 div = document.querySelector('.nomColumnHeaderToolTip[enum_id=' + enumId + '][field_id=' + fieldId + ']');
 
             if (!div) {
@@ -279,12 +279,12 @@
 
                 document.body.appendChild(div);
                 var getType = nom.Type.Utils.getType,
-                    _enum = nom.enums.getEnumById(enumInstance, enumId),
+                    _enum = nom.enums.getEnumById(instanceName, enumId),
                     field = _enum.fields[fieldId];
 
                 div.innerHTML = ("<div class=''>" +
                     "<div class='nomColumnHeader'><table><tr><th colspan='2'>{fieldName}</th></tr>{content}</table></div>")._format_({
-                    content :getType(field.type).getColumnTypeHeader(enumInstance,field),
+                    content :getType(field.type).getColumnTypeHeader(instanceName,field),
                     fieldName :field.header,
                     closeHandler :'AjaxPlugins.Nomenclador.GridDataEditor.columnHeaderCloseHandler(this,event)'
                 });

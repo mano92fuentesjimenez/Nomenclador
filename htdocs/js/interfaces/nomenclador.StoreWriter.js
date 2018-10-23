@@ -125,10 +125,11 @@
                 this.configureStore();
             }, this);
 
-            var formDataEditor = this.enumInstanceConfig.getFormDataEditor(this._enum.tpl);
+            var instanceConfig = this.enumInstance.getInstanceConfig(),
+                formDataEditor = instanceConfig.getFormDataEditor(this._enum.tpl);
             if (formDataEditor)
-                this.dataEditor = new formDataEditor(this.enumInstance,this._enum, this.enumInstanceConfig, this.columns);
-            else this.dataEditor = new nom.FormDataEditor_Default(this.enumInstance, this._enum, this.enumInstanceConfig, this.columns);
+                this.dataEditor = new formDataEditor(this.enumInstance,this._enum, this.columns);
+            else this.dataEditor = new nom.FormDataEditor_Default(this.enumInstance, this._enum, this.columns);
 
         },
         configureStore: function () {

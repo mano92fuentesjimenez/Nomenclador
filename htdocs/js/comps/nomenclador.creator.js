@@ -75,7 +75,7 @@
 				"finishedCreation" :true
 			});
 			this.refs = new nom.refs();
-			this.refs.load(this.enumInstance, arguments[0].refs || {});
+			this.refs.load(this.enumInstance.getName(), arguments[0].refs || {});
 			this.on('afterrender', function (){
 				this.createValidator();
 			});
@@ -89,7 +89,7 @@
 			var dbConfigStore = new Ext.data.JsonStore({
 				fields :["id"],
 				url :Genesig.ajax.getLightURL("Nomenclador.default") + "&action=getDbConfigs",
-				baseParams:{enumInstance:this.enumInstance}
+				baseParams:{enumInstance:this.enumInstance.getName()}
 			});
 
 			dbConfigStore.on("load", function (t, records){
@@ -127,9 +127,9 @@
 						return "El nombre de un "+self.entityType+" no puede contener ':'";
 					if (text.indexOf('-') !== -1)
 						return "El nombre de un "+self.entityType+" no puede contener '-'";
-					if (enums.getEnumByName(self.enumInstance, text) && (self.creating || text != self._enum.name))
+					if (enums.getEnumByName(self.enumInstance.getName(), text) && (self.creating || text != self._enum.name))
 						return "No pueden haber "+self.entityType+"(es) repetidos.";
-					for (var _enum in enums.getEnums(self.enumInstance)){
+					for (var _enum in enums.getEnums(self.enumInstance.getName())){
 						if (_enum === text && (self.creating || text !== self._enum.id))
 							return "No puede haber un "+self.entityType+" con un nombre identico al identificador de" +
 								" otro";
@@ -149,7 +149,7 @@
 				this.setEnum();
 			}
 			else {
-				this.addFields(enums.getDefaultFields(self.enumInstance,self.tpl));
+				this.addFields(enums.getDefaultFields(self.enumInstance.getName(),self.tpl));
 			}
 			var items = [
                 {
@@ -272,7 +272,7 @@
 			var toExclude = this._default_(toExclude, {});
 			var dataArray = [];
 			var types = nom.Type.Utils.getTypesDict();
-			var no_enum = Object.keys(enums.getEnums(this.enumInstance)).length;
+			var no_enum = Object.keys(enums.getEnums(this.enumInstance.getName())).length;
 			var configDataTypes = this.tplConfig.dataTypes;
 
 			for (var type in types){
@@ -434,7 +434,7 @@
 					var v = true;
 					var getType = nom.Type.Utils.getType;
 					references._each_(function (value, key){
-						var _enum = enums.getEnumById(self.enumInstance, self.refs.getEnum(key));
+						var _enum = enums.getEnumById(self.enumInstance.getName(), self.refs.getEnum(key));
 						_enum.fields._each_(function (value){
 							var type = getType(value.type);
 							if (!type)
@@ -486,7 +486,7 @@
 
 				if (record.get('type') == 'DB_Enum' && combo.canSelectEnum._isObject_()) {
 					var o = combo.canSelectEnum;
-					var _enum = enums.getEnumById(self.enumInstance, o._enum);
+					var _enum = enums.getEnumById(self.enumInstance.getName(), o._enum);
 					var field = _enum.fields[o.field];
 					errorMsg('No puede seleccionar el tipo nomenclador, pues este campo esta referenciado por ' +
 						'el campo: "' + field.header + '" del nomenclador: "' + _enum.name + '"');
@@ -570,7 +570,7 @@
 					if (cRecord.get('type') != 'DB_Enum')
 						return;
 					var prop = self.properties[cRecord.get('id')].getValue();
-					var _enum = enums.getEnumById(self.enumInstance, prop._enum);
+					var _enum = enums.getEnumById(self.enumInstance.getName(), prop._enum);
 
 					var enumsFields = Object.keys(_enum.fields).filter(function (v){
 						return _enum.fields[v].type == 'DB_Enum';
@@ -674,7 +674,7 @@
 						var error = false;
 						selected.map(function (record){
 							//no se puede borrar una columna que es referenciada por alguien
-							var references = self.refs.getReferences(self.enumInstance, self._enum.id, record.get("id"));
+							var references = self.refs.getReferences(self.enumInstance.getName(), self._enum.id, record.get("id"));
 							if (references) {
 								self.alertRefsError(record.get('name'), references);
 								error = true;
@@ -872,7 +872,7 @@
 							}
 							self.showEnums(
 								function (node){
-									self.addFields(enums.getEnumById(self.enumInstance,node.id).fields._queryBy_(function(field){
+									self.addFields(enums.getEnumById(self.enumInstance.getName(),node.id).fields._queryBy_(function(field){
 										return !field.isDefault;
 									},this,true));
 								}
@@ -935,7 +935,7 @@
 			return _enumId;
 		},
 		showEnums :function (callBack){
-			nom.showEnumTree(this.enumInstance,true, callBack);
+			nom.showEnumTree(this.enumInstance.getName(),true, callBack, this.enumInstance.getInstanceNameModifier());
 		},
 		createValidator :function (){
 
@@ -979,7 +979,7 @@
 		getNomenclador :function (){
 			var nomenclador = {};
 			var changes = {add :{}, mod :{}, del :{}, delRefs :[]};
-			this.refs.clearToAdd(this.enumInstance);
+			this.refs.clearToAdd(this.enumInstance.getName());
 			var fields = {};
 			var self = this;
 			nomenclador.name = this.nameTextField.getValue();
@@ -1026,8 +1026,8 @@
 				order++;
 				//anhadir todas las nuevas referencias.
 				if (nom.Type.Utils.getType(type).valueType == nom.Type.REF_Type) {
-					if (!self.refs.exists(self.enumInstance,nomenclador.id, id, properties._enum, properties.field))
-						self.refs.add(self.enumInstance, nomenclador.id, id, properties._enum, properties.field);
+					if (!self.refs.exists(self.enumInstance.getName(),nomenclador.id, id, properties._enum, properties.field))
+						self.refs.add(self.enumInstance.getName(), nomenclador.id, id, properties._enum, properties.field);
 				}
 			});
 			//adicionando las propiedades extras de la entidad.
@@ -1046,7 +1046,7 @@
 			};
 
 			if (this.creating)
-				return {_enum :nomenclador, refs :self.refs.getAddedReferences(this.enumInstance)};
+				return {_enum :nomenclador, refs :self.refs.getAddedReferences(this.enumInstance.getName())};
 
 
 			//Ver los cambios y ponerlos en un objeto
@@ -1097,7 +1097,7 @@
 						})
 					}
 				}
-			changes.addRefs = self.refs.getAddedReferences(this.enumInstance);
+			changes.addRefs = self.refs.getAddedReferences(this.enumInstance.getName());
 			changes['_enum'] = nomenclador;
 			return changes
 		},
@@ -1247,7 +1247,7 @@
 			if (references) {
 				references._map_(function (item, key){
 					var split = key.split(":");
-					var _enum = enums.getEnums(this.enumInstance)[split[0]];
+					var _enum = enums.getEnums(this.enumInstance.getName())[split[0]];
 					s += self.entityType+": " + _enum._enum.name + " Campo:" + _enum._enum.fields[split[1]].header + ", \n";
 				});
 				errorMsg("El campo " + name + " no se puede eliminar", "El campo " + name +

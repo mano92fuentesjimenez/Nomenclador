@@ -54,11 +54,9 @@
 		frame :true,
 		editorComponent :null,
 		enumInstance:null,
-		enumInstanceConfig:null,
         enableTabScroll:true,
 		constructor :function (){
 			nom.dataEditorTabPanel.superclass.constructor.apply(this, arguments);
-			this.enumInstanceConfig = new nom.InstanceConfigClass(this.enumInstanceConfig);
 			this.tabs = {};
 			this.addEvents({'saved' :true});
 		},
@@ -77,14 +75,14 @@
 
             var funcEnumChange = function (_enum) {
                     panel.parent.removeEnum(_enum.id);
-                    nom.getUI(controller.enumInstance).showEnum(_enum);
+                    nom.getUI(controller.enumInstance.getName()).showEnum(_enum);
                     return false;
                 },
                 funcEnumDeleted = function () {
             		panel.parent.removeEnum(controller._enum.id, true);
                     return false;
                 },
-                enumObs = enums.getObservableFromEnum(this.enumInstance, _enum),
+                enumObs = enums.getObservableFromEnum(this.enumInstance.getName(), _enum),
 				controller,
                 panel = new Ext.Panel({
                     parent:this,
@@ -96,18 +94,17 @@
                 config = {
                     enumInstance: this.enumInstance,
                     _enum: _enum,
-                    enumInstanceConfig: this.enumInstanceConfig,
                     showTitle:false,
                     maskObj:panel
                 },
 				self = this;
-
-            var tpl = this.enumInstanceConfig.getTpl(_enum.tpl);
+			var instanceConfig = this.enumInstance.getInstanceConfig(),
+            	tpl = instanceConfig.getTpl(_enum.tpl);
             if(tpl.isReadOnly())
-            	config.manageEnum= false;
+            	config.manageEnum = false;
 
-            if (this.enumInstanceConfig.getEnumDataEditor(_enum.tpl))
-                controller = new this.enumInstanceConfig.getEnumDataEditor(_enum.tpl);
+            if (instanceConfig.getEnumDataEditor(_enum.tpl))
+                controller = new (instanceConfig.getEnumDataEditor(_enum.tpl))(config);
             else controller = new nom.GridDataEditor(config);
 
             controller.destroyUI = controller.destroyUI.createSequence(function(){
