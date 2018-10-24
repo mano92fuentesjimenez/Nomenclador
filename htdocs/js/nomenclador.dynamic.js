@@ -162,6 +162,10 @@
 
             return this.getEnumById(instanceName,_enum).denomField;
         },
+        //Devuelve los campos por defecto definidos en el servidor.
+        getDefaultFields:function() {
+            return this.defaultFields;
+        },
         getFieldsIdFromEnum:function(_enum){
             return _enum.fields._map_(function(v, k){
                 return k;
@@ -331,6 +335,8 @@
     });
     nom.Tpl = function(config) {
         this._apply_(config);
+        if(!utils.isObject(this.extraProps))
+            this.extraProps = {};
     };
     nom.tplDefaultId ='default';
 
@@ -381,12 +387,13 @@
             if(utils.isArray(this.defaultFields))
                 config = this.defaultFields;
             else
-                config = enums.defaultFields;
+                config = enums.getDefaultFields();
 
             if (config != null) {
-                if (config._queryBy_(qb)._length_() == 0)
+                if (config._queryBy_(qb)._length_() === 0)
+                //Si no tiene campo denominacion, le pongo uno
                 //esto es porque siempre siempre, un nomenclador tiene que tener un campo denominacion
-                    config['denom_rand_1254'] = this.defaultFields._queryBy_(qb)._first_();
+                    config['denom_rand_1254'] = enums.getDefaultFields()._queryBy_(qb)._first_();
                 return config;
             }
             return this.defaultFields;
@@ -896,7 +903,7 @@
 
         // isGrid:true,
         constructor:function(config){
-            config._enum =  enums.getEnumById(config.enumInstance, config._enum);
+            config._enum =  enums.getEnumById(config.enumInstance.getName(), config._enum);
             var t = nom.Type.Utils.getType(config._enum.fields[config._fieldId].type),
                 self =this,
                 fireDChanged = function(){

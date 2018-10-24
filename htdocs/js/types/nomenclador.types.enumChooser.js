@@ -15,14 +15,14 @@
                     fieldLabel:field.header,
                     readOnly:true,
                     onTrigger2Click:function(){
-                        nom.showEnumTree(enumInstance, true, function(obj) {
-                            var _enum = nom.enums.getEnumById(enumInstance, obj.id);
+                        nom.showEnumTree(enumInstance.getName(), true, function(obj) {
+                            var _enum = nom.enums.getEnumById(enumInstance.getName(), obj.id);
                             t.dirtyValue = false;
                             t.setValue({
                                 valueField: obj.id,
                                 displayField: _enum.name
                             })
-                        })
+                        },undefined,enumInstance.getInstanceNameModifier());
                     },
                     setValue:function(v){
                         if(Genesig.Utils.isObject(v)) {

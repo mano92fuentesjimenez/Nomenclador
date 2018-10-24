@@ -37,6 +37,7 @@
                         "enum_row='{enum_row}' " +
                         "enum_field='{enum_field}' " +
                         "instance_name='{instanceName}'" +
+                        "instance_modifier='{instanceModifier}'" +
                         'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_Enum.getEnumRowData(this);" ' +
                         'class="gisTtfIcon_flaticon-information-button">' +
                         '</div>' +
@@ -45,7 +46,8 @@
                     enumId: enumD.id,
                     enum_row: pRec.get(nom.Type.PrimaryKey.UNIQUE_ID),
                     enum_field: field.id,
-                    enumInstance: this._enumInstance_.getName()
+                    instanceName: this._enumInstance_.getName(),
+					instanceModifier: this._enumInstance_.getInstanceNameModifier()
                 });
             }
             else{
@@ -164,24 +166,26 @@
 			var enumId = pElement.getAttribute('enumId'),
 				enumRow = pElement.getAttribute('enum_row'),
 				enumField = pElement.getAttribute('enum_field'),
-				enumInstance = pElement.getAttribute('instance_name'),
+				instanceName = pElement.getAttribute('instance_name'),
+				instanceModifier= pElement.getAttribute('instance_modifier'),
+				instance = nom.enums.getInstance(instanceName,instanceModifier),
 				el = this.getEnumRowDataContainer(pElement),
 				self = this;
 			nom.request('getRowFromEnumField',
                 {
-                	enumInstance:enumInstance,
+                	enumInstance:instance,
                     enumId :enumId,
                     enumRow :enumRow,
                     enumField :enumField,
                     type:'DB_Enum'
                 },function (resp){
-					self.showLinkRecordData(enumInstance,enumId, enumField, resp.values, el);
+					self.showLinkRecordData(instance,enumId, enumField, resp.values, el);
                 },null)
 		},
 		showLinkRecordData :function (enumInstance, pEnumId, pEnumField, pData, pEl){
-			var enumDetails = nom.enums.getEnumById(enumInstance, pEnumId),
+			var enumDetails = nom.enums.getEnumById(enumInstance.getName(), pEnumId),
 				enumFields = enumDetails.fields,
-				referencedEnum = nom.enums.getEnumById(enumInstance, enumFields[pEnumField].properties._enum),
+				referencedEnum = nom.enums.getEnumById(enumInstance.getName(), enumFields[pEnumField].properties._enum),
 				referencedEnumField = referencedEnum.fields,
 				data = {},
 				tb = pEl.last().first(),

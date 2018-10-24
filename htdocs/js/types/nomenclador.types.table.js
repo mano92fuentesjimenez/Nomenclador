@@ -72,7 +72,8 @@
 				var html = '<div' +
 					" props_value= '"+value+"' "+
 					" _enum='"+Ext.encode(this._fieldDetails_.properties._enum)+"' "+
-					" enum_instance='"+this._enumInstance_+"' " +
+					" enum_instance='"+this._enumInstance_.getName()+"' " +
+					" instance_modifier='"+this._enumInstance_.getInstanceNameModifier()+"' "+
 					"title= '"+this._fieldDetails_.header+"' " +
 					"onclick='AjaxPlugins.Nomenclador.Type.Types.DB_Table.showValue(this)'>" +
 					"<span> Ver Tabla</span>" +
@@ -82,11 +83,13 @@
 		})._apply_({
 		   showValue:function(el) {
 			   var value = el.getAttribute('props_value'),
-				   enumInstance = el.getAttribute('enum_instance'),
+				   instanceName = el.getAttribute('enum_instance'),
+				   instanceModifier = el.getAttribute('instance_modifier'),
 				   _enum = Ext.decode(el.getAttribute('_enum')),
 				   title = el.getAttribute('title'),
+				   instance = nom.enums.getInstance(instanceName,instanceModifier),
 				   grid = new nom.GridOfflineDataEditor({
-					   enumInstance:enumInstance,
+					   enumInstance:instance,
 					   _enum: _enum,
 					   manageEnum:false
 
@@ -110,7 +113,7 @@
 				   });
 			   grid.getUI().on('afterrender',function() {
 				   grid.setValue(value)
-			   })
+			   });
 			   w.show();
 
 		   }

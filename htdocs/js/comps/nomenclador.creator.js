@@ -149,7 +149,7 @@
 				this.setEnum();
 			}
 			else {
-				this.addFields(enums.getDefaultFields(self.enumInstance.getName(),self.tpl));
+				this.addFields(this.tplConfig.getDefaultFields());
 			}
 			var items = [
                 {
@@ -186,7 +186,7 @@
 			];
 			var northHeigth = 150;
 			var tpl = this.tplConfig;
-			if( (tpl.extraProps||{})._length_()>0 ) {
+			if( tpl.getExtraProps()._length_()>0 ) {
                 this.extraProps = [];
                 var extraProps = tpl.getExtraProps();
                 var divisions = tpl.getExtraPropsDivisions();

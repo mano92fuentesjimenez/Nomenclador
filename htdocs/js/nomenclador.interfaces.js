@@ -129,9 +129,6 @@
 
             if(this.showTitle)
                 this.title = this._enum.name;
-            // this.addAction('load','pre','nomenclador.ff');
-            // this.addAction('load','post','nomenclador.gg');
-            // this.addAction('count','pre','nomenclador.cc');
 
             nom.GridDataEditor.superclass.constructor.call(this, ({items:[]})._apply_(config));
         },
