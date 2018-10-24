@@ -59,75 +59,78 @@
 		};
 	}
 
+    /**
+	 * @param instanceName {string}    Nombre de la instancia de nomencladores. Para agrupar las entidades
+	 * @param instanceModifier {string}Modificador del nombre de instancia. Para agrupar las configuraciones
+     */
+    exp.showManager = function(instanceName,instanceModifier){};
 	addService('showManager',function () {
         nom.getUI.apply(nom,arguments).show();
     });
 
 	/**
 	 * Muestra una ventana con la estructura de todos los nomencladores junto con sus categorias.
-	 * @param enumInstance string	    Nombre de la instancia de nomencladores
+	 * @param instanceName string	    Nombre de la instancia de nomencladores, Para agrupar las entidades.
 	 * @param callback {function}       Función que se llama cuando se selecciona un enum en la ventana.La función recibe
 	 *                                 como parámetro un objeto con las siguientes propiedades.
 	 *                                  id:ID del enum seleccionado.
 	 *                                  path:Camino hasta el enum según los id de las categorias y el enum en el árbol.
 	 *                                  node:Nodo del enum en el árbol.
+	 * @param title {string}            Titulo de la ventana
+	 * @param instanceModifier {string} Modificador del nombre de instancia. Se usa para dividir las configuraciones de
+	 * 						           UI
 	 */
-	exp.showEnumTree=function(enumInstance, callback){};
-	addService('showEnumTree',function(enumInstance, callback){
-		nom.showEnumTree(enumInstance, true, callback, 'Listado de nomencladores');
+	exp.showEnumTree = function(instanceName, callback, title, instanceModifier){};
+	addService('showEnumTree',function(instanceName, callback, title, instanceModifier){
+		nom.showEnumTree(instanceName, true, callback, title || 'Listado de nomencladores', instanceModifier);
 	}, true);
 	
 	/**
 	 * Devuelve un panel en el que se muestran los datos de un nomenclador.
-     * @param enumInstance string	    Nombre de la instancia de nomencladores
+     * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param _enum {object|string}     Objeto enum o string con el id de un enum. Es el enum a editar los datos.
 	 * @param config {object}          Configuración a aplicar al panel que se va a devolver.
-	 * 				   enumInstanceConfig:{object}  Como mismo se define en nom.showUI()
+	 * 				   instanceNameConfig:{object}  Como mismo se define en nom.showUI()
 	 * 				   manageEnum:boolean   Define si se va a permitir administrar los datos del nom.
-	 *
+	 * @param instanceModifier {string}  @see ShowEnums
 	 */
-	exp.getEnumDataPanel=function(enumInstance, _enum, config){};
-	addService('getEnumDataPanel',function(enumInstance, _enum, config){
-		var _enum = _enum._isString_() ? nom.enums.getEnumById(enumInstance, _enum):_enum,
-			_interface = config && config['enumInstanceConfig'] &&config['enumInstanceConfig']['enumDataEditor'],
-			_interface = _interface ? _interface : nom.GridDataEditor;
-
-		return nom.addMenuHandler(enumInstance, _enum, _interface, config);
+	exp.getEnumDataPanel=function(instanceName, _enum, config, instanceModifier){};
+	addService('getEnumDataPanel',function(instanceName, _enum, config, instanceModifier){
+		return nom.getEnumDataPanel.apply(arguments);
 	});
 	
 	/**
 	 * Devuelve un panel en que se muestra la estructura de todos los enums con las categorias.
-	 * @param enumInstance string	    Nombre de la instancia de nomencladores
+	 * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param config    {object}        Objeto de configuración a aplicar al panel que se devuelve.
 	 *                             showFields:bool para mostrar los campos de un nomenclador.
 	 *                             showEnums:bool para mostrar los nomencladores en caso de que solo se quiera mostar
 	 *                             el árbol de categoría.
+	 * @param instanceModifier {string}  @see ShoEnums
 	 * @returns {*}
 	 */
-	exp.getEnumTreePanel=function(enumInstance, config){};
-	addService('getEnumTreePanel', function(enumInstance, config){
-		return new nom.nomencladorTree( ({canMoveEnums:false, enumInstance:enumInstance})._apply_(config));
+	exp.getEnumTreePanel=function(instanceName, config, instanceModifier){};
+	addService('getEnumTreePanel', function(instanceName, config, instanceModifier){
+		var instance = nom.enums.getInstance(instanceName, instanceModifier);
+		return new nom.nomencladorTree( ({canMoveEnums:false, enumInstance:instance})._apply_(config));
 	});
 
 	/**
 	 * Devuelve un arreglo de objetos de la forma {name: nomebreDelNomenclador, id: IdentificadorDelNomenclador}
 	 */
-	exp.getEnumsList=function(enumInstance){};
-	addService('getEnumsList',function (enumInstance){
-		var arr = [],
-			enums = nom.enums.getEnums(enumInstance);
-		enums._map_(function(val,id){
-			arr.push({name:val._enum.name, id:val._enum.id});
+	exp.getEnumsList=function(instanceName){};
+	addService('getEnumsList',function (instanceName){
+		return nom.enums.getEnums(instanceName)._map_(function(val,id){
+			return {name:val._enum.name, id:val._enum.id};
 		});
-		return arr;
 	});
 
 	/**
 	 *
 	 */
-	exp.enumExist=function(enumInstance,pEnumId){};
-	addService('enumExist',function (enumInstance,pEnumId){
-		return !!nom.enums.getEnumById(enumInstance,pEnumId)
+	exp.enumExist=function(instanceName,pEnumId){};
+	addService('enumExist',function (instanceName,pEnumId){
+		return !!nom.enums.getEnumById(instanceName,pEnumId)
 
 	});
 
@@ -136,16 +139,16 @@
 	 * El método es asíncrono, debe pedir los datos del servidor por lo que el resultado se le pasa por párametro a la
 	 * función callback.
 	 */
-	exp.getEnumTreeStructure=function(enumInstance,callback){};
-	addService('getEnumTreeStructure',function (enumInstance,callback){
-		nom.request('getServerHeaders',{enumInstance:enumInstance},function (response, o) {
-           callback(buildTree(enumInstance,response.simpleTree));
+	exp.getEnumTreeStructure=function(instanceName,callback){};
+	addService('getEnumTreeStructure',function (instanceName,callback){
+		nom.request('getServerHeaders',{instanceName:instanceName},function (response, o) {
+           callback(buildTree(instanceName,response.simpleTree));
         });
 	},true);
-	var buildTree = function(enumInstance,simpleTree){
+	var buildTree = function(instanceName,simpleTree){
 		if(!simpleTree.childs){
 			return {
-				text: nom.enums.getEnumById(enumInstance,simpleTree.idNode).name,
+				text: nom.enums.getEnumById(instanceName,simpleTree.idNode).name,
 				leaf:true,
 				nodeId:simpleTree.idNode
 			}
@@ -153,7 +156,7 @@
 		else {
 			var childs = [];
 			simpleTree.childs._each_(function(value, key){
-				childs.push(buildTree(enumInstance,value));
+				childs.push(buildTree(instanceName,value));
 			});
 			return {
 				text:simpleTree.text,
@@ -166,56 +169,45 @@
 
 	/**
 	 * Devuelve un objeto enum seleccionado por el identificador de este
-     * @param enumInstance string	    Nombre de la instancia de nomencladores
+     * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param enumId {string}           Identificador del enum
 	 */
-	exp.getEnumById=function(enumInstance,enumId){};
-	addService('getEnumById',function (enumInstance,enumId){
-		return nom.enums.getEnumById(enumInstance,enumId);
+	exp.getEnumById=function(instanceName,enumId){};
+	addService('getEnumById',function (instanceName,enumId){
+		return nom.enums.getEnumById(instanceName,enumId);
 	});
 /**
 	 * Devuelve un objeto enum seleccionado por el identificador de este de forma sincrona, va a dar error si no
  	 * esta cargada la instancia
-     * @param enumInstance string	    Nombre de la instancia de nomencladores
+     * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param enumId {string}           Identificador del enum
 	 */
-	exp.getEnumByIdSync=function(enumInstance,enumId){
-		return nom.enums.getEnumById(enumInstance,enumId);
+	exp.getEnumByIdSync=function(instanceName,enumId){
+		return nom.enums.getEnumById(instanceName,enumId);
 	};
 
 
 	/**
 	 * Devuelve un enum seleccionado por el nombre que tiene este
-     * @param enumInstance string	    Nombre de la instancia de nomencladores
+     * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param enumName  {string}        Nombre del enum seleccionado.
 	 */
-	exp.getEnumByName=function(enumInstance,enumName){};
-	addService('getEnumByName', function(enumInstance,enumName){
-		return nom.enums.getEnumByName(enumInstance,enumName);
+	exp.getEnumByName=function(instanceName,enumName){};
+	addService('getEnumByName', function(instanceName,enumName){
+		return nom.enums.getEnumByName(instanceName,enumName);
 	});
 
 	/**
 	 * Devuelve un enum seleccionado por el nombre que tiene este de forma sincrona, va a dar error si no esta cargado la instancia
-     * @param enumInstance string	    Nombre de la instancia de nomencladores
+     * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param enumName  {string}        Nombre del enum seleccionado.
 	 */
-	exp.getEnumByNameSync=function(enumInstance,enumName){
-		return nom.enums.getEnumByName(enumInstance,enumName);
+	exp.getEnumByNameSync=function(instanceName,enumName){
+		return nom.enums.getEnumByName(instanceName,enumName);
 	};
 	/**
-     * @param enumInstance string	    Nombre de la instancia de nomencladores
-	 * @param _enum string  Identificador o nombre del nomenclador.
-	 * @param fieldName string Nombre del campo
-	 * @returns
-	 */
-	exp.getFieldFromEnumByName = function (enumInstance,_enum, fieldName){};
-	addService('getEnumByName', function(enumInstance,enumName){
-		return nom.enums.getEnumByName(enumInstance,enumName)
-	});
-
-	/**
 	 * Extrae los datos del nomenclador segun la configuración.
-     * @param enumInstance string	    Nombre de la instancia de nomencladores
+     * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param _enum {object | string}   Enum o id del enum al que se le quieren extraer los datos
 	 * @param config {object}       	Objeto de configuracion para cargar los datos. Ver Nomenclador.dynamic.getEnumData
 	 * @param callback {function}       Función que se llama cuando se terminan de cargar los datos del nomenclador.
@@ -223,16 +215,16 @@
 	 *                                  [ { fieldId: data ,...} ].
 	 * @param scope                     Scope en el que se va a a llamar a la función callback.
 	 */
-	exp.getEnumAllData=function(enumInstance,_enum, config,callback, scope, onError, mask){};
-	addService('getEnumAllData', function(enumInstance,_enum, config,callback, scope, onError, mask){
+	exp.getEnumAllData=function(instanceName,_enum, config,callback, scope, onError, mask){};
+	addService('getEnumAllData', function(instanceName,_enum, config,callback, scope, onError, mask){
 		var configObj = config._isObject_() ? config : {};
 			_enum = _enum._isString_() ? _enum : _enum.id;
-		nom.getEnumData(enumInstance, _enum, callback, scope, configObj, onError, mask)
+		nom.getEnumData(instanceName, _enum, callback, scope, configObj, onError, mask)
 	},true);
 
 	/**
 	 * Extrae los datos de la columna especificada en el nomenclador especificado.
-     * @param enumInstance string	    Nombre de la instancia de nomencladores
+     * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param enumId {string}           Id del enum
 	 *
 	 *  @param config {object}           En el objeto config todas las propiedades son opcionales, sus propiedades son:
@@ -243,10 +235,10 @@
 	 *  @param callback {function}       Functión que se llama cuando se terminan de cargar los datos.
 	 *                                   los datos cargados serán de la forma [{primaryKeyId: idRow, idColumn:value}...]
 	 */
-	exp.getEnumColumnData=function(enumInstance,enumId, config, columnId, callback){};
-	addService('getEnumColumnData',function (enumInstance,enumId, config, columnId, callback){
+	exp.getEnumColumnData=function(instanceName,enumId, config, columnId, callback){};
+	addService('getEnumColumnData',function (instanceName,enumId, config, columnId, callback){
 		nom.request('getEnumColumnData',{
-			enumInstance:enumInstance,
+			instanceName:instanceName,
             enumId:enumId,
             config:config,
             columnId:columnId
@@ -256,7 +248,7 @@
 
 	/**
 	 * Devuelve un comboBox en el cual se pueden seleccionar los datos de la columna del nomenclador especificado.
-     * @param  enumInstance string	    Nombre de la instancia de nomencladores
+     * @param  instanceName string	    Nombre de la instancia de nomencladores
 	 * @param  enumId {string}             Id del nomencldor.
 	 * @param  columnId{string|null}       Id de la columna de la cual se quiere ver los datos. Si la columna es null, entonces
 	 *                                  se cogen los datos de la columna por defecto.
@@ -275,14 +267,14 @@
      * 				   -show2ndTitle {boolean=false} Dice si se va a mostrar o no el 2do titulo, que es el nombre del nomenclador
      * 				   -selectorTitle        {string}  Titulo de la ventana de selector de nomenclador.
 	 */
-	exp.getEnumSelector=function(enumInstance, enumId, columnId, manageEnum, filterBy,value,visualConfigs ){};
-	addService('getEnumSelector',function (enumInstance,enumId, columnId, manageEnum, filterBy, value,visualConfigs ){
+	exp.getEnumSelector=function(instanceName, enumId, columnId, manageEnum, filterBy,value,visualConfigs ){};
+	addService('getEnumSelector',function (instanceName,enumId, columnId, manageEnum, filterBy, value,visualConfigs ){
 		return new (nom.getEnumSelectorClass.apply(this,arguments));
 	});
 
 	/**
 	 * Devuelve la clase de un comboBox en el cual se pueden seleccionar los datos de la columna del nomenclador especificado.
-     * @param  enumInstance string	    Nombre de la instancia de nomencladores
+     * @param  instanceName string	    Nombre de la instancia de nomencladores
 	 * @param  enumId {string}             Id del nomencldor.
 	 * @param  columnId{string|null}       Id de la columna de la cual se quiere ver los datos. Si la columna es null, entonces
 	 *                                   se cogen los datos de la columna por defecto.
@@ -301,32 +293,33 @@
 	 * 				   -show2ndTitle {boolean=false} Dice si se va a mostrar o no el 2do titulo, que es el nombre del nomenclador
 	 * 				   -selectorTitle        {string}  Titulo de la ventana de selector de nomenclador.
 	 */
-	exp.getEnumSelectorClass=function(enumInstance, enumId, columnId, manageEnum, filterBy,value,visualConfigs ){};
-	addService('getEnumSelectorClass',function (enumInstance, enumId, columnId, manageEnum, filterBy, value,visualConfigs ){
+	exp.getEnumSelectorClass=function(instanceName, enumId, columnId, manageEnum, filterBy,value,visualConfigs ){};
+	addService('getEnumSelectorClass',function (instanceName, enumId, columnId, manageEnum, filterBy, value,visualConfigs ){
 		return nom.getEnumSelectorClass.apply(this, arguments);
 	});
 
-	exp.getStoreReaderPrototype = function(enumInstance){};
-	addService('getStoreReaderPrototype', function(enumInstance){
+	exp.getStoreReaderPrototype = function(instanceName){};
+	addService('getStoreReaderPrototype', function(instanceName){
 		return nom.interfaces.EnumStoreReader;
 	});
 
-    exp.getStoreWriterPrototype = function(enumInstance){};
-    addService('getStoreWriterPrototype', function(enumInstance){
+    exp.getStoreWriterPrototype = function(instanceName){};
+    addService('getStoreWriterPrototype', function(instanceName){
         return nom.interfaces.EnumStoreWriter;
     });
-	exp.getEnumTreePanelPrototype = function(enumInstance){};
-	addService('getEnumTreePanelPrototype', function(enumInstance){
+	exp.getEnumTreePanelPrototype = function(instanceName){};
+	addService('getEnumTreePanelPrototype', function(instanceName){
 		return nom.nomencladorTree;
 	});
-	exp.getEnumGridDataEditorPrototype = function(enumInstance){};
-	addService('getEnumGridDataEditorPrototype', function(enumInstance){
+	exp.getEnumGridDataEditorPrototype = function(instanceName){};
+	addService('getEnumGridDataEditorPrototype', function(instanceName){
 		return nom.GridDataEditor;
 	});
 
-	exp.addAction = function(enumInstance,when, actionType, action){};
-    addService('addAction', function(){
-        nom.enums.addAction.apply(nom.enums,arguments);
+	exp.addAction = function(instanceName,instanceModifier,when, actionType, action){};
+    addService('addAction', function(instanceName,instanceModifier,when, actionType, action){
+        var actionM = exp.getActionManager(instanceName,instanceModifier);
+        actionM.addAction(when, actionType,action);
     });
 	exp.getEnumManagerTreeProto = function(){};
 	addService('getEnumManagerTreeProto', function(){
@@ -345,31 +338,49 @@
     /**
 	 * Carga una instancia de nomencladores, asi en una sola carga se pueden hacer todas las operaciones sobre enums.export
 	 * que se quiera
-     * @param enumInstance
+     * @param instanceName
      */
-    exp.load= function(enumInstance){};
-    addService('load', function(enumInstance){
+    exp.load= function(instanceName){};
+    addService('load', function(instanceName){
         return true;
     });
 
-    exp.showUI = function(enumInstance, config){};
-    addService('showUI', function(enumInstance, config){
-        nom.showUI(enumInstance, config);
+    exp.showUI = function(instanceName, config){};
+    addService('showUI', function(instanceName, config){
+        nom.showUI(instanceName, config);
     });
 
-    exp.getActionManager = function (enumInstance) {};
-    addService('getActionManager', function () {
-		return nom.enums.getActionManager();
+    exp.getActionManager = function (instanceName, instanceModifier) {};
+    addService('getActionManager', function (instanceName, instanceModifier) {
+		return nom.enums.getActionManager(instanceName, instanceModifier);
     });
 
-	exp.getDenomField = function(enumInstance,_enum){};
-    addService('getDenomField',function(enumInstance,_enum){
-    	return nom.enums.getDenomField(enumInstance, _enum);
+	exp.getDenomField = function(instanceName,_enum){};
+    addService('getDenomField',function(instanceName,_enum){
+    	return nom.enums.getDenomField(instanceName, _enum);
 	});
+    exp.getDenomFieldSync = function(instanceName, _enum){
+    	return nom.enums.getDenomField(instanceName, _enum);
+	};
 
     exp.eachEnumFieldSync = function () {
     	var enums = nom.enums;
     	return enums.eachEnumFieldSync.apply(enums,arguments);
+    };
+
+    /**
+	 * Le pone la configuracion de nomencladores a una instancia
+     * @param instanceName {string} 	  Nombre de la instancia de nomencladores. Agrupa las entidades
+     * @param instanceModifier {string}   Modificador de nombre de instancia. Agrupa configuraciones.
+     * @param config  {object}            @see ShowUI
+     */
+	exp.setInstanceConfig = function(instanceName, instanceModifier, config){};
+	addService('setInstanceConfig', function(instanceName, instanceModifier, config){
+		nom.enums.setInstanceConfig(instanceName, instanceModifier, config);
+	});
+
+	exp.getEnumInstanceSync = function(instanceName, instanceModifier){
+	    return nom.enums.getInstance(instanceName,instanceModifier);
     }
 
 })();

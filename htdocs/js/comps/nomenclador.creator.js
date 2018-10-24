@@ -13,7 +13,7 @@
 
 	nom.nomencladorCreator = Ext.extend(Ext.Window, {
 		entityType:'nomenclador',
-		width: 700,
+		width: 800,
 		height: 600,
 		modal: true,
 		_enum: null,
@@ -23,8 +23,8 @@
 
 		//nombre del tpl q se va a usar para crear el nomenclador
 		tpl:'default',
-		//configuraciones de todos los tpl en esta instancia de nomenclador.
-		tplConfigs:undefined,
+		//configuracion de tpl de nomenclador.
+		tplConfig:undefined,
 		//Si tiene valor, es el identificador de un dataSource q se va a usar para
 		defaultDataSource:null,
 
@@ -75,7 +75,7 @@
 				"finishedCreation" :true
 			});
 			this.refs = new nom.refs();
-			this.refs.load(this.enumInstance, arguments[0].refs || {});
+			this.refs.load(this.enumInstance.getName(), arguments[0].refs || {});
 			this.on('afterrender', function (){
 				this.createValidator();
 			});
@@ -89,7 +89,7 @@
 			var dbConfigStore = new Ext.data.JsonStore({
 				fields :["id"],
 				url :Genesig.ajax.getLightURL("Nomenclador.default") + "&action=getDbConfigs",
-				baseParams:{enumInstance:this.enumInstance}
+				baseParams:{enumInstance:this.enumInstance.getName()}
 			});
 
 			dbConfigStore.on("load", function (t, records){
@@ -127,9 +127,9 @@
 						return "El nombre de un "+self.entityType+" no puede contener ':'";
 					if (text.indexOf('-') !== -1)
 						return "El nombre de un "+self.entityType+" no puede contener '-'";
-					if (enums.getEnumByName(self.enumInstance, text) && (self.creating || text != self._enum.name))
+					if (enums.getEnumByName(self.enumInstance.getName(), text) && (self.creating || text != self._enum.name))
 						return "No pueden haber "+self.entityType+"(es) repetidos.";
-					for (var _enum in enums.getEnums(self.enumInstance)){
+					for (var _enum in enums.getEnums(self.enumInstance.getName())){
 						if (_enum === text && (self.creating || text !== self._enum.id))
 							return "No puede haber un "+self.entityType+" con un nombre identico al identificador de" +
 								" otro";
@@ -149,87 +149,94 @@
 				this.setEnum();
 			}
 			else {
-				this.addFields(enums.getDefaultFields(self.enumInstance,self.tpl));
+				this.addFields(this.tplConfig.getDefaultFields());
 			}
 			var items = [
-				{
-					title :"Datos generales",
-					layout :"column",
-					anchor :"100%",
-					region:'center',
-					defaults : {
-						labelAlign: "top",
-						columnWidth: .5,
-						anchor: '100%',
-						layout :'form',
-						bodyStyle: 'padding:0 10px 0 10px',
-						defaults: {
-							anchor: "100%"
-						}
-					},
-					items:[
-						{
-							items :[
-								this.nameTextField,
-								this.dataSourceSelector
-							]
-						},
-						{
-							items :[
-								this.descriptionTextArea
-							]
-						},
-					]
-				}
+                {
+                    title: "Datos generales",
+                    layout: "column",
+                    anchor: "100%",
+                    region: 'center',
+                    xtype: 'fieldset',
+                    defaults: {
+                        labelAlign: "top",
+                        columnWidth: .5,
+                        anchor: '100%',
+                        layout: 'form',
+                        bodyStyle: 'padding:0 10px 0 10px',
+                        defaults: {
+                            anchor: "100%"
+                        }
+                    },
+                    items: [
+                        {
+                            items: [
+                                this.nameTextField,
+                                this.dataSourceSelector
+                            ],
+
+                        },
+                        {
+                            items: [
+                                this.descriptionTextArea
+                            ]
+                        },
+                    ]
+                }
 			];
 			var northHeigth = 150;
-			var tpl = ((this.tplConfigs || {})[this.tpl] ||{});
-			if( (tpl.extraProps||{})._length_()>0 )
-			{
-				this.extraProps = [];
-				var extraProps = tpl.extraProps;
-				var i = 0;
-				var itemsL =[];
-				var itemsR = [];
+			var tpl = this.tplConfig;
+			if( tpl.getExtraProps()._length_()>0 ) {
+                this.extraProps = [];
+                var extraProps = tpl.getExtraProps();
+                var divisions = tpl.getExtraPropsDivisions();
+                var i = 0,
+                    propsItems = {},
+                    propsInputs = {};
 
-				extraProps._each_(function(v,k){
-					var input = new v({propId:k});
-					if(i%2 ===0)
-						itemsL.push(input);
-					else
-						itemsR.push(input);
-					self.extraProps.push(input);
-					i++;
-				});
-				items.push({
-					layout: 'column',
-					title: 'Propiedades',
-					region: 'south',
-					height: 100,
-					autoScroll: true,
-					split: true,
-					xtype:'fieldset',
-					defaults: {
-						labelAlign: "top",
-						columnWidth: .5,
-						anchor: '100%',
-						layout: 'form',
-						bodyStyle: 'padding:0 10px 0 10px',
-						defaults: {
-							anchor: "100%"
-						}
-					},
-					items: [
-						{
-							items: itemsL
-						},
-						{
-							items: itemsR
-						}
-					]
-				});
-				northHeigth +=100;
-			}
+                extraProps._each_(function (v, k) {
+                    var input = new v(),
+                        pos = i % divisions;
+                    input.__propId__ = k;
+
+                    if (propsItems[pos] === undefined)
+                        propsItems[pos] = [];
+                    propsItems[pos].push(input);
+                    propsInputs[k] = input;
+                    self.extraProps.push(input);
+                    i++;
+                });
+                items.push({
+                    layout: 'column',
+                    title: 'Propiedades',
+                    region: 'center',
+                    autoScroll: true,
+                    split: true,
+                    xtype: 'fieldset',
+                    defaults: {
+                        labelAlign: "top",
+                        columnWidth: Math.floor(1 / divisions * 100) / 100,
+                        anchor: '100%',
+                        layout: 'form',
+                        bodyStyle: 'padding:0 10px 0 10px',
+                        defaults: {
+                            anchor: "100%"
+                        }
+                    },
+                    items: propsItems._map_(function (v, k) {
+                        return {items: v};
+                    }, this, false)
+                });
+                items[0].region = 'north';
+                items[0].height = 150;
+                northHeigth += 100;
+
+                if (!this.creating) {
+                    this._enum.extraProps._each_(function (v,k) {
+                        propsInputs[k].setValue(v);
+                    })
+                }
+            }
 
 			this.items=[];
 			var defaults ={};
@@ -265,8 +272,8 @@
 			var toExclude = this._default_(toExclude, {});
 			var dataArray = [];
 			var types = nom.Type.Utils.getTypesDict();
-			var no_enum = Object.keys(enums.getEnums(this.enumInstance)).length;
-			var configDataTypes = ((this.tplConfigs ||{})[this.tpl] || {}).dataTypes;
+			var no_enum = Object.keys(enums.getEnums(this.enumInstance.getName())).length;
+			var configDataTypes = this.tplConfig.dataTypes;
 
 			for (var type in types){
 				/**
@@ -427,7 +434,7 @@
 					var v = true;
 					var getType = nom.Type.Utils.getType;
 					references._each_(function (value, key){
-						var _enum = enums.getEnumById(self.enumInstance, self.refs.getEnum(key));
+						var _enum = enums.getEnumById(self.enumInstance.getName(), self.refs.getEnum(key));
 						_enum.fields._each_(function (value){
 							var type = getType(value.type);
 							if (!type)
@@ -479,7 +486,7 @@
 
 				if (record.get('type') == 'DB_Enum' && combo.canSelectEnum._isObject_()) {
 					var o = combo.canSelectEnum;
-					var _enum = enums.getEnumById(self.enumInstance, o._enum);
+					var _enum = enums.getEnumById(self.enumInstance.getName(), o._enum);
 					var field = _enum.fields[o.field];
 					errorMsg('No puede seleccionar el tipo nomenclador, pues este campo esta referenciado por ' +
 						'el campo: "' + field.header + '" del nomenclador: "' + _enum.name + '"');
@@ -563,7 +570,7 @@
 					if (cRecord.get('type') != 'DB_Enum')
 						return;
 					var prop = self.properties[cRecord.get('id')].getValue();
-					var _enum = enums.getEnumById(self.enumInstance, prop._enum);
+					var _enum = enums.getEnumById(self.enumInstance.getName(), prop._enum);
 
 					var enumsFields = Object.keys(_enum.fields).filter(function (v){
 						return _enum.fields[v].type == 'DB_Enum';
@@ -667,7 +674,7 @@
 						var error = false;
 						selected.map(function (record){
 							//no se puede borrar una columna que es referenciada por alguien
-							var references = self.refs.getReferences(self.enumInstance, self._enum.id, record.get("id"));
+							var references = self.refs.getReferences(self.enumInstance.getName(), self._enum.id, record.get("id"));
 							if (references) {
 								self.alertRefsError(record.get('name'), references);
 								error = true;
@@ -865,7 +872,7 @@
 							}
 							self.showEnums(
 								function (node){
-									self.addFields(enums.getEnumById(self.enumInstance,node.id).fields._queryBy_(function(field){
+									self.addFields(enums.getEnumById(self.enumInstance.getName(),node.id).fields._queryBy_(function(field){
 										return !field.isDefault;
 									},this,true));
 								}
@@ -921,14 +928,14 @@
 				return 'fieldsMode';
 			if (this.creating) {
 				if(!this._enumId_)
-					this._enumId_ = (this.nameTextField.getValue().replace(/([^a-z A-Z0-9_])*/g, '') + '-' + Math.ceil(Math.random() * 1000000));
+					this._enumId_ = (this.nameTextField.getValue().toLowerCase().replace(/ /g,'_').replace(/\W+/g, '') + '-' + Math.ceil(Math.random() * 1000000));
 				_enumId = this._enumId_;
 			}
 			else _enumId = this._enum.id;
 			return _enumId;
 		},
 		showEnums :function (callBack){
-			nom.showEnumTree(this.enumInstance,true, callBack);
+			nom.showEnumTree(this.enumInstance.getName(),true, callBack, this.enumInstance.getInstanceNameModifier());
 		},
 		createValidator :function (){
 
@@ -972,7 +979,7 @@
 		getNomenclador :function (){
 			var nomenclador = {};
 			var changes = {add :{}, mod :{}, del :{}, delRefs :[]};
-			this.refs.clearToAdd(this.enumInstance);
+			this.refs.clearToAdd(this.enumInstance.getName());
 			var fields = {};
 			var self = this;
 			nomenclador.name = this.nameTextField.getValue();
@@ -982,7 +989,8 @@
 			nomenclador.fields = fields;
 			nomenclador.dataSource = this.isDefaultDS() ? this.defaultDataSource : this.dataSourceSelector.getValue();
 
-			var order = 0;
+			var order = 0,
+				denomField = null;
 			this.gridEditor.getStore().each(function (record){
 
 				var id = record.get("id"),
@@ -1000,6 +1008,9 @@
 				if (Ext.isObject(properties))
 					properties['filter'] = filter;
 
+				if (record.isDenom && denomField===null)
+					denomField = id;
+
 				if(t.canBeMultiple)
 					properties = (properties || {})._apply_({multiSelection:multi});
 
@@ -1015,16 +1026,17 @@
 				order++;
 				//anhadir todas las nuevas referencias.
 				if (nom.Type.Utils.getType(type).valueType == nom.Type.REF_Type) {
-					if (!self.refs.exists(self.enumInstance,nomenclador.id, id, properties._enum, properties.field))
-						self.refs.add(self.enumInstance, nomenclador.id, id, properties._enum, properties.field);
+					if (!self.refs.exists(self.enumInstance.getName(),nomenclador.id, id, properties._enum, properties.field))
+						self.refs.add(self.enumInstance.getName(), nomenclador.id, id, properties._enum, properties.field);
 				}
 			});
 			//adicionando las propiedades extras de la entidad.
 			nomenclador.tpl= this.tpl;
+			nomenclador.denomField =denomField;
 			if(this.extraProps) {
 				nomenclador.extraProps = {};
 				this.extraProps._each_(function (v) {
-					nomenclador.extraProps[v.propId] = v.getValue();
+					nomenclador.extraProps[v.__propId__] = v.getValue();
 				});
 			}
 
@@ -1034,7 +1046,7 @@
 			};
 
 			if (this.creating)
-				return {_enum :nomenclador, refs :self.refs.getAddedReferences(this.enumInstance)};
+				return {_enum :nomenclador, refs :self.refs.getAddedReferences(this.enumInstance.getName())};
 
 
 			//Ver los cambios y ponerlos en un objeto
@@ -1085,7 +1097,7 @@
 						})
 					}
 				}
-			changes.addRefs = self.refs.getAddedReferences(this.enumInstance);
+			changes.addRefs = self.refs.getAddedReferences(this.enumInstance.getName());
 			changes['_enum'] = nomenclador;
 			return changes
 		},
@@ -1235,7 +1247,7 @@
 			if (references) {
 				references._map_(function (item, key){
 					var split = key.split(":");
-					var _enum = enums.getEnums(this.enumInstance)[split[0]];
+					var _enum = enums.getEnums(this.enumInstance.getName())[split[0]];
 					s += self.entityType+": " + _enum._enum.name + " Campo:" + _enum._enum.fields[split[1]].header + ", \n";
 				});
 				errorMsg("El campo " + name + " no se puede eliminar", "El campo " + name +

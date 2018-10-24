@@ -76,7 +76,7 @@ class EnumsRequests
                 $enum2 = $enums->getEnum($props['_enum']);
                 $addType::createMultiTable($newEnum, $enum2, $conn);
             }
-            else if (!$conn->addColumn($newEnum->getId(), $schema, $key, $addType::getDBTypeCreation($newEnum->enumInstance, $connType, $addfield->getProperties(), $newEnum)) ||
+            else if (!$conn->addColumn($newEnum->getId(), $schema, $key, $addType::getDBTypeCreation($newEnum->enumInstance, $connType, $addfield->getProperties(), $newEnum),$addfield->getHeader()) ||
                 !$conn->setDefaultValueForColumn($newEnum->getId(), $schema, $key, $addType::getDefaultValue($connType, $addfield->getProperties()))
             ) {
                 throw new EnumException("Hubo un error a&ntilde;adiendo la columna");
@@ -99,7 +99,7 @@ class EnumsRequests
                     $enum2 = $enums->getEnum($modProps['_enum']);
                     $modType::createMultiTable($newEnum, $enum2, $conn);
                 }
-                else if (!$conn->addColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum)) ||
+                else if (!$conn->addColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum), $modField->getHeader()) ||
                     !$conn->setDefaultValueForColumn($newEnum->getId(), $schema, $key, $modType::getDefaultValue($connType, $modField->getProperties()))
                 ) {
                     throw new EnumException("Hubo un error modificando la columna");
@@ -116,7 +116,7 @@ class EnumsRequests
                 }
             }
             else if ($oldEnum->getField($key)->getType() != $modType || $modType != 'DB_Enum') {
-                if (!$conn->modColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum)) ||
+                if (!$conn->modColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum), $modField->getHeader()) ||
                     !$conn->setDefaultValueForColumn($newEnum->getId(), $schema, $key, $modType::getDefaultValue($connType, $modField->getProperties()))
                 ) {
                     throw new EnumException("Hubo un error modificando la columna");
@@ -128,7 +128,7 @@ class EnumsRequests
                 $oldEnum2 = $enums->getEnum($oldProps['_enum']);
                 $modEnum2 = $enums->getEnum($modProps['_enum']);
 
-                if($oldMulti && $modMulti && $oldProps['_enum'] == $modProps['_enum']){
+                if($oldMulti === $modMulti && $oldProps['_enum'] == $modProps['_enum']){
                     continue;
                 }
                 if($oldMulti) {
@@ -140,7 +140,7 @@ class EnumsRequests
                 if($modMulti){
                     $modType::createMultiTable($newEnum, $modEnum2, $conn);
                 }
-                else if(!$conn->addColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum)) ||
+                else if(!$conn->addColumn($newEnum->getId(), $schema, $key, $modType::getDBTypeCreation($newEnum->enumInstance, $connType, $modField->getProperties(), $newEnum), $modField->getHeader()) ||
                     !$conn->setDefaultValueForColumn($newEnum->getId(), $schema, $key, $modType::getDefaultValue($connType, $modField->getProperties()))
                 ) {
                     throw new EnumException("Hubo un error modificando la columna");
@@ -239,7 +239,7 @@ class EnumsRequests
         $conn = EnumsUtils::getDBConnection($enum);
         $error = array();
         $msg = '';
-        $ids = null;
+        $addedData = null;
 
         $actionsM->callPreSubmitActionsForEnum($enum,$data);
 
@@ -253,7 +253,7 @@ class EnumsRequests
             if(!$conn->insertData($enum->getId(), $fieldsOrder, $enum->getDataSource()->getSchema(), $addData, true)){
                 throw new EnumException($conn->getLastError());
             }
-            $ids = $conn->fetchData(false);
+            $addedData = $conn->fetchData(false);
             foreach ($enum->getFields() as $value){
                 $field = new Field($value);
                 $type = $field->getType();
@@ -261,7 +261,7 @@ class EnumsRequests
                 if($type =='DB_Enum' && $props['multiSelection']){
                     $enum_ref = $enums->getEnum($props['_enum']);
                     $multiTable = DB_Enum::getMultiTableName($enum, $enum_ref);
-                    $data = $enum->getMultiValueField($data['add'],$field->getId(),$ids);
+                    $data = $enum->getMultiValueField($data['add'],$field->getId(),$addedData);
                     if(!$conn->insertData($multiTable,array($enum->getId(),$enum_ref->getId()),$enum->getDataSource()->getSchema(),$data)) {
                         throw new EnumException($conn->getLastError());
                     }
@@ -269,7 +269,8 @@ class EnumsRequests
             }
         }
 
-        $actionsM->callPostAddActions($enum,$data['add']);
+
+        $actionsM->callPostAddActions($enum,$addedData);
 
         //modificar
         if (count($data['mod']) > 0) {
@@ -334,7 +335,7 @@ class EnumsRequests
         //$conn->commitTransaction();
 
 
-        return array('delMsg' => $msg, 'add'=>$ids);
+        return array('delMsg' => $msg, 'add'=>$addedData);
     }
 
     public static function removeEnum($enumInstance, $enumId, $path)
@@ -638,16 +639,16 @@ class Enums
     public function getDefaultValue(){
         return array();
     }
-    public static $instance;
+    public static $instance = array();
 
     public static function getInstance($enumInstance)
     {
         if(!$enumInstance)
             throw new Exception();
-        if (!self::$instance) {
-            self::$instance = new Enums($enumInstance);
+        if (!array_key_exists($enumInstance, self::$instance)) {
+            self::$instance[$enumInstance] = new Enums($enumInstance);
         }
-        return self::$instance;
+        return self::$instance[$enumInstance];
     }
 
     public static function getEnumsPath()

@@ -17,6 +17,7 @@
 		nodesEvaluator :null,
 		checked:null,
         plgIndexer:null,
+		enumInstance:null,
 		constructor :function (pCfg){
 			var indexer = this.indexedTreePlg = new comps.plugins.tree.indexedTree,
 				plgSearch = new comps.plugins.tree.indexTreeSearch({
@@ -53,16 +54,16 @@
 			this.on('nodedragover', this.nodeDragOverFunc, this);
 			this.on('nodedrop', this.nodeDropFunc, this);
 			this.on('beforeclick',function(nd){
-                if (nd && nd.attributes._type_ === 'enum') this.fireEvent('beforeenumselected', enums.getEnumByName(this.enumInstance,nd.text));
+                if (nd && nd.attributes._type_ === 'enum') this.fireEvent('beforeenumselected', enums.getEnumByName(this.enumInstance.getName(),nd.text));
 			}, this);
             this.on('click',function(pNd){
-                if (pNd && pNd.attributes._type_ === 'enum') this.fireEvent('enumselected', enums.getEnumByName(this.enumInstance,pNd.text));
+                if (pNd && pNd.attributes._type_ === 'enum') this.fireEvent('enumselected', enums.getEnumByName(this.enumInstance.getName(),pNd.text));
             },this);
 			var selM = this.getSelectionModel();
 			selM.on({
 				scope :this,
 				selectionchange :function (pSelM, pNd){
-					if (pNd && pNd.attributes._type_ === 'enum') this.fireEvent('enumselected', enums.getEnumByName(this.enumInstance,pNd.text));
+					if (pNd && pNd.attributes._type_ === 'enum') this.fireEvent('enumselected', enums.getEnumByName(this.enumInstance.getName(),pNd.text));
 				}
 			});
 			selM._apply_({
@@ -132,10 +133,10 @@
 					self.fireEvent('loadedheaders');
 				};
 			nom.enums.load(
-				this.enumInstance,
+				this.enumInstance.getName(),
 				function (response){
 					indexer.nodeRemoveAllChilds(root);
-					var simpleTree = nom.enums.getSimpleTree(self.enumInstance);
+					var simpleTree = nom.enums.getSimpleTree(self.enumInstance.getName());
 					if (simpleTree) {
 						if (self.rendered) {
 							doAppend(simpleTree.childs);
@@ -145,8 +146,8 @@
 					}
 				},
 				function (){
-					AjaxPlugins.Nomenclador.getUI(self.enumInstance).close();
-				},mask,this.enumInstanceConfig
+					AjaxPlugins.Nomenclador.getUI(self.enumInstance.getName()).close();
+				},mask
 			);
 		},
         treeNodesProxy:function(attr){

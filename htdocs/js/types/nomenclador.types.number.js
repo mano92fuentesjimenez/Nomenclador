@@ -6,12 +6,13 @@
 		addType =nom.Type.Utils.addType;
 
 	addType('DB_Number',Ext.extend(nom.Type.ValueType, {
-		nameToShow :'N&uacute;mero',
+		nameToShow :'N\u00FAmero',
 		propertyNeeded :false,
 		getValueEditExtComp :function (enumInstance, field){
 			return new AjaxPlugins.Ext3_components.fields.numberField({
 				allowBlank :!field.needed,
 				fieldLabel :field.header,
+				decimalPrecision: 8
 			});
 		},
 		getPropertiesExtComp :function (){

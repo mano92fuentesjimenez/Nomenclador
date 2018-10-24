@@ -1,55 +1,95 @@
 services:
   getModel:
-    /:
-      get:
-        description: "Load all models headers"
-        out: "text/json"
-        action: "getServerHeadersRest"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
+    description: "Interfaz para obtener las definiciones de los modelos"
+    urls:
+      /:
+        methods:
+          get:
+            description: "Load all models headers"
+            out: "application/json"
+            action: "getModels"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
 
-    /{model_id}:
-      get:
-        description: "Load model header"
-        out: "text/json"
-        action: "getServerEnumHeaders"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
+      /{model_id}:
+        description:
+          model_id: "Identificador del modelo"
+        methods:
+          get:
+            description: "Load model header"
+            out: "application/json"
+            action: "getModel"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+
+  getModelRecordsIds:
+    description: "Obtener los identificadores de los records de los modelos"
+    urls:
+      /{enum}:
+        description:
+          enum: "Identificador del modelo"
+        methods:
+          get:
+            description: "Load model records ids"
+            out: "application/json"
+            action: "getEnumDataIds"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+              enumLoadEnums:
+                description: "Define si se cargaran todos los ids de todos los modelos"
+                type: "bool"
+                default: true
+              enumLoadPageOffset:
+              enumLoadPageSize:
+              enumLoadIdRow:
+              enumLoadColumns:
+              enumLoadWhere:
 
   getModelRecords:
-    /{enum}:
-      get:
-        description: "Load model records"
-        out: "text/json"
-        action: "getEnumData"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
-          enumLoadEnums:
-            default: true
-          enumLoadPageOffset:
-          enumLoadPageSize:
-          enumLoadIdRow:
-          enumLoadColumns:
-          enumLoadWhere:
+    description: "Interfaz para la interaciion con los records de los modelos"
+    urls:
+      /{enum}:
+        description:
+          enum: "Identificador del modelo"
+        methods:
+          get:
+            description: "Load model records"
+            out: "application/json"
+            action: "getEnumData"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+              enumLoadEnums:
+                default: true
+              enumLoadPageOffset:
+              enumLoadPageSize:
+              enumLoadIdRow:
+              enumLoadColumns:
+              enumLoadWhere:
 
-    /{enum}/{enumLoadIdRow}:
-      get:
-        description: "Load model records"
-        out: "text/json"
-        action: "getEnumData"
-        arguments:
-          instance:
-            description: "Instancia o dominio de trabajo"
-            default: "system"
-          enumLoadEnums:
-            default: true
-          enumLoadPageOffset:
-          enumLoadPageSize:
-          enumLoadColumns:
-          enumLoadWhere:
+      /{enum}/{enumLoadIdRow}:
+        description:
+          enum: "Identificador del modelo"
+          enumLoadIdRow: "Identificador del record"
+        methods:
+          get:
+            description: "Load model records"
+            out: "application/json"
+            action: "getEnumData"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+              enumLoadEnums:
+                default: true
+              enumLoadPageOffset:
+              enumLoadPageSize:
+              enumLoadColumns:
+              enumLoadWhere:

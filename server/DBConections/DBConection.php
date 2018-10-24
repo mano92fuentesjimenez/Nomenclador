@@ -60,8 +60,8 @@ abstract class DBConn{
     public abstract function getRow($tablename, $schema, $row_number);
     public abstract function fetchData($associative, $multiEnumFields);
 
-    public abstract function addColumn($tableName, $schema, $fieldName, $columnType);
-    public abstract function modColumn($tableName, $schema, $fieldName, $columnType);
+    public abstract function addColumn($tableName, $schema, $fieldName, $columnType, $comm);
+    public abstract function modColumn($tableName, $schema, $fieldName, $columnType, $comm);
     public abstract function delColumn($tableName, $schema, $fieldName);
     public abstract function setDefaultValueForColumn($tableName, $schema, $fieldName,$value);
     public abstract function closeConnection();
@@ -231,14 +231,14 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->countRows($tableName, $schema, $where);
     }
 
-    public function addColumn($tableName, $schema, $fieldName, $columnType)
+    public function addColumn($tableName, $schema, $fieldName, $columnType, $comm)
     {
-        return $this->dbConn->addColumn($tableName, $schema, $fieldName, $columnType);
+        return $this->dbConn->addColumn($tableName, $schema, $fieldName, $columnType, $comm);
     }
 
-    public function modColumn($tableName, $schema, $fieldName, $columnType)
+    public function modColumn($tableName, $schema, $fieldName, $columnType, $comm)
     {
-        return $this->dbConn->modColumn($tableName, $schema, $fieldName, $columnType);
+        return $this->dbConn->modColumn($tableName, $schema, $fieldName, $columnType, $comm);
     }
 
     public function delColumn($tableName, $schema, $fieldName)
@@ -248,7 +248,9 @@ class DBConnProxy extends  DBConn
 
     public function setDefaultValueForColumn($tableName, $schema, $fieldName, $value)
     {
-        return $this->dbConn->setDefaultValueForColumn($tableName, $schema, $fieldName, $value);
+        if(!is_null($value))
+            return $this->dbConn->setDefaultValueForColumn($tableName, $schema, $fieldName, $value);
+        return true;
     }
 
     public function getFieldValuesFilteredWithPrimaryKey($tableName, $schema, $fieldName, $fieldToFilter, $filterValue, $offset = null, $limit = null)

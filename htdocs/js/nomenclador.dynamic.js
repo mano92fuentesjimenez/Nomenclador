@@ -17,7 +17,7 @@
         this.defaultFields = {};
         this.loaded = {};
         this.simpleTree = {};
-        this.instanceConfigs ={};
+        this.instances ={};
         this.Events = [
             /**
              * Se lanza cuando se elimina un nomenclador que estuvo cargado
@@ -29,63 +29,40 @@
             'enumchanged'
             ];
         this.actions = {};
-        this.ActionManager = new nom.ActionManager();
+        this.instances = new nom.InstanceManager();
     };
-    nom.ActionManager = function(){
-        /**
-         * actions =
-         * {
-         *   enumInstance:{
-         *      actionType :{
-         *         when :[action, ...]
-         *      }
-         *   }
-         * }
-         *
-         * actionType = [enumInstanceAdding,addEnum, removeEnum, modEnum]
-         * when = [pre, post]
-         * action = pluginName.Action
-         */
-        this.actions = {};
 
-    };
-    nom.ActionManager = Ext.extend(nom.ActionManager,{
-
-        addAction:function(enumInstance, when, actionType, action){
-            if(this.actions[enumInstance] == null)
-                this.actions[enumInstance] = {};
-            if(!utils.isObject(this.actions[enumInstance][actionType]))
-                this.actions[enumInstance][actionType]={};
-            if(!utils.isArray(this.actions[enumInstance][actionType][when]))
-                this.actions[enumInstance][actionType][when] = [];
-
-            this.actions[enumInstance][actionType][when].push(action);
-        },
-        getActions:function(enumInstance){
-            if(this.actions[enumInstance])
-                return this.actions[enumInstance];
-            return {};
-        },
-    });
     nom.enums = Ext.extend(nom.enums, {
         loaded: null,
         simpleTree:null,
         dataSources:null,
         defaultFields:null,
-        instanceConfigs:null,
+        instances:null,
 
-        getActionManager:function(){
-            return this.ActionManager;
+        getActionManager:function(instanceName,instanceNameModifier){
+            return this.getInstance(instanceName,instanceNameModifier).getActionManager();
         },
-        checkEnumInstance:function(enumInstance){
-            if(!this.enums[enumInstance])
-                throw new Error('La instancia '+enumInstance+' no existe en nomencladores');
+        checkEnumInstance:function(instanceName){
+            if(!this.enums[instanceName])
+                throw new Error('La instancia '+instanceName+' no existe en nomencladores');
 
         },
-        getEnumByName: function (enumInstance, name){
-            this.checkEnumInstance(enumInstance);
+        getInstance:function(instanceName,instanceModifier){
+            return this.instances.getInstance(instanceName, instanceModifier);
+        },
+        getInstanceManager:function(){
+            return this.instances;
+        },
+        setInstanceConfig:function(instanceName, instanceModifier, config){
+            var instance = this.getInstance(instanceName, instanceModifier);
+            instance.setInstanceConfig(config);
+        },
+        getEnumByName: function (instanceName, name){
+            this.checkEnumInstance(instanceName);
             var _enum,
-                enums = this.getEnums(enumInstance);
+                enums = this.getEnums(instanceName);
+            if(utils.isObject(name))
+                name = name.name;
 
             Object.keys(enums).map(function (key){
                 if (enums[key]._enum.name == name) {
@@ -95,20 +72,22 @@
             });
             return _enum;
         },
-        getEnumById: function (enumInstance,id){
-            this.checkEnumInstance(enumInstance);
-            var enums = this.getEnums(enumInstance);
+        getEnumById: function (instanceName,id){
+            this.checkEnumInstance(instanceName);
+            var enums = this.getEnums(instanceName);
+            if(utils.isObject(id))
+                id = id.id;
             if (!enums[id])
                 return false;
             return enums[id]._enum;
         },
-        getObservableFromEnum: function (enumInstance,_enum){
-            this.checkEnumInstance(enumInstance);
-            return this.getEnums(enumInstance)[_enum.id];
+        getObservableFromEnum: function (instanceName,_enum){
+            this.checkEnumInstance(instanceName);
+            return this.getEnums(instanceName)[_enum.id];
         },
-        removeEnumByName: function (enumInstance, name){
-            this.checkEnumInstance(enumInstance);
-            var enums = this.getEnums(enumInstance);
+        removeEnumByName: function (instanceName, name){
+            this.checkEnumInstance(instanceName);
+            var enums = this.getEnums(instanceName);
             Object.keys(enums).map(function (key){
                 if (enums[key]._enum.name == name) {
                     enums[key].fireEvent('enumdeleted');
@@ -117,15 +96,15 @@
                 }
             })
         },
-        removeEnumById: function (enumInstance, id){
-            this.checkEnumInstance(enumInstance);
-            var enums = this.getEnums(enumInstance);
+        removeEnumById: function (instanceName, id){
+            this.checkEnumInstance(instanceName);
+            var enums = this.getEnums(instanceName);
             enums[id].fireEvent('enumdeleted');
             delete this.enums[id];
         },
-        add: function (enumInstance, _enum){
-            this.checkEnumInstance(enumInstance);
-            var enums = this.getEnums(enumInstance);
+        add: function (instanceName, _enum){
+            this.checkEnumInstance(instanceName);
+            var enums = this.getEnums(instanceName);
 
             if (enums[_enum.id])
                 enums[_enum.id].fireEvent('enumchanged', _enum);
@@ -134,13 +113,11 @@
             }
             enums[_enum.id]._enum = _enum;
         },
-        load: function (enumInstance, callback, onError,mask,instanceConfig){
+        load: function (instanceName, callback, onError,mask){
             var self =this;
-            nom.request('getServerHeaders',{enumInstance:enumInstance},function (response, o){
-                self.loaded[enumInstance] = true;
-                self.instanceConfigs[enumInstance] = instanceConfig;
-
-                var enums = self.getEnums(enumInstance);
+            nom.request('getServerHeaders',{enumInstance:instanceName},function (response, o){
+                self.loaded[instanceName] = true;
+                var enums = self.getEnums(instanceName);
                 response.enums._each_(function (_enum){
                     if (enums[_enum.id] ) {
                         if(JSON.stringify(_enum) !== JSON.stringify(enums[_enum.id]._enum))
@@ -159,80 +136,277 @@
                 });
 
                 self.defaultFields = response.defaultFields;
-                self.simpleTree[enumInstance] = response.simpleTree;
+                self.simpleTree[instanceName] = response.simpleTree;
                 nom.execute(callback);
 
             },onError,mask);
         },
-        getEnums: function(enumInstance){
-            if(!this.enums[enumInstance])
-                this.enums[enumInstance] = {};
-            return this.enums[enumInstance];
+        getEnums: function(instanceName){
+            if(!this.enums[instanceName])
+                this.enums[instanceName] = {};
+            return this.enums[instanceName];
         },
-        hasLoaded: function (enumInstance){
-            return this.loaded[enumInstance];
+        hasLoaded: function (instanceName){
+            return this.loaded[instanceName];
         },
-        eachEnumFieldSync: function (enumInstance, enumId, pFn, scope){
-            this.getEnumById(enumInstance,enumId).fields._each_(function (fld, fieldId){
+        eachEnumFieldSync: function (instanceName, enumId, pFn, scope){
+            this.getEnumById(instanceName,enumId).fields._each_(function (fld, fieldId){
                 if (fieldId !== nom.Type.PrimaryKey.UNIQUE_ID) {
                     return pFn.call(scope, fld, fieldId, this);
                 }
             });
         },
-        getSimpleTree:function(enumInstance){
-            this.checkEnumInstance(enumInstance);
-            return this.simpleTree[enumInstance];
+        getSimpleTree:function(instanceName){
+            this.checkEnumInstance(instanceName);
+            return this.simpleTree[instanceName];
         },
-        getDefaultFields:function(enumInstance, tpl) {
-            this.checkEnumInstance(enumInstance);
-            var config = this.getConfigFromInstance(enumInstance, 'tpl'),
-                qb = function (v) {
-                    return v.isDenom
-                };
-            if(config === null)
-                config = {};
-
-            tpl = utils.isString(tpl) ? tpl: 'default';
-            config = (config[tpl] || {});
-            //if tpl:default == true
-            if(config === true)
-                config = this.defaultFields;
-            else
-                config = config.defaultFields;
-
-            if (config != null) {
-                if (config._queryBy_(qb)._length_() == 0)
-                    //esto es porque siempre siempre, un nomenclador tiene que tener un campo denominacion
-                    config['denom_rand_1254'] = this.defaultFields._queryBy_(qb)._first_();
-                return config;
-            }
-            return this.defaultFields;
-        },
-
-        getDenomField:function(enumInstance,_enum){
-
-            var denomField = null;
-            if(!utils.isString(_enum))
+        getDenomField:function(instanceName,_enum){
+            if(utils.isObject(_enum))
                 _enum = _enum.id;
 
-            this.eachEnumFieldSync(enumInstance,_enum,function (field) {
-                if(field.isDenom){
-                    denomField = field;
-                    return null;
-                }
-            }, this);
-            return denomField;
+            return this.getEnumById(instanceName,_enum).denomField;
+        },
+        //Devuelve los campos por defecto definidos en el servidor.
+        getDefaultFields:function() {
+            return this.defaultFields;
         },
         getFieldsIdFromEnum:function(_enum){
             return _enum.fields._map_(function(v, k){
                 return k;
             },this, false)
-        },
-        getConfigFromInstance:function(enumInstance,configName) {
-            var configs = this.instanceConfigs[enumInstance];
+        }
 
-            return configs === undefined ? null :
-                ( configs[configName] === undefined ? null : configs[configName] )
+    });
+    nom.ActionManager = function(actions){
+        /**
+         * actions =
+         * {
+         *   actionType :{
+         *     when :[action, ...]
+         *   }
+         * }
+         * actionType = [enumInstanceAdding,addEnum, removeEnum, modEnum]
+         * when = [pre, post]
+         * action = pluginName.Action
+         */
+        this.actions = utils.isObject(actions) ? actions : {};
+
+    };
+    nom.ActionManager = Ext.extend(nom.ActionManager,{
+
+        addAction:function(when, actionType, action){
+
+            if(action === undefined){
+                action = actionType;
+                actionType = when;
+                when = 'pre';
+            }
+
+            if(this.actions[actionType] == null)
+                this.actions[actionType] = {};
+            if(!utils.isArray(this.actions[actionType][when]))
+                this.actions[actionType][when] = [];
+
+            this.actions[actionType][when].push(action);
+        },
+        getActions:function(actionManager){
+            if(actionManager instanceof nom.ActionManager){
+                var actions = new nom.ActionManager(this.actions._clone_()),
+                    extActions = actionManager.getActions();
+                extActions._each_(function(v,k){
+                    v._each_(function(v2,k2){
+                        actions.addAction(k,k2,v);
+                    })
+                });
+                return actions.getActions();
+            }
+
+            return this.actions;
+        },
+    });
+    nom.InstanceManager = function() {
+        this.instances = {};
+        this.defaultInstance = 'default';
+        this.configs = {};
+    };
+    nom.InstanceManager.prototype = {
+        //Configurations by instance-instanceModifiers (This is used for splitting UI features)
+        instances:null,
+        verifyInstance:function(instanceName, instanceModifier){
+
+            instanceModifier = this.getInstanceNameModifier(instanceModifier);
+            var id = this.getInstanceId(instanceName, instanceModifier);
+            if(this.configs[id] === undefined)
+                this.configs[id] = new nom.EnumInstance(instanceName,instanceModifier);
+            return this.configs[id];
+
+        },
+        getInstance:function(instanceName, instanceModifier){
+            return this.verifyInstance(instanceName,instanceModifier);
+        },
+        getInstanceNameModifier:function(instanceModifier){
+            if(!utils.isString(instanceModifier))
+                instanceModifier = this.defaultInstance;
+            return instanceModifier;
+        },
+        getInstanceId:function(instanceName, instanceModifier){
+            instanceModifier = this.getInstanceNameModifier(instanceModifier);
+            return instanceName+'-'+instanceModifier;
+        }
+    };
+    //Representa una instancia de nomenclador, una configuracion por cada instancia.
+    nom.EnumInstance = function(name,instanceModifier){
+        this.name = name;
+        this.instanceModifier = instanceModifier;
+        this.actionManager = new nom.ActionManager();
+    };
+    nom.EnumInstance.prototype = {
+        //InstanceName (This is used for splitting groups of entities)
+        name:null,
+        instanceModifier:null,
+        getActionManager:function(){
+            return this.actionManager;
+        },
+        /**
+         * Sobrescribe la configuracion para esta instancia de nomencladores.
+         * @param config  Objeto de la misma forma q se especifica en InstanceConfigClass
+         */
+        setInstanceConfig:function(config ){
+            this.config = new nom.InstanceConfigClass(config);
+        },
+        getInstanceConfig:function() {
+            if(this.config === undefined)
+                this.config = new nom.InstanceConfigClass();
+            return this.config;
+        },
+        getInstanceNameModifier:function(){
+            return this.instanceModifier;
+        },
+        getName: function(){
+            return this.name;
+        },
+        getInstanceId: function(){
+            return enums.getInstanceManager().getInstanceId(this.name, this.instanceModifier);
+        }
+    };
+
+    nom.InstanceConfigClass = function(config){
+        this._apply_(config);
+
+        this.tpl = (this.tpl || {})._map_(function(v,k){
+            return new nom.Tpl(v);
+        })
+    };
+    nom.InstanceConfigClass = Ext.extend(nom.InstanceConfigClass, {
+        getEnumDataEditor: function(tplName){
+            var dataEditor = this.getValueFromTpl('enumDataEditor', tplName);
+            if(utils.isObject(dataEditor))
+                return dataEditor;
+            return nom.GridDataEditor;
+        },
+        getFormDataEditor: function(tplName){
+            return this.getValueFromTpl('formDataEditor',tplName);
+        },
+        getValueFromTpl:function(objName, tplName){
+            var value = null;
+            if(this[objName])
+                value = this[objName];
+            if(this.existTpl(tplName) && this.tpl[tplName][objName] !== undefined)
+                value = this.tpl[tplName][objName];
+            return value;
+        },
+        existTpl:function(tplName){
+            return utils.isObject(this.tpl) && utils.isObject(this.tpl[tplName]);
+        },
+        getDefaultTplName:function(){
+            return utils.isString(this.defaultTpl)? this.defaultTpl:nom.tplDefaultId;
+        },
+        getDefaultDataSource:function(tplName){
+            return this.getValueFromTpl('defaultDataSource',tplName);
+        },
+        getAllTpl:function(skipDefautl){
+            var self = this;
+            if(!skipDefautl)
+                return this.tpl;
+            return this.tpl._queryBy_(function(v,k){
+                return k !== self.getDefaultTplName() && k !== nom.tplDefaultId ;
+            },this, true)
+        },
+        getTpl:function(tplName){
+            var tplConfig = new nom.Tpl();
+            if(this.tpl)
+                tplConfig = new nom.Tpl(this.tpl[tplName]);
+            return tplConfig;
+        }
+    });
+    nom.Tpl = function(config) {
+        this._apply_(config);
+        if(!utils.isObject(this.extraProps))
+            this.extraProps = {};
+    };
+    nom.tplDefaultId ='default';
+
+    /**
+     * Tpl q define como es q se va a construir el nomenclador. Solo se usa a la hora de construccion, las validaciones
+     * no son contra esto. Tambien da una configuracion de como es q se va a mostrar en el arbol de nomencladores.
+     *
+     * readOnly:   Los nomencladores q tengan esto en su tpl, no pueden ser modificados desde nomencladores,
+     *                                    Ni pueden ser creados o modificados desde nomencladores
+     * hidden:     No se van a mostrar los nomencladores en el arbol de nomencladores q tengan este tpl.
+     * defaultFields: Listado de campos por defectos que se deben mostrar cada vez q se cree un nomenclador
+     *               Es de la forma  [field] donde cada field es de la misma forma en q se guarda
+     *               en el servidor los cada campo de un nomenclador.
+     * allowReferencing: Permite que aunque no se muestren los enum con este tpl, puedan ser referenciados
+     *                  por los nomencladores de otros tpl q si se muestran
+     * header:      Nombre a mostrar en el tpl
+     * dataTypes:   Objeto de la forma { dataTypeId:true}. Si el objeto es especificado se mustran los tipos en el objeto
+     *             Si el objeto no es especificado, se muestran todos los tipos.
+     * extraProps:  Objeto q contiene un listado de propiedades extras en una entidad, La llave es
+     *             el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
+     *              Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
+     *             el json del nomenclador q se construyo.
+     * defaultDataSource: Id del dataSource q se va a tomar por defecto.
+     */
+    nom.Tpl = Ext.extend(nom.Tpl,{
+        isReadOnly: function(){
+            return this.readOnly;
+        },
+        isHidden:function(){
+            return this.hidden;
+        },
+        getHeader:function() {
+            return this.header;
+        },
+        getExtraProps:function(){
+            return this.extraProps._queryBy_(function (v,k) {
+                return k !=='divisions';
+            },this,true);
+        },
+        getExtraPropsDivisions:function () {
+            return this.extraProps.divisions? this.extraProps.divisions : 2;
+        },
+        getDefaultFields:function() {
+            var qb = function (v) {
+                    return v.isDenom
+                },
+                config = null;
+            //if tpl:default == true
+            if(utils.isArray(this.defaultFields))
+                config = this.defaultFields;
+            else
+                config = enums.getDefaultFields();
+
+            if (config != null) {
+                if (config._queryBy_(qb)._length_() === 0)
+                //Si no tiene campo denominacion, le pongo uno
+                //esto es porque siempre siempre, un nomenclador tiene que tener un campo denominacion
+                    config['denom_rand_1254'] = enums.getDefaultFields()._queryBy_(qb)._first_();
+                return config;
+            }
+            return this.defaultFields;
+        },
+        getDefaultDataSource :function(){
+            return this.defaultDataSource;
         }
     });
 
@@ -246,51 +420,51 @@
         //     //idEnum+Idfield : [{enumId:"",fieldId:""}]
         // },
 
-        load: function (enumInstance, data){
-            this.referenced[enumInstance] = data
+        load: function (instanceName, data){
+            this.referenced[instanceName] = data
         },
-        getRefs:function(enumInstance){
-            if(!this.referenced[enumInstance])
-                this.referenced[enumInstance] = {};
-            return this.referenced[enumInstance];
+        getRefs:function(instanceName){
+            if(!this.referenced[instanceName])
+                this.referenced[instanceName] = {};
+            return this.referenced[instanceName];
         },
-        getAddRefs:function(enumInstance){
-            if(!this.addReference[enumInstance])
-                this.addReference[enumInstance] = {};
-            return this.addReference[enumInstance];
+        getAddRefs:function(instanceName){
+            if(!this.addReference[instanceName])
+                this.addReference[instanceName] = {};
+            return this.addReference[instanceName];
         },
-        getReferences: function (enumInstance,enumId, fieldId){
+        getReferences: function (instanceName,enumId, fieldId){
             var key = this.getKey(enumId, fieldId),
-                refs = this.getRefs(enumInstance);
+                refs = this.getRefs(instanceName);
 
             if (refs[key] != undefined)
                 if (refs[key]._length_() > 0)
                     return refs[key];
             return false;
         },
-        exists: function (enumInstance,fromEnum, fromField, toEnum, toField){
+        exists: function (instanceName,fromEnum, fromField, toEnum, toField){
             var from = this.getKey(fromEnum, fromField),
-                refs = this.getRefs(enumInstance),
+                refs = this.getRefs(instanceName),
                 to = this.getKey(toEnum, toField);
             if (!refs[to])
                 return false;
             return refs[to][from];
         },
-        add: function (enumInstance,fromEnum, fromField, toEnum, toField){
+        add: function (instanceName,fromEnum, fromField, toEnum, toField){
             var from = this.getKey(fromEnum, fromField),
-                addRefs = this.getAddRefs(enumInstance),
+                addRefs = this.getAddRefs(instanceName),
                 to = this.getKey(toEnum, toField);
 
             if (!addRefs[to])
                 addRefs[to] = {};
             addRefs[to][from] = 1;
         },
-        clearToAdd: function (enumInstance){
-            this.addReference[enumInstance] = {};
+        clearToAdd: function (instanceName){
+            this.addReference[instanceName] = {};
         },
-        getAddedReferences: function (enumInstance){
+        getAddedReferences: function (instanceName){
             var objs = [],
-                addRefs = this.getAddRefs(enumInstance);
+                addRefs = this.getAddRefs(instanceName);
             for (var to in addRefs){
                 var arr = to.split(":");
                 var toEnum = arr[0];
@@ -331,7 +505,7 @@
 
     /**
      * Funcion que retorna los datos de un nomenclador
-     * @param enumInstance     {string}        Identificador de la instancia de nomencladores a la cual pertenece enumId
+     * @param instanceName     {string}        Identificador de la instancia de nomencladores a la cual pertenece enumId
      * @param enumId           {string}        Identificador del nomenclador delque se cargaran los datos
      * @param callback         {function}      Funcion de callback para cuando se realice la carga
      * @param [scope]          {object}        Ambito en el que se ejecutara la funcion
@@ -353,7 +527,7 @@
      * @param [onError]        {function}      Funcion que se ejecuta cuando el pedido genera errors
      * @param [mask]           {function}      Funcion que cuando se ejecuta quita la mascara
      */
-    nom.getEnumData = function (enumInstance, enumId, callback, scope, enumDataLoadConfig, onError, mask){
+    nom.getEnumData = function (instanceName, enumId, callback, scope, enumDataLoadConfig, onError, mask){
         function proccessRequest (response, params){
             callback.call(scope,response, params);
         }
@@ -368,7 +542,7 @@
             });
 
         nom.request('getEnumData',{
-            enumInstance:enumInstance,
+            enumInstance:instanceName,
             enum: enumId,
             enumLoadPageSize: this._default_(enumDataLoadConfig.pageSize, 100000),
             enumLoadPageOffset: this._default_(enumDataLoadConfig.offset,0),
@@ -409,7 +583,7 @@
             return a.order>b.order;
         });
         fields._each_(function (field){
-            if (field.id == nom.Type.PrimaryKey.UNIQUE_ID) {
+            if (field.id === nom.Type.PrimaryKey.UNIQUE_ID) {
                 cmFields.push({header: "Llave primaria", dataIndex: field.id, hidden: true, sortable: true});
                 return;
             }
@@ -439,26 +613,17 @@
         });
         return new Ext.grid.ColumnModel(cmFields);
     };
-    nom.columnHeaderOver = function (el){
-        var s = 4;
-    };
-    nom.getDefaultColumnId = function (enumInstance, enumId){
-        var _enum = enums.getEnumById(enumInstance, enumId);
-        var id = '';
-        _enum.fields._each_(function (value, key){
-            if (value.isDefault && value.isDenom) {
-                id = value.id;
-                return null;
-            }
-        });
-        return id;
+    nom.getDefaultColumnId = function (instanceName, enumId){
+        var _enum = enums.getEnumById(instanceName, enumId);
+        return enums.getDenomField(instanceName,enumId);
     };
 
-    nom.getEnumStructure = function (enumInstance, pEnumId, pReturnList, filterFn, scope){
-        var enumDetails = enums.getEnumById(enumInstance, pEnumId),
+    //cosas de resumeView
+   /* nom.getEnumStructure = function (instanceName, pEnumId, pReturnList, filterFn, scope){
+        var enumDetails = enums.getEnumById(instanceName, pEnumId),
             fields = [];
 
-        enums.eachEnumFieldSync(enumInstance,pEnumId, function (pFld, pFldId){
+        enums.eachEnumFieldSync(instanceName,pEnumId, function (pFld, pFldId){
             var isEnum = pFld.type === 'DB_Enum',
                 nd = pFld._clone_();
             if (Ext.isFunction(filterFn)) {
@@ -471,7 +636,7 @@
             nd._ownerEnum_ = enumDetails;
             nd.fieldId = nd.id;
             nd.id = 'nomenclador_field_'._id_();
-            nd.items = isEnum ? nom.getEnumStructure(enumInstance,pFld.properties._enum, true) : [];
+            nd.items = isEnum ? nom.getEnumStructure(instanceName,pFld.properties._enum, true) : [];
 
             fields.push(nd);
         });
@@ -482,10 +647,37 @@
         }
 
         return fields;
+    };*/
+
+
+    nom.getEnumDataPanel=function(instanceName, _enum, config,instanceModifier){
+        var instance = enums.getInstance(instanceName,instanceModifier),
+            _interface = instance.getEnumDataEditor();
+
+        _enum =  nom.enums.getEnumById(instanceName, _enum);
+        instance.setInstanceConfig((config || {}).enumInstanceConfig);
+        var panel = new Ext.Panel({
+                layout: 'fit',
+                items: []
+            }),
+            c = {
+                _enum: _enum,
+                enumInstance: instance,
+                maskObj: panel
+            },
+            tab = new _interface(c._apply_(config || {}));
+
+        panel.add(tab.getUI());
+        panel.storeWriter = tab;
+        panel.doLayout();
+
+        return panel;
+
     };
 
-    nom.showEnumTree = function (enumInstance, showEnums, callBack, title){
-        var tree = new nom.nomencladorTree({
+    nom.showEnumTree = function (instanceName, showEnums, callBack, title, instanceModifier){
+        var enumInstance = enums.getInstance(instanceName,instanceModifier),
+            tree = new nom.nomencladorTree({
             showFields: false,
             showEnums: showEnums,
             autoLoadTree: true,
@@ -506,8 +698,8 @@
             isValid: function (){
                 var node = this.getSelectedNode();
                 return node != null && (
-                        (node.attributes._type_ == 'enum' && showEnums) ||
-                        (node.attributes._type_ == 'category' && !showEnums)
+                        (node.attributes._type_ === 'enum' && showEnums) ||
+                        (node.attributes._type_ === 'category' && !showEnums)
                     );
             },
             getXType: function (){
@@ -515,8 +707,7 @@
             }
         });
         tree.on('dblclick', function (){
-            if (showEnums && tree.getSelectionModel().getSelectedNode().attributes._type_ == 'enum' || !showEnums
-            )
+            if (showEnums && tree.getSelectionModel().getSelectedNode().attributes._type_ === 'enum' || !showEnums)
                 treeWD.btnAceptar.getEl().dom.click();
         });
 
@@ -570,7 +761,6 @@
         referencedField:null,
         readOnly:true,
         filterObj:null,
-        enumInstanceConfig:null,
         manageEnum:true,
         enumDirty:false,
         originalValue:null,
@@ -578,16 +768,11 @@
         constructor:function (config) {
             nom.enumInput.superclass.constructor.apply(this,arguments);
 
-            this._enum = utils.isString(this._enum)? enums.getEnumById(this.enumInstance, this._enum):this._enum;
+
+            this._enum = enums.getEnumById(this.enumInstance.getName(), this._enum);
             this.referencedField = this._enum.fields[this._fieldId];
             this.selector_columns = (this.selector_columns  || enums.getFieldsIdFromEnum(this._enum));
 
-            this.setValue.createInterceptor(
-                function(value){
-                    if(Ext.isObject(value))
-                        this.setDirtyValue(value);
-                    return true;
-                });
         },
         getFilterObj:function(){
             return this.filterObj;
@@ -603,7 +788,6 @@
                 config = {
                     _enum: this._enum,
                     enumInstance: this.enumInstance,
-                    enumInstanceConfig:this.enumInstanceConfig,
                     manageEnum:this.manageEnum,
                     showTitle:this.show2ndTitle,
                     columns:this.selector_columns,
@@ -611,8 +795,8 @@
                     excludeEnums: this.getExclusion(),
                     maskObj:panel
                 }._apply_(this.getFilterObj()),
-                tab = (this.enumInstanceConfig && this.enumInstanceConfig.enumDataEditor ) ?
-                    this.enumInstanceConfig.enumDataEditor : nom.GridDataEditor,
+                instanceConfig = this.enumInstance.getInstanceConfig(),
+                tab = instanceConfig.getEnumDataEditor(this._enum.tpl),
                 tab = new tab(config),
                 self = this;
 
@@ -655,21 +839,6 @@
 
             this.addModValueSetted = true;
             return obj;
-        },
-        setDirtyValue:function(obj){
-            if(this.originalValue === null){
-                if(Genesig.Utils.isObject(this.currentValue) && !this.addModValueSetted) {
-                    this.originalValue = this.currentValue;
-                    this.enumDirty = this.currentValue.valueField !== obj.valueField;
-                }
-                else {
-                    this.originalValue = false;
-                    this.enumDirty = true;
-                }
-            }
-            else {
-                this.enumDirty = this.originalValue === false  || (this.originalValue.valueField !== obj.valueField);
-            }
         },
         setValue:function(value,toClean){
             var type = nom.Type.Utils.getType(this.referencedField.type),
@@ -714,7 +883,12 @@
             return 'datachanged';
         },
         isDirty:function(){
-            return this.enumDirty;
+            if(utils.isObject(this.originalValue)){
+                return !(utils.isObject(this.currentValue)
+                    && this.currentValue.displayField === this.originalValue.displayField
+                    && this.currentValue.valueField === this.originalValue.valueField);
+            }
+            return utils.isObject(this.currentValue);
         }
 
     };
@@ -723,7 +897,7 @@
 
         // isGrid:true,
         constructor:function(config){
-            config._enum = (utils.isString(config._enum) ? enums.getEnumById(config.enumInstance, config._enum) : config._enum );
+            config._enum =  enums.getEnumById(config.enumInstance.getName(), config._enum);
             var t = nom.Type.Utils.getType(config._enum.fields[config._fieldId].type),
                 self =this,
                 fireDChanged = function(){
@@ -807,24 +981,7 @@
         }
     }));
 
-    nom.addMenuHandler = function(enumInstance, _enum, _interface, config) {
-        var panel = new Ext.Panel({
-                layout: 'fit',
-                items: []
-            }),
-            c = {
-                _enum: _enum,
-                enumInstance: enumInstance,
-                maskObj: panel
-            },
-            tab = new _interface(c._apply_(config));
 
-        panel.add(tab.getUI());
-        panel.storeWriter = tab;
-        panel.doLayout();
-
-        return panel;
-    };
 
 
     var enumSelector = Ext.extend(nom.enumInput,{
@@ -855,9 +1012,9 @@
      * @param dependsField  {AjaxPlugins.Nomenclador.enumInput}
      * @param modifing      {bool}        True para no inicializar los fields que dependen de otros en disable
      */
-    nom.makeFilter = function (enumInstance, currentField, dependsField, modifing){
+    nom.makeFilter = function (instanceName, currentField, dependsField, modifing){
 
-        var filter = nom.canBeFilteredBy(enumInstance, currentField._enum, dependsField._enum );
+        var filter = nom.canBeFilteredBy(instanceName, currentField._enum, dependsField._enum );
 
         if (!modifing)
             currentField.disable();
@@ -901,17 +1058,21 @@
      * @param config {object | string}  Es un objeto de configuracion o el string diciendo la instancia de nomencladores.
      *     excludeEnum  {object | string}  Contiene los nomencladores q se van a excluir, si es un objeto es de la forma {idEnum:true}
      *     includeEnum  {obectj} Es un nomenclador y si esta presente, solo se va a mostrar este mas todas las categorias
-     *     enumInstance {string} Es el nombre de la instancia de nomencladores. Es obligatorio
+     *     enumInstance {EnumInstance} Es el nombre de la instancia de nomencladores. Es obligatorio
      *     showFields   {bool}  Si es true, se van a mostrar los campos de los nomencladores.
      *     showEnums    {bool}  Dice si se muestran los nomencladores o no.
      *     checked      {array[string]}  Si este arreglo existe, muestra checkboxes en los nodos de los nomencladores
      *                        Y esta checked si el identificador del nomenclador esta en el arreglo
      *     nodesEvaluator {function}  Funcion q dice si un nodo va a formar parte del arbol o no
+     *     allowReferencing  {bool}   Dice si este renderizador fue llamado por el tipo enum para hacer refenrencias entre
+     *                         nomencladores.
      * @returns {*}
      */
     nom.treeNodesProxy = function (pAtrs, config){
         //Si config no es un objeto o string, entonces q de error.
         var config = utils.isString(config) ? {enumInstance:config}: config,
+            enumInstance = config.enumInstance,
+            instanceConfig = enumInstance.getInstanceConfig(),
             toExclude = config.excludeEnum,
             toInclude = config.includeEnum,
             typ = pAtrs._type_ || ('childs' in pAtrs ? 'category' : 'enum'),
@@ -919,17 +1080,22 @@
             isCat = typ == 'category',
             children = null,
             checked = undefined,
-            text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(config.enumInstance, pAtrs.idNode).name,
+            text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(enumInstance.getName(), pAtrs.idNode).name,
             enumFields = config.showFields && isEnum ? (
-                enums.getEnumById(config.enumInstance, pAtrs.idNode).fields._queryBy_(function (pV){
-                    return pV.id != nom.Type.PrimaryKey.UNIQUE_ID && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
+                enums.getEnumById(enumInstance.getName(), pAtrs.idNode).fields._queryBy_(function (pV){
+                    return pV.id !== nom.Type.PrimaryKey.UNIQUE_ID && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
                 }, this, true)
             ) : [];
         if(isCat) {
             children = this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK) {
+                var _enum = nom.enums.getEnumById(enumInstance.getName(), pV.idNode),
+                    tplName = _enum.tpl,
+                    tplConfig = instanceConfig.getTpl(tplName);
+
                 return 'childs' in pV || (
-                    (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode != toExclude))
-                    && (!toInclude || toInclude.id == pV.idNode)
+                    (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode !== toExclude))
+                    && (!tplConfig.isHidden() || (tplConfig.allowReferencing && config.allowReferencing))
+                    && (!toInclude || toInclude.id === pV.idNode)
                     && (config.showEnums && !('childs' in pV))
                 );
             }, this, true)._map_(function (pV, pK) {
@@ -966,24 +1132,25 @@
             text :text,
             category :pAtrs.childs,
             iconCls : (isEnum ? 'enum_tree_node gisTtfIcon_webdev-seo-form' : 'enumCategoryTreeIcon'),
-            leaf :children === null,
+            leaf :children === null || children._length_() === 0,
             _text_ :text,
             allowChildren :pAtrs.childs != null,
             checked: checked,
-            tpl: enums.getEnumById(config.enumInstance,pAtrs.idNode).tpl
+            tpl: enums.getEnumById(enumInstance.getName(),pAtrs.idNode).tpl
         });
         return pAtrs;
     };
 
-    nom.getEnumSelectorClass = function(enumInstance,enumId, columnId, manageEnum, filterBy,value, visualConfigs ){
-        var _enum = nom.enums.getEnumById(enumInstance,enumId),
-            columnId = columnId || nom.getDefaultColumnId(enumInstance,enumId),
+    nom.getEnumSelectorClass = function(instanceName,enumId, columnId, manageEnum, filterBy,value, visualConfigs, instanceModifier ){
+        var _enum = nom.enums.getEnumById(instanceName,enumId),
+            instance = nom.enums.getInstance(instanceName, instanceModifier),
+            columnId = columnId || nom.getDefaultColumnId(instanceName,enumId),
             columns = [columnId],
-            selector_columns = visualConfigs ? visualConfigs.selector_columns : undefined,
-            selectorTitle = visualConfigs? visualConfigs.selectorTitle: undefined,
-            show2ndTitle = visualConfigs? visualConfigs.show2ndTitle: undefined;
+            selector_columns = visualConfigs ? visualConfigs.selector_columns: undefined,
+            selectorTitle = visualConfigs ? visualConfigs.selectorTitle: undefined,
+            show2ndTitle = visualConfigs ? visualConfigs.show2ndTitle: undefined;
 
-        _enum = _enum ? _enum:nom.enums.getEnumByName(enumInstance,enumId);
+        _enum = _enum ? _enum:nom.enums.getEnumByName(instanceName,enumId);
 
         if(selector_columns === 'all')
             columns = null;
@@ -1001,7 +1168,7 @@
             selector_columns:columns,
             modifying:value,
             filterBy:filterBy,
-            enumInstance:enumInstance,
+            enumInstance:instance,
             manageEnum:manageEnum
         });
     };
@@ -1011,9 +1178,9 @@
      * @param _enum  {object|string}    Enum que se va a filtrar.
      * @param byEnum {object|string}    Enum por el que se quiere filtrar.
      */
-    nom.canBeFilteredBy = function (enumInstance, _enum, byEnum){
-        _enum = _enum._isString_() ? enums.getEnumById(enumInstance,_enum) : _enum;
-        byEnum = byEnum._isString_() ? enums.getEnumById(enumInstance,byEnum) : byEnum;
+    nom.canBeFilteredBy = function (instanceName, _enum, byEnum){
+        _enum = _enum._isString_() ? enums.getEnumById(instanceName,_enum) : _enum;
+        byEnum = byEnum._isString_() ? enums.getEnumById(instanceName,byEnum) : byEnum;
 
         var fieldToFilterBy = null;
 
@@ -1030,51 +1197,53 @@
 
    /**
      * Muestra la ventana principal de nomencladores de la instancia enumInstance usando la configuracion config.
-     * @param enumInstance  {string}    Nombre de la instancia de nomencladores. Nuevo nombre crea una instancia nueva.
+     * @param instanceName  {string}    Nombre de la instancia de nomencladores. Nuevo nombre crea una instancia nueva.
      * @param config    {object}        Configuracion con la cual se va a ejecutar esta instancia de nomencladores.
      *                       formDataEditor: Debe contener el prototipo de la clase que se va a usar como formulario
      *                                      a la hora de insertar datos. Debe heredar de FormDataEditor.
      *                       enumDataEditor: Debe contener el prototipo de la clase que se va a usar como interfaz para
      *                                      visualizar los datos. Debe heredar de EnumStoreWriter si esta interfaz va a
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
-    *            tpl: "nombre Tpl":
-     *                       defaultFields: Listado de campos por defectos que se deben mostrar cada vez q se cree un nomenclador
-     *                                      Es de la forma  [field] donde cada field es de la misma forma en q se guarda
-     *                                      en el servidor los cada campo de un nomenclador.
-    *                        dataTypes: Objeto de la forma { dataTypeId:true}
-    *                        extraProps: Objeto q contiene un listado de propiedades extras en una entidad, La llave es
-    *                                  el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
-    *                                  Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
-    *                                  el json del nomenclador q se construyo.
+    *                        defaultTpl:  Identificador del tpl que va a mostrar por defecto.
+    *                        defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
+    *                                    nomencladores de esta instancia.
+    *            tpl: "id":
+    *                        tplConfio: Ver Tpl
     *                 Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
     *                 instancia de nomencladores.
-    *            defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
-    *                                    nomencladores de esta instancia.
+    *
+    *  @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
+    *                                    agrupa configuraciones de UI.
      *
      */
-    nom.showUI = function (enumInstance, config){
-        nom.getUI(enumInstance, config).show();
+    nom.showUI = function (instanceName, config, instanceModifier){
+        nom.getUI(instanceName, config,instanceModifier).show();
     };
-    nom.getUI = function(enumInstance, config){
-        enumInstance = enumInstance? enumInstance : nom.export.DEFAULT_INSTANCE;
-        if(!nom.UIDict[enumInstance]) {
-            nom.UIDict[enumInstance] = new nom.nomencladorEditor({
-                enumInstance: enumInstance,
+    nom.getUI = function(instanceName, config, instanceModifier){
+        instanceName = instanceName ? instanceName : nom.export.DEFAULT_INSTANCE;
+        var instance = enums.getInstance(instanceName,instanceModifier),
+            instanceId = instance.getInstanceId();
+        instance.setInstanceConfig(config);
+
+
+        if(!nom.UIDict[instanceId]) {
+            nom.UIDict[instanceId] = new nom.nomencladorEditor({
+                enumInstance: instance,
                 listeners: {
                     close: function () {
-                        AjaxPlugins.Nomenclador.removeUI(this.enumInstance);
+                        AjaxPlugins.Nomenclador.removeUI(instanceId);
                     }
                 }
-            }._apply_({enumInstanceConfig:config ? config: false }));
-            AjaxPlugins.Location.registerWindows(nom.UIDict[enumInstance]);
+            });
+            AjaxPlugins.Location.registerWindows(nom.UIDict[instanceId]);
         }
-        return nom.UIDict[enumInstance];
+        return nom.UIDict[instanceId];
     };
     nom.eachUI = function(callBack){
         nom.UIDict._each_(callBack);
     };
-    nom.removeUI = function(enumInstance){
-        nom.UIDict[enumInstance] = null;
+    nom.removeUI = function(instanceName){
+        nom.UIDict[instanceName] = null;
     };
     nom.UIDict = {};
 
@@ -1114,7 +1283,11 @@
         params['action'] =action;
 
         if(params.enumInstance) {
-            var actions = nom.enums.getActionManager().getActions(params.enumInstance);
+
+            if(params.enumInstance instanceof nom.EnumInstance)
+                params.enumInstance = params.enumInstance.getName();
+
+            var actions = nom.enums.getActionManager(params.enumInstance).getActions(params.enumInstance);
             if(params['actions'])
                 params['actions']._apply_(actions);
             else

@@ -137,12 +137,12 @@
 		},
 		getValidFields :function (enumInstance, fields){
 			return fields._queryBy_(function (value, key){
-				if (value.type == 'DB_GeoFormula' || value.type == 'DB_MapserverLayer')
+				if (value.type === 'DB_GeoFormula' || value.type === 'DB_MapserverLayer')
 					return true;
-				else if (value.type == 'DB_Enum') {
-					var _enum = nom.enums.getEnumById(enumInstance, value.properties._enum);
+				else if (value.type === 'DB_Enum') {
+					var _enum = nom.enums.getEnumById(enumInstance.getName(), value.properties._enum);
 					var type = _enum.fields[value.properties.field].type;
-					return type == 'DB_GeoFormula' || type == 'DB_MapserverLayer';
+					return type === 'DB_GeoFormula' || type === 'DB_MapserverLayer';
 				}
 				return false;
 			});

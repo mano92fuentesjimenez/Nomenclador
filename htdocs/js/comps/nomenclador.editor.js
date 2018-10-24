@@ -29,6 +29,7 @@
 		title:'Gestionar nomencladores',
 		indexedTreePlg : null,
 		nomencladorPlugins : null,
+        enumInstance:null,
 
 		enumsTreePanelToolbar : null,
 		enumsEditPanelToolbar : null,
@@ -151,9 +152,6 @@
 		constructor: function () {
 
 			this.enumInstance = arguments[0].enumInstance;
-			this.enumInstanceConfig = arguments[0].enumInstanceConfig;
-			if( this.enumInstanceConfig == null)
-			    this.enumInstanceConfig = {};
 
 			this.treePanel = new nom.treeEditorPanel({
 				region:'center',
@@ -163,7 +161,6 @@
 				},
 				canMoveEnums:true,
 				enumInstance:this.enumInstance,
-				enumInstanceConfig:this.enumInstanceConfig,
                 maskObj: this
 			});
 
@@ -171,8 +168,7 @@
 				region: 'center',
 				editorComponent : this,
 				items: [],
-				enumInstance: this.enumInstance,
-				enumInstanceConfig:this.enumInstanceConfig
+				enumInstance: this.enumInstance
 			});
 
 			nom.nomencladorEditor.superclass.constructor.call(this, Ext.apply(arguments[0] || {}, {
@@ -268,14 +264,14 @@
 			return false;
 		},
 		dialogHandler: function (buttonId) {
-			if (buttonId == "yes") {
+			if (buttonId === "yes") {
 				this.visorTabPanel.saveAndClose();
 				this.visorTabPanel.on("saved", function () {
 					this.CLOSEEEEE = true;
 					this.close();
 				}, this)
 			}
-			if (buttonId == "no") {
+			if (buttonId === "no") {
 				this.CLOSEEEEE = true;
 				this.close();
 			}
@@ -291,7 +287,7 @@
 		 * @param _enum {string| object} Id del enum o el enum a mostrar.
 		 */
 		showEnum:function(_enum){
-			var _enum = _enum._isString_() ? enums.getEnumById(this.enumInstance, _enum) : _enum;
+			var _enum = enums.getEnumById(this.enumInstance.getName(), _enum);
 			this.visorTabPanel.addEnumTab(_enum);
 			
 		},
@@ -309,13 +305,10 @@
         autoScroll: true,
         canMoveEnums:true,
         askToChangeEnum:null,
-        enumInstanceConfig:null,
         maskObj:null,
         constructor: function (cfg) {
 
             var self = this;
-            this.enumInstance = arguments[0].enumInstance;
-            this.enumInstanceConfig = arguments[0].enumInstanceConfig || {};
             this._apply_(cfg);
 
             this.initializeMenu();
@@ -402,7 +395,7 @@
                     listeners: {
                         "beforeshow": function (t) {
                             var _enumName = t.triggerElement.innerText;
-                            var _enum = enums.getEnumByName(self.enumInstance, _enumName);
+                            var _enum = enums.getEnumByName(self.enumInstance.getName(), _enumName);
                             if (_enum.description == "")
                                 return false;
                             t.body.dom.innerHTML = "<h1>" + _enum.description + "<h1>";
@@ -412,7 +405,8 @@
             }, this);
         },
         initializeMenu : function(){
-            var mn = this.menuOptions = new comps.MenuDynamic(false);
+            var mn = this.menuOptions = new comps.MenuDynamic(false),
+                instanceConfig = this.enumInstance.getInstanceConfig();
 
             mn.registerItem(
                 [
@@ -450,7 +444,7 @@
                         text: 'Modificar '+ this.entityType,
                         iconCls : 'gis_modificar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_('mod_enum',this, true)
+                        handler: this.proccessAction._delegate_(['mod_enum'],this, true)
                     },
                     {
                         text: 'Eliminar '+this.entityType,
@@ -466,11 +460,12 @@
                 'nomenclador'
             );
 
-            var addEnumMenu = (this.enumInstanceConfig.tpl || {})._queryBy_(function(v,k){
-                return k !== 'default';
-            },this,true)._map_(function(v,k){
+
+            var addEnumMenu = instanceConfig.getAllTpl(true)._queryBy_(function(tpl){
+                return !tpl.isReadOnly() && !tpl.isHidden() && instanceConfig.getDefaultTplName() !== tpl.getHeader();
+            },this,true)._map_(function(tpl,k){
                 return {
-                    text:k,
+                    text:tpl.getHeader(),
                     handler:this.proccessAction._delegate_(['add_enum',k],this, true)
                 };
             },this,false);
@@ -482,7 +477,7 @@
                         text: 'Adicionar '+this.entityType,
                         iconCls : 'gis_adicionar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_(['add_enum','default'],this, true),
+                        handler: this.proccessAction._delegate_(['add_enum',instanceConfig.getDefaultTplName()],this, true),
                         menu:addEnumMenu
                     }
                 ],
@@ -510,7 +505,7 @@
                         this.removeRank(pN);
                     },
                     mod_enum : function(pN){
-                        this.modNomenclador(pN, tpl);
+                        this.modNomenclador(pN);
                     },
                     rem_enum : function(pN){
                         this.removeNomenclador(pN)
@@ -530,7 +525,8 @@
             }
         },
         addNomenclador: function (tpl) {
-            var self = this;
+            var self = this,
+                instanceConfig = this.enumInstance.getInstanceConfig();
             nom.request('hasDataSources',{enumInstance:this.enumInstance},function (resp) {
                 if (!resp) {
                     errorMsg( "Debe crear una fuente de datos para poder crear un nomenclador");
@@ -544,8 +540,8 @@
                     enumInstance:self.enumInstance,
                     entityType:self.entityType,
                     tpl:tpl,
-                    tplConfigs:self.enumInstanceConfig.tpl || {},
-                    defaultDataSource: self.enumInstanceConfig.defaultDataSource || {}
+                    tplConfig:instanceConfig.getTpl(tpl),
+                    defaultDataSource: instanceConfig.getDefaultDataSource(tpl)
                 })).show();
             });
 
@@ -630,8 +626,11 @@
 
             });
         },
-        modNomenclador: function (node, tpl) {
-            var _enum = enums.getEnumByName(this.enumInstance,node.text),
+        modNomenclador: function (node) {
+            var _enum = enums.getEnumByName(this.enumInstance.getName(),node.text),
+                tpl = _enum.tpl,
+                instanceConfig = this.enumInstance.getInstanceConfig(),
+                tplConfig = instanceConfig.getTpl(tpl),
                 self = this,
                 f = function(){
                     nom.request('modEnumData',{ enumId:_enum.id, enumInstance:self.enumInstance},function (response) {
@@ -647,10 +646,15 @@
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
                             tpl:tpl,
-                            tplConfigs: self.enumInstanceConfig.tpl || {}
+                            tplConfig: tplConfig
                         }).show();
                     });
                 };
+
+            if(tplConfig.isReadOnly()){
+                infoMsg('Este '+this.entityType+' no se puede modificar porque es de solo lectura');
+                return;
+            }
             if(this.askToChangeEnum == null)
                 f();
             else
@@ -676,21 +680,26 @@
         },
         removeNomenclador: function (node) {
             var mask = Genesig.Utils.mask(this,'Eliminando '+this.entityType+': '+node.attributes._text_+'.'),
-                self = this;
-
+                _enum = enums.getEnumByName(this.enumInstance.getName(),node.attributes._text_),
+                self = this,
+                tpl = this.enumInstance.getInstanceConfig().getTpl(_enum.tpl);
+            if(tpl.isReadOnly()){
+                infoMsg('Este '+this.entityType+' no se puede eliminar porque es de solo lectura');
+                return;
+            }
 
             AjaxPlugins.Ext3_components.Messages.MessageBox.confirm("Confirmaci&oacute;n","&iquest;Est&aacute; seguro que desea eliminar el "+this.entityType+": "+node.attributes._text_+'?',function(b){
 
                 if (b == 'ok') {
                     nom.request('removeEnum',{
                         enumInstance:this.enumInstance,
-                        enumId: enums.getEnumByName(self.enumInstance, node.text).id,
+                        enumId: enums.getEnumByName(self.enumInstance.getName(), node.text).id,
                         path: node.getPath('idNode')
                     },function (response) {
 
                         infoMsg('El nomenclador: ' + node.attributes._text_ + ' ha sido eliminado satisfactoriamente.');
 
-                        enums.removeEnumByName(self.enumInstance, node.text);
+                        enums.removeEnumByName(self.enumInstance.getName(), node.text);
 
                         self.reloadTreeNode(node.parentNode);
                         self.fireEvent('enumremoved',self.getEnumFromNode(node));
@@ -710,7 +719,7 @@
             },this);
         },
 		getEnumFromNode:function(node){
-            return enums.getEnumByName(this.enumInstance,node.text)
+            return enums.getEnumByName(this.enumInstance.getName(),node.text)
 		},
         removeRank: function (node) {
             AjaxPlugins.Ext3_components.Messages.MessageBox.confirm("Confirmaci&oacute;n","&iquest;Est&aacute; seguro que quiere eliminar la "+this.addRankButtonText+" seleccionada con todas las subcategor&iacute;as y "+this.entityType+"(s) de la misma?",function(b) {
@@ -758,7 +767,7 @@
                 _enumPath: _enumPath,
                 refs: obj.refs
             }, function () {
-                enums.add(self.enumInstance, _enum);
+                enums.add(self.enumInstance.getName(), _enum);
                 self.reloadTreeNode(_enum.id);
 
                 infoMsg('El nomenclador ha sido adicionado satisfactoriamente');
@@ -770,10 +779,10 @@
             nom.request('modEnum', {
                 enumInstance:this.enumInstance,
                 'changes': changes,
-                'original': enums.getEnumByName(self.enumInstance,node.text)
+                'original': enums.getEnumByName(self.enumInstance.getName(),node.text)
             }, function (r) {
                 var _enum = changes._enum;
-                enums.add(self.enumInstance, _enum);
+                enums.add(self.enumInstance.getName(), _enum);
                 self.reloadTreeNode(node);
 
                 infoMsg('Se ha modificado satisfactoriamente el nomenclador.');
@@ -785,7 +794,7 @@
             AjaxPlugins.Ext3_components.Messages.MessageBox.confirm('Eliminar en cascada', 'Est&aacute; seguro de que quiere' +
                 ' eliminar en cascada.',function(r){
                 if(r == 'ok'){
-                    var _enum = enums.getEnumByName(self.enumInstance, node.text);
+                    var _enum = enums.getEnumByName(self.enumInstance.getName(), node.text);
                     var path = node.getPath('text');
                     var mask = Genesig.Utils.mask(self);
                     nom.request('delOnCascade',{

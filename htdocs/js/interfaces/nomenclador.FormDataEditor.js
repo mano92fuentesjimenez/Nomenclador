@@ -11,10 +11,9 @@
         enums = nom.enums,
         addW = AjaxPlugins.Ext3_components.Windows.AddModWindow;
 
-    nom.interfaces.FormDataEditor = Ext.extend(function (enumInstance, _enum, enumInstanceConfig, columns) {
+    nom.interfaces.FormDataEditor = Ext.extend(function (enumInstance, _enum, columns) {
         this.enumInstance = enumInstance;
         this._enum = _enum;
-        this.enumInstanceConfig = enumInstanceConfig;
         this.columns = columns;
     }, {
         getEnumFields: function () {

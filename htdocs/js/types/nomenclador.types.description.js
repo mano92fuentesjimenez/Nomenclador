@@ -10,7 +10,7 @@
         addType =nom.Type.Utils.addType;
 
     addType('DB_Description',Ext.extend(nom.Type.ValueType, {
-        nameToShow :"Descripcion",
+        nameToShow :"Descripci\u00F3n",
         getValueEditExtComp :function (enumInstance, field){
             var fld = new fields.fieldDescripcion({
                 allowBlank :!field.needed,
@@ -35,7 +35,7 @@
 				var wrap = fld.el.wrap({
 					children:[{
 						id: id,
-						cls:'gis_grow_button'
+						cls:'gis_grow_button gisIconColorTheme gisTtfIcon_flaticon-increase-size-option'
 					}]
 				});
 				fld.wrap = wrap;

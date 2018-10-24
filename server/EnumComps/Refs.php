@@ -46,11 +46,11 @@ class Refs
     public static function getInstance($enumInstance)
     {
         if(!$enumInstance)
-            throw new Exception('Instancia no usada');
-        if (!self::$instance) {
-            self::$instance = new Refs($enumInstance);
+            throw new Exception();
+        if (!array_key_exists($enumInstance, self::$instance)) {
+            self::$instance[$enumInstance] = new Refs($enumInstance);
         }
-        return self::$instance;
+        return self::$instance[$enumInstance];
     }
 
 

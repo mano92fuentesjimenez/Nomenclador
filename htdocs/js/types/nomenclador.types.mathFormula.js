@@ -14,7 +14,7 @@
 		constructor :function (){
 			types.DB_MathFormula.superclass.constructor.apply(this, arguments);
 		},
-		nameToShow :'F&oacute;rmula Matem&aacute;tica'._parse2Unicode_(),
+		nameToShow :'F\u00F3rmula Matem\u00E1tica'._parse2Unicode_(),
 		getPropertiesExtComp :function (enumInstance,_enumId, fieldId, fields){
 			var fields = this.getValidFields(enumInstance,fields)._map_(function (v){
 				return {
@@ -96,12 +96,12 @@
 		},
 		getValidFields :function (enumInstance, fields){
 			return fields._queryBy_(function (value, key){
-				if (value.type == 'DB_Number' || value.type == 'DB_MathFormula')
+				if (value.type === 'DB_Number' || value.type === 'DB_MathFormula')
 					return true;
-				else if (value.type == 'DB_Enum') {
-					var _enum = nom.enums.getEnumById(enumInstance, value.properties._enum);
+				else if (value.type === 'DB_Enum') {
+					var _enum = nom.enums.getEnumById(enumInstance.getName(), value.properties._enum);
 					var type = _enum.fields[value.properties.field].type;
-					return type == 'DB_Number' || type == 'DB_MathFormula';
+					return type === 'DB_Number' || type === 'DB_MathFormula';
 				}
 				return false;
 			});

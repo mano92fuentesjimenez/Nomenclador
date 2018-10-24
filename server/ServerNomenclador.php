@@ -58,20 +58,20 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumResult->resp = $this->getSeverHeaders($requ->value['enumInstance']);
                 }
                     break;
-                case 'getServerHeadersRest': {
-                    $enumResult->resp = $this->getSeverHeaders($requ->value['enumInstance'])['enums'];
+                case 'getModels': {
+                    $enumResult->resp = $this->getModels($enumInstance,null);
                 }
                     break;
-                case 'getServerEnumHeaders': {
-                    $headers = $this->getSeverHeaders($requ->value['enumInstance']);
+                case 'getModel': {
                     $modelId = $requ->value['model_id'];
-                    if(!array_key_exists($modelId,$headers['enums'])){
+                    try{
+                        $enum = $this->getModels($enumInstance,$modelId);
+                        $enumResult->resp = $enum;
+                    }catch(Exception $e){
                         $enumResult->error = array(
                             'code'=>404,
-                            'message'=>"Model: \"$modelId\", doesn exists"
+                            'message'=>$e->getMessage()
                         );
-                    }else{
-                        $enumResult->resp = $headers['enums'][$modelId];
                     }
                 } break;
                 case 'addEnum': {
@@ -156,15 +156,27 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumResult->resp = $this->queryEnum(
                         $enumInstance,
                         $enumId,
-                        $params['enumLoadPageOffset'],
-                        $params['enumLoadPageSize'],
+                        array_key_exists('enumLoadPageOffset',$params) ? $params['enumLoadPageOffset'] : null,
+                        array_key_exists('enumLoadPageSize',$params) ? $params['enumLoadPageSize']: null,
                         $loadAll,
-                        $params['enumLoadIdRow'],
+                        array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadIdRow'] : null,
                         null,
-                        $params['enumLoadColumns'],
-                        $params['enumLoadWhere'],
+                        array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadColumns'] : null,
+                        array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null,
                         null
                         );
+                }
+                    break;
+                case 'getEnumDataIds': {
+                    $params = $requ->value;
+                    $enumInstance = $requ->value['enumInstance'];
+                    $enumId = $params['enum'];
+
+                    $enumResult->resp = $this->queryEnumsIds(
+                        $enumInstance,
+                        $enumId,
+                        array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null
+                    );
                 }
                     break;
                 case 'getTotalRecordsFromEnum':{
@@ -472,13 +484,148 @@ class ServerNomenclador extends ClientResponderAdapter
         return $enum->queryEnum($pageOffset,$pageSize,$loadAll, $idRow,$fieldLazyToEval,$fields,$where,$inData );
     }
 
-    public function test(){
-        return 'joderererererer';
-    }
-
     static $conn =null;
     public static function getConn(){
         return self::$conn;
+    }
+
+    public function getModels($enumInstance,$modelId){
+        $enums = Enums::getInstance($enumInstance);
+
+        if(isset($modelId)){
+            $enum = $enums->getEnum($modelId);
+            if(!isset($enum)){
+                throw new Exception("Model: \"$modelId\", doesn't exists");
+            }else{
+                $enum_ = $enum->enum_tree;
+                $enum_['idField'] = PrimaryKey::ID;
+                return $enum_;
+            }
+        }else{
+            $enums_ = array();
+            foreach ($enums->enums as $enumId=>$enum){
+                $enum['idField'] = PrimaryKey::ID;
+                $enums_[]=$enum;
+            }
+            return $enums_;
+        }
+    }
+
+    public function queryEnumsIds($enumInstance, $enumId, $where){
+        $ids = $this->queryEnum(
+            $enumInstance,
+            $enumId,
+            null,
+            null,
+            false,
+            null,
+            null,
+            array(),
+            $where,
+            null
+        );
+        $resp = array();
+        foreach ($ids as $id){
+            $resp[] = $id[PrimaryKey::ID];
+        }
+        return $resp;
+    }
+
+    //todo esto es temporal para pasar del amacenamiento de nomencladores al estandart definido para REST
+    private function parseTree($roots,$parent=null,&$arr=null,&$id = 0){
+        $root = !isset($arr);
+        $arr = !$root ? $arr : array();
+        foreach ($roots as $node){
+            $isModel = !array_key_exists('childs',$node);
+
+            $id++;
+
+            $nd = array(
+                'id'=>$id,
+                'parent_id'=>$root ? null : $parent['id'],
+                '_id'=>$node['idNode'],
+                '_parent_id'=>isset($parent) ? null : $parent['_id'],
+                'model_id'=>$isModel ? $node['idNode'] : null,
+                'name'=>$node['text']
+            );
+            $arr[]=$nd;
+            if(!$isModel && count($node['childs'])){
+                $this->parseTree(
+                    $node['childs'],
+                    $nd,
+                    $arr,
+                    $id
+                );
+
+                //$id = end($arr)['id'];
+            }
+        }
+        return $arr;
+    }
+    public function getStandartTree($instance){
+        $tree = $this->getSeverHeaders($instance)['simpleTree'];
+
+        $treeArr = $this->parseTree($tree['childs']);
+
+        return $treeArr;
+    }
+    public function getCategoryModelDefinition($id){
+        return array(
+            'name'=>'Categorías',
+            'id'=>$id,
+            'description'=>'',
+            'denomField'=>'name',
+            'fields'=>array(
+                'id'=>array (
+                    'type' => 'PrimaryKey',
+                    'needed'=>true,
+                    'header'=>'id',
+                    'order'=>1,
+                    'id' => 'id',
+                ),
+                'parent_id'=>array(
+                    'type'=>'DB_Number',
+                    'needed'=>false,
+                    'properties'=>array(
+                        'field'=>'id',
+                        '_enum'=>$id
+                    ),
+                    'header'=>'parent_id',
+                    'order'=>2,
+                    'id'=>'parent_id'
+                ),
+                'name'=>array(
+                    'type'=>'DB_String',
+                    'needed'=>true,
+                    'header'=>'Nombre',
+                    'order'=>3,
+                    'id'=>'name'
+                ),
+                'model_id'=>array(
+                    'type'=>'DB_EnumChoser',
+                    'needed'=>true,
+                    'header'=>'model_id',
+                    'order'=>4,
+                    'id'=>'model_id'
+                )
+            ),
+            'idField'=>'id'
+        );
+    }
+    public function getCategoryRecordById($instance,$idRecord){
+        $tree = $this->getStandartTree($instance);
+        $id = ((float)$idRecord)-1;
+        if(!isset($tree[$id]))
+            throw new Exception('Record doesnt exists');
+
+        $rec = $tree[$id];
+
+        if(isset($rec['model_id'])){
+            $modelDef = $this->getModels($instance,$rec['model_id']);
+            $rec['name']=$modelDef['name'];
+        }
+
+        return $rec;
     }
 
 }
@@ -500,5 +647,4 @@ class EnumRestMethods{
         return $enum->queryEnum($offset,$limit,false,null,null,array($columnId=>$columnId));
     }
 }
-
 

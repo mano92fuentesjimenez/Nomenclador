@@ -125,9 +125,11 @@
                 this.configureStore();
             }, this);
 
-            if (this.enumInstanceConfig && this.enumInstanceConfig.formDataEditor)
-                this.dataEditor = new this.enumInstanceConfig.formDataEditor(this.enumInstance,this._enum, this.enumInstanceConfig, this.columns);
-            else this.dataEditor = new nom.FormDataEditor_Default(this.enumInstance, this._enum, this.enumInstanceConfig, this.columns);
+            var instanceConfig = this.enumInstance.getInstanceConfig(),
+                formDataEditor = instanceConfig.getFormDataEditor(this._enum.tpl);
+            if (formDataEditor)
+                this.dataEditor = new formDataEditor(this.enumInstance,this._enum, this.columns);
+            else this.dataEditor = new nom.FormDataEditor_Default(this.enumInstance, this._enum, this.columns);
 
         },
         configureStore: function () {

@@ -10,7 +10,7 @@
         manageImagesExport = AjaxPlugins.ManageImages.export;
 
     addType('DB_Images',Ext.extend(nom.Type.ValueType, {
-        nameToShow :'Im&aacute;genes',
+        nameToShow :'Im\u00E1genes',
         destroyProp: true,
         canBeMultiple:true,
         gridRender :function (text, pD, pRec){
@@ -27,7 +27,7 @@
 
             return s;
         },
-        getValueEditExtComp :function (enumInstance, field, _enum, enumInstanceConfig){
+        getValueEditExtComp :function (enumInstance, field, _enum){
             var invokeManageImages = function(cb,values){
                 manageImagesExport.ImageSelectorWindow(cb,values,{allowMultiSelection:field.properties.multiSelection});
             },

@@ -43,10 +43,16 @@ class DataSources
         $dataSources = $this->getData($conn);
         if(count($dataSources) == 0){
             $defaultValue = json_encode($this->getDefaultValue());
-            $conn->simpleQuery("insert into mod_nomenclador.dataSources(v,proj,enum_instance) values ('$defaultValue', '$projName','$enumInstance')");
-
             $actions = ActionManager::getInstance($this->enumInstance);
-            $actions->callInstanceAddingActions($this);
+            $conn->simpleQuery("insert into mod_nomenclador.dataSources(v,proj,enum_instance) values ('$defaultValue', '$projName','$enumInstance')");
+            try {
+                $actions->callInstanceAddingActions($this);
+            }
+            catch (Exception $e){
+                $conn->simpleQuery("delete from mod_nomenclador.dataSources where proj like '$projName' and enum_instance like '$enumInstance'");
+                throw $e;
+            }
+
             $dataSources = $this->getData($conn);
         }
         $dataSources = reset($dataSources);
@@ -63,7 +69,7 @@ class DataSources
         return $dataSources;
     }
 
-    private static $instance;
+    private static $instance = array();
 
     private function getDefaultValue(){
         return array();
@@ -73,10 +79,10 @@ class DataSources
     {
         if(!$enumInstance)
             throw new Exception();
-        if (!self::$instance) {
-            self::$instance = new DataSources($enumInstance);
+        if (!array_key_exists($enumInstance, self::$instance)) {
+            self::$instance[$enumInstance] = new DataSources($enumInstance);
         }
-        return self::$instance;
+        return self::$instance[$enumInstance];
     }
 
     public static function getDataSourcePath()
@@ -104,6 +110,11 @@ class DataSources
 
     public function getSource($sourceName)
     {
+        if(!array_key_exists($sourceName, $this->dataSources)){
+            $actionM = ActionManager::getInstance($this->enumInstance);
+            $actionM->callUndefinedExistDataSourceActions($sourceName);
+        }
+
         return new DataSource($this->enumInstance,$this->dataSources[$sourceName]);
     }
 
@@ -296,7 +307,7 @@ class DataSource
         $oDS = $this->dataSource;
         $dS = $dS->dataSource;
         return ($oDS['dataSource'] != $dS['dataSource']
-            || $oDS['host'] != $dS['host']
+            || gethostbyname($oDS['host']) != gethostbyname($dS['host'])
             || $oDS['dbname'] != $dS['dbname']
             || $oDS['port'] != $dS['port']);
 
