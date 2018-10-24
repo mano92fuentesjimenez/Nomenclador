@@ -641,10 +641,10 @@
 
 
     nom.getEnumDataPanel=function(instanceName, _enum, config,instanceModifier){
-        var _enum = _enum._isString_() ? nom.enums.getEnumById(instanceName, _enum):_enum,
-            instance = enums.getInstance(instanceName,instanceModifier),
+        var instance = enums.getInstance(instanceName,instanceModifier),
             _interface = instance.getEnumDataEditor();
 
+        _enum =  nom.enums.getEnumById(instanceName, _enum);
         instance.setInstanceConfig((config || {}).enumInstanceConfig);
         var panel = new Ext.Panel({
                 layout: 'fit',
