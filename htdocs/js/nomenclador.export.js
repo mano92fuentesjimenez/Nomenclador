@@ -316,9 +316,10 @@
 		return nom.GridDataEditor;
 	});
 
-	exp.addAction = function(instanceName,when, actionType, action){};
-    addService('addAction', function(instanceName){
-        nom.enums.getActionManager(instanceName).addAction.apply(nom.enums,arguments);
+	exp.addAction = function(instanceName,instanceModifier,when, actionType, action){};
+    addService('addAction', function(instanceName,instanceModifier,when, actionType, action){
+        var actionM = exp.getActionManager(instanceName,instanceModifier);
+        actionM.addAction(when, actionType,action);
     });
 	exp.getEnumManagerTreeProto = function(){};
 	addService('getEnumManagerTreeProto', function(){
@@ -350,8 +351,8 @@
     });
 
     exp.getActionManager = function (instanceName, instanceModifier) {};
-    addService('getActionManager', function (instanceName) {
-		return nom.enums.getActionManager(instanceName);
+    addService('getActionManager', function (instanceName, instanceModifier) {
+		return nom.enums.getActionManager(instanceName, instanceModifier);
     });
 
 	exp.getDenomField = function(instanceName,_enum){};
