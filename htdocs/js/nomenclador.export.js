@@ -374,7 +374,7 @@
      */
 	exp.setInstanceConfig = function(instanceName, instanceModifier, config){};
 	addService('setInstanceConfig', function(instanceName, instanceModifier, config){
-
+		nom.enums.setInstanceConfig(instanceName, instanceModifier, config);
 	})
 
 })();

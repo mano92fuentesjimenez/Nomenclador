@@ -53,6 +53,10 @@
         getInstanceManager:function(){
             return this.instances;
         },
+        setInstanceConfig:function(instanceName, instanceModifier, config){
+            var instance = this.getInstance(instanceName, instanceModifier);
+            instance.setInstanceConfig(config);
+        },
         getEnumByName: function (instanceName, name){
             this.checkEnumInstance(instanceName);
             var _enum,
