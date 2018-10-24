@@ -63,6 +63,7 @@
 	 * @param instanceName {string}    Nombre de la instancia de nomencladores. Para agrupar las entidades
 	 * @param instanceModifier {string}Modificador del nombre de instancia. Para agrupar las configuraciones
      */
+    exp.showManager = function(instanceName,instanceModifier){};
 	addService('showManager',function () {
         nom.getUI.apply(nom,arguments).show();
     });
@@ -79,7 +80,7 @@
 	 * @param instanceModifier {string} Modificador del nombre de instancia. Se usa para dividir las configuraciones de
 	 * 						           UI
 	 */
-	exp.showEnumTree=function(instanceName, callback, title, instanceModifier){};
+	exp.showEnumTree = function(instanceName, callback, title, instanceModifier){};
 	addService('showEnumTree',function(instanceName, callback, title, instanceModifier){
 		nom.showEnumTree(instanceName, true, callback, title || 'Listado de nomencladores', instanceModifier);
 	}, true);
@@ -348,7 +349,7 @@
         nom.showUI(instanceName, config);
     });
 
-    exp.getActionManager = function (instanceName) {};
+    exp.getActionManager = function (instanceName, instanceModifier) {};
     addService('getActionManager', function (instanceName) {
 		return nom.enums.getActionManager(instanceName);
     });
