@@ -275,6 +275,8 @@
             this.config = new nom.InstanceConfigClass(config);
         },
         getInstanceConfig:function() {
+            if(this.config === undefined)
+                this.config = new nom.InstanceConfigClass();
             return this.config;
         },
         getInstanceNameModifier:function(){
