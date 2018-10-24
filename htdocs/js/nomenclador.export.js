@@ -376,6 +376,10 @@
 	exp.setInstanceConfig = function(instanceName, instanceModifier, config){};
 	addService('setInstanceConfig', function(instanceName, instanceModifier, config){
 		nom.enums.setInstanceConfig(instanceName, instanceModifier, config);
-	})
+	});
+
+	exp.getEnumInstanceSync = function(instanceName, instanceModifier){
+	    return nom.enums.getInstance(instanceName,instanceModifier);
+    }
 
 })();
