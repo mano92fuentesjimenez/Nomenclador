@@ -404,11 +404,10 @@
         },
 
         addAction:function(which, when, action){
-            this.actionManager.addAction(this.enumInstance,when,which,action);
+            this.actionManager.addAction(when,which,action);
         },
         getActions: function(){
-            return this.actionManager.getActions(this.enumInstance)._clone_()._rapply_(enums.getActionManager(this.enumInstance.getName(), this.enumInstance.getInstanceNameModifier())
-                .getActions(this.enumInstance));
+            return this.actionManager.getActions(this.enumInstance.getActionManager())
         },
 
         //Filtering methods

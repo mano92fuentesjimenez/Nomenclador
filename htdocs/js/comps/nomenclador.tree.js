@@ -136,7 +136,7 @@
 				this.enumInstance.getName(),
 				function (response){
 					indexer.nodeRemoveAllChilds(root);
-					var simpleTree = nom.enums.getSimpleTree(self.enumInstance);
+					var simpleTree = nom.enums.getSimpleTree(self.enumInstance.getName());
 					if (simpleTree) {
 						if (self.rendered) {
 							doAppend(simpleTree.childs);
@@ -161,7 +161,7 @@
 				showEnums:this.showEnums
 			};
 
-			return nom.treeNodesProxy(attr,config, this.enumInstance.getInstanceConfig());
+			return nom.treeNodesProxy(attr,config);
 		}
 
 	});

@@ -264,14 +264,14 @@
 			return false;
 		},
 		dialogHandler: function (buttonId) {
-			if (buttonId == "yes") {
+			if (buttonId === "yes") {
 				this.visorTabPanel.saveAndClose();
 				this.visorTabPanel.on("saved", function () {
 					this.CLOSEEEEE = true;
 					this.close();
 				}, this)
 			}
-			if (buttonId == "no") {
+			if (buttonId === "no") {
 				this.CLOSEEEEE = true;
 				this.close();
 			}
