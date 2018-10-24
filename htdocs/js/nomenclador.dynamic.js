@@ -363,6 +363,7 @@
      *             el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
      *              Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
      *             el json del nomenclador q se construyo.
+     * defaultDataSource: Id del dataSource q se va a tomar por defecto.
      */
     nom.Tpl = Ext.extend(nom.Tpl,{
         isReadOnly: function(){
@@ -402,6 +403,9 @@
             }
             return this.defaultFields;
         },
+        getDefaultDataSource :function(){
+            return this.defaultDataSource;
+        }
     });
 
     nom.refs = function (){
@@ -767,12 +771,6 @@
             this.referencedField = this._enum.fields[this._fieldId];
             this.selector_columns = (this.selector_columns  || enums.getFieldsIdFromEnum(this._enum));
 
-            this.setValue.createInterceptor(
-                function(value){
-                    if(Ext.isObject(value))
-                        this.setDirtyValue(value);
-                    return true;
-                });
         },
         getFilterObj:function(){
             return this.filterObj;
@@ -840,21 +838,6 @@
             this.addModValueSetted = true;
             return obj;
         },
-        setDirtyValue:function(obj){
-            if(this.originalValue === null){
-                if(Genesig.Utils.isObject(this.currentValue) && !this.addModValueSetted) {
-                    this.originalValue = this.currentValue;
-                    this.enumDirty = this.currentValue.valueField !== obj.valueField;
-                }
-                else {
-                    this.originalValue = false;
-                    this.enumDirty = true;
-                }
-            }
-            else {
-                this.enumDirty = this.originalValue === false  || (this.originalValue.valueField !== obj.valueField);
-            }
-        },
         setValue:function(value,toClean){
             var type = nom.Type.Utils.getType(this.referencedField.type),
                 renderer  = type.enumTypeRenderer,
@@ -898,7 +881,12 @@
             return 'datachanged';
         },
         isDirty:function(){
-            return this.enumDirty;
+            if(utils.isObject(this.originalValue)){
+                return !(utils.isObject(this.currentValue)
+                    && this.currentValue.displayField === this.originalValue.displayField
+                    && this.currentValue.valueField === this.originalValue.valueField);
+            }
+            return utils.isObject(this.currentValue);
         }
 
     };
@@ -1215,12 +1203,13 @@
      *                                      visualizar los datos. Debe heredar de EnumStoreWriter si esta interfaz va a
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
     *                        defaultTpl:  Identificador del tpl que va a mostrar por defecto.
+    *                        defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
+    *                                    nomencladores de esta instancia.
     *            tpl: "id":
     *                        tplConfio: Ver Tpl
     *                 Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
     *                 instancia de nomencladores.
-    *            defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
-    *                                    nomencladores de esta instancia.
+    *
     *  @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
     *                                    agrupa configuraciones de UI.
      *

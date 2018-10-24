@@ -59,22 +59,27 @@ class Postgree_9_1 extends DBConn
     {
         $createStr = "CREATE TABLE \"$schema\".\"$tableName\"(";
 
-        $createStr.= '"'.$fields[0]['id'].'" '.$fields[0]['type']. (PrimaryKey::ID == $fields[0]['id']?'':( isset($fields[0]['default'])? ' DEFAULT \''.$fields[0]['default'].'\'' : ''));
-        array_shift($fields);
-
         foreach ($fields as $value){
             if( $value['id'] == PrimaryKey::ID) {
-                $createStr .= ',"' . $value['id'] . '"' . $value['type'] ;
+                $createStr .="\"{$value['id']}\" {$value['type']} ,";
             }
             else {
-                $createStr .= ',"' . $value['id'] . '"' . $value['type'];
-                if(isset($value['default'])){
-                    $createStr .= ' DEFAULT \'' . $value['default'] . '\'';
+                $haveDefault = isset($value['default']);
+                $createStr .= "\"{$value['id']}\" {$value['type']}";
+                if($haveDefault){
+                    $createStr .= " DEFAULT '{$value['default']}'";
                 }
+                $createStr.=',';
             }
         }
+        $createStr = substr($createStr,0,-1);
         $createStr.=");";
 
+        $comment = "comment on column \"$schema\".\"$tableName\" ";
+
+        foreach ($fields as $value){
+            $createStr.= "$comment.\"{$value['id']}\" is '{$value['comm']}'; ";
+        }
         return $this->query($createStr);
 
     }
@@ -245,16 +250,17 @@ class Postgree_9_1 extends DBConn
         return $this->query($query);
     }
 
-    public function addColumn($tableName, $schema, $fieldName, $columnType)
+    public function addColumn($tableName, $schema, $fieldName, $columnType, $comm)
     {
-        $query = "ALTER TABLE \"$schema\".\"$tableName\" ADD COLUMN \"$fieldName\" $columnType;";
+        $query = "ALTER TABLE \"$schema\".\"$tableName\" ADD COLUMN \"$fieldName\" $columnType; Comment on column \"$schema\".\"$tableName\".\"$fieldName\" is '$comm'";
+
         return $this->query($query);
     }
 
-    public function modColumn($tableName, $schema, $fieldName, $columnType)
+    public function modColumn($tableName, $schema, $fieldName, $columnType, $comm)
     {
         return($this->delColumn($tableName, $schema,$fieldName) &&
-        $this->addColumn($tableName, $schema, $fieldName, $columnType));
+        $this->addColumn($tableName, $schema, $fieldName, $columnType, $comm));
 
     }
 

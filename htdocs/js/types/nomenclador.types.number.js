@@ -12,6 +12,7 @@
 			return new AjaxPlugins.Ext3_components.fields.numberField({
 				allowBlank :!field.needed,
 				fieldLabel :field.header,
+				decimalPrecision: 8
 			});
 		},
 		getPropertiesExtComp :function (){

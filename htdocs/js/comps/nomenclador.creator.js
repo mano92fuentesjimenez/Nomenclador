@@ -928,7 +928,7 @@
 				return 'fieldsMode';
 			if (this.creating) {
 				if(!this._enumId_)
-					this._enumId_ = (this.nameTextField.getValue().replace(/([^a-z A-Z0-9_])*/g, '') + '-' + Math.ceil(Math.random() * 1000000));
+					this._enumId_ = (this.nameTextField.getValue().toLowerCase().replace(/ /g,'_').replace(/\W+/g, '') + '-' + Math.ceil(Math.random() * 1000000));
 				_enumId = this._enumId_;
 			}
 			else _enumId = this._enum.id;

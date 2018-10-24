@@ -287,7 +287,7 @@
 		 * @param _enum {string| object} Id del enum o el enum a mostrar.
 		 */
 		showEnum:function(_enum){
-			var _enum = _enum._isString_() ? enums.getEnumById(this.enumInstance.getName(), _enum) : _enum;
+			var _enum = enums.getEnumById(this.enumInstance.getName(), _enum);
 			this.visorTabPanel.addEnumTab(_enum);
 			
 		},

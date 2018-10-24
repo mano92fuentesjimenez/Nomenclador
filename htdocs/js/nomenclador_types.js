@@ -17,7 +17,7 @@
 
         nameToShow : '',
         /**
-         * Es un input de ext. Debe tener un getValue para obtener el valor.
+         * Es un input de ext. Debe cumplir con FormValidator.
          * @type {Ext.form}
          */
         getValueEditExtComp : function(enumInstance, field, _enum, enumInstanceConfig){
