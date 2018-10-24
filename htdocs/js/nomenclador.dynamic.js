@@ -689,12 +689,6 @@
             this.referencedField = this._enum.fields[this._fieldId];
             this.selector_columns = (this.selector_columns  || enums.getFieldsIdFromEnum(this._enum));
 
-            this.setValue.createInterceptor(
-                function(value){
-                    if(Ext.isObject(value))
-                        this.setDirtyValue(value);
-                    return true;
-                });
         },
         getFilterObj:function(){
             return this.filterObj;
@@ -763,21 +757,6 @@
             this.addModValueSetted = true;
             return obj;
         },
-        setDirtyValue:function(obj){
-            if(this.originalValue === null){
-                if(Genesig.Utils.isObject(this.currentValue) && !this.addModValueSetted) {
-                    this.originalValue = this.currentValue;
-                    this.enumDirty = this.currentValue.valueField !== obj.valueField;
-                }
-                else {
-                    this.originalValue = false;
-                    this.enumDirty = true;
-                }
-            }
-            else {
-                this.enumDirty = this.originalValue === false  || (this.originalValue.valueField !== obj.valueField);
-            }
-        },
         setValue:function(value,toClean){
             var type = nom.Type.Utils.getType(this.referencedField.type),
                 renderer  = type.enumTypeRenderer,
@@ -821,7 +800,12 @@
             return 'datachanged';
         },
         isDirty:function(){
-            return this.enumDirty;
+            if(utils.isObject(this.originalValue)){
+                return !(utils.isObject(this.currentValue)
+                    && this.currentValue.displayField === this.originalValue.displayField
+                    && this.currentValue.valueField === this.originalValue.valueField);
+            }
+            return utils.isObject(this.currentValue);
         }
 
     };
