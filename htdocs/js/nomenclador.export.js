@@ -141,14 +141,16 @@
 	 */
 	exp.getEnumTreeStructure=function(instanceName,callback){};
 	addService('getEnumTreeStructure',function (instanceName,callback){
-		nom.request('getServerHeaders',{instanceName:instanceName},function (response, o) {
+		nom.request('getServerHeaders',{enumInstance:instanceName},function (response, o) {
            callback(buildTree(instanceName,response.simpleTree));
         });
 	},true);
 	var buildTree = function(instanceName,simpleTree){
 		if(!simpleTree.childs){
+            var _enum = nom.enums.getEnumById(instanceName,simpleTree.idNode);
 			return {
-				text: nom.enums.getEnumById(instanceName,simpleTree.idNode).name,
+				text:_enum.name,
+				tpl: _enum.tpl,
 				leaf:true,
 				nodeId:simpleTree.idNode
 			}
