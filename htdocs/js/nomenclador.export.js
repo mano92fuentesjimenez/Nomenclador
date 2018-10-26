@@ -333,15 +333,15 @@
 
     exp.addAction.ACTIONS = {
     	MODEL: {
-    		MODIFY_ENUM:'modEnum',
-    		REMOVE_ENUM:'remEnum',
-    		ADD_ENUM:'addEnum'
+    		MODIFY:'modEnum',
+    		REMOVE:'remEnum',
+    		ADD:'addEnum'
 		},
 		RECORDS: {
-    		LOAD_DATA: 'load',
-			ADD_RECORD: 'add',
-			MODIFY_RECORD: 'mod',
-			DELETE_RECORD: 'del'
+    		LOAD: 'load',
+			ADD: 'add',
+			MODIFY: 'mod',
+			DELETE: 'del'
 		}
 	};
     exp.addAction.ACTIONS_MOMENTS = {
