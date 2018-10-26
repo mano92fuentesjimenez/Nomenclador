@@ -328,6 +328,24 @@
 		return nom.treeEditorPanel
 	});
 
+    exp.addAction.ACTIONS = {
+    	MODEL: {
+    		MODIFY_ENUM:'modEnum',
+    		REMOVE_ENUM:'remEnum',
+    		ADD_ENUM:'addEnum'
+		},
+		RECORDS: {
+    		LOAD_DATA: 'load',
+			ADD_RECORD: 'add',
+			MODIFY_RECORD: 'mod',
+			DELETE_RECORD: 'del'
+		}
+	};
+    exp.addAction.ACTIONS_MOMENTS = {
+    	BEFORE : 'pre',
+    	AFTER : 'post'
+	};
+
     exp.getPrimaryKeyId= function(){};
     addService('getPrimaryKeyId', function(){
         return nom.Type.PrimaryKey.UNIQUE_ID;
