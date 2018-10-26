@@ -321,7 +321,7 @@
 
 	exp.addAction = function(instanceName,instanceModifier,when, actionType, action){};
     addService('addAction', function(instanceName,instanceModifier,when, actionType, action){
-        exp.getActionManager(instanceName,instanceModifier).then(function(aM){
+        exp.getActionManager(instanceName,instanceModifier,function(aM){
             aM.addAction(when, actionType,action);
 		});
 
