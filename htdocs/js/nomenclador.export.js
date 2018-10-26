@@ -13,6 +13,7 @@
 		};
 
 	exp._defineConstant_('DEFAULT_INSTANCE','system');
+	exp._defineConstant_('DEFAULT_INSTANCE_MODIFIER','default');
 
 	/**
 	 * Toda funcion de este objeto debe comprobar que los scripts de nomenclador ya esten cargados, asi como los headers
@@ -240,7 +241,7 @@
 	exp.getEnumColumnData=function(instanceName,enumId, config, columnId, callback){};
 	addService('getEnumColumnData',function (instanceName,enumId, config, columnId, callback){
 		nom.request('getEnumColumnData',{
-			instanceName:instanceName,
+			enumInstance:instanceName,
             enumId:enumId,
             config:config,
             columnId:columnId
@@ -320,8 +321,10 @@
 
 	exp.addAction = function(instanceName,instanceModifier,when, actionType, action){};
     addService('addAction', function(instanceName,instanceModifier,when, actionType, action){
-        var actionM = exp.getActionManager(instanceName,instanceModifier);
-        actionM.addAction(when, actionType,action);
+        exp.getActionManager(instanceName,instanceModifier).then(function(aM){
+            aM.addAction(when, actionType,action);
+		});
+
     });
 	exp.getEnumManagerTreeProto = function(){};
 	addService('getEnumManagerTreeProto', function(){
