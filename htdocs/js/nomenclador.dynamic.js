@@ -226,7 +226,7 @@
     });
     nom.InstanceManager = function() {
         this.instances = {};
-        this.defaultInstance = 'default';
+        this.defaultInstance = nom.export.DEFAULT_INSTANCE_MODIFIER;
         this.configs = {};
     };
     nom.InstanceManager.prototype = {
@@ -1283,11 +1283,13 @@
         params['action'] =action;
 
         if(params.enumInstance) {
-
-            if(params.enumInstance instanceof nom.EnumInstance)
+            var instanceModifier = nom.export.DEFAULT_INSTANCE_MODIFIER;
+            if(params.enumInstance instanceof nom.EnumInstance) {
+                instanceModifier = params.enumInstance.getInstanceNameModifier();
                 params.enumInstance = params.enumInstance.getName();
+            }
 
-            var actions = nom.enums.getActionManager(params.enumInstance).getActions(params.enumInstance);
+            var actions = nom.enums.getActionManager(params.enumInstance, instanceModifier).getActions();
             if(params['actions'])
                 params['actions']._apply_(actions);
             else
