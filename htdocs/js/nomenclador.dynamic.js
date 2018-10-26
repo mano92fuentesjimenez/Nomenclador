@@ -1223,7 +1223,9 @@
         instanceName = instanceName ? instanceName : nom.export.DEFAULT_INSTANCE;
         var instance = enums.getInstance(instanceName,instanceModifier),
             instanceId = instance.getInstanceId();
-        instance.setInstanceConfig(config);
+
+        if(config === null)
+            instance.setInstanceConfig(config);
 
 
         if(!nom.UIDict[instanceId]) {
