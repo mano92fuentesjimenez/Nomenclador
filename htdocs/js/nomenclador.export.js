@@ -64,7 +64,7 @@
 	 * @param instanceName {string}    Nombre de la instancia de nomencladores. Para agrupar las entidades
 	 * @param instanceModifier {string}Modificador del nombre de instancia. Para agrupar las configuraciones
      */
-    exp.showManager = function(instanceName,instanceModifier){};
+    exp.showManager = function(instanceName,config,instanceModifier){};
 	addService('showManager',function () {
         nom.getUI.apply(nom,arguments).show();
     });
