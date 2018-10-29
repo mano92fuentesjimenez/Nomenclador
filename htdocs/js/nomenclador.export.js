@@ -305,6 +305,12 @@
 	addService('getStoreReaderPrototype', function(instanceName){
 		return nom.interfaces.EnumStoreReader;
 	});
+	exp.getStoreReaderPrototypeSync = function(instanceName,configName){
+		var enumInstance = nom.enums.getInstance(instanceName,configName);
+		return Ext.extend(nom.interfaces.EnumStoreReader,{
+			enumInstance:enumInstance
+		});
+	};
 
     exp.getStoreWriterPrototype = function(instanceName){};
     addService('getStoreWriterPrototype', function(instanceName){
