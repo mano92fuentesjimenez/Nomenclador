@@ -152,6 +152,15 @@ class ActionManager
         }
     }
 
+    public function callPostModActions($enum, &$data){
+        $actions = $this->getActions('mod','post');
+
+        foreach ($actions as $action){
+            $p = $this->getPlugin($action);
+            $p['server']->{$p['action']}($enum,$data);
+        }
+    }
+
     public function callPreEnumAddActions($enum){
         $actions = $this->getActions('addEnum','pre');
         foreach ($actions as $action){

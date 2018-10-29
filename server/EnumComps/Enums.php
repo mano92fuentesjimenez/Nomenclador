@@ -179,9 +179,9 @@ class Enum
 
         return true;
     }
-    public function getTableName($includeSchema=true){
+    public function getTableName($includeSchema=true, $schemaPrefix='', $tablePrefix=''){
         $d = $this->getDataSource();
-        return ($includeSchema ? "\"{$d->getSchema()}\"." : '')."\"{$this->getId()}\"";
+        return ($includeSchema ? "\"{$schemaPrefix}{$d->getSchema()}\"." : '')."\"{$tablePrefix}{$this->getId()}\"";
     }
     public function getDataBaseName(){
         return $this->getDataSource()->getDataBaseName();
