@@ -213,16 +213,20 @@
             if(actionManager instanceof nom.ActionManager){
                 var actions = new nom.ActionManager(this.actions._clone_()),
                     extActions = actionManager.getActions();
-                extActions._each_(function(v,k){
-                    v._each_(function(v2,k2){
-                        actions.addAction(k,k2,v);
-                    })
-                });
+                    actions.setActions(extActions);
                 return actions.getActions();
             }
 
             return this.actions;
         },
+        setActions:function(actions) {
+            if (actions)
+                actions._each_(function (v, k) {
+                    v._each_(function (v2, k2) {
+                        this.addAction(k, k2, v);
+                    })
+                });
+        }
     });
     nom.InstanceManager = function() {
         this.instances = {};
@@ -269,10 +273,20 @@
         },
         /**
          * Sobrescribe la configuracion para esta instancia de nomencladores.
-         * @param config  Objeto de la misma forma q se especifica en InstanceConfigClass
+         * @param config  {Object}  {
+         *                            @see AjaxPlugins.Nomenclador.ActionManager
+         *                            actions: configuration
+         *
+         *                            @see AjaxPlugins.Nomenclador.InstanceConfigClass
+         *                            configs
+         *                          }
          */
         setInstanceConfig:function(config ){
+            var actions = config.actions;
+            if(actions)
+                delete config.actions;
             this.config = new nom.InstanceConfigClass(config);
+            this.actionManager.setActions(actions);
         },
         getInstanceConfig:function() {
             if(this.config === undefined)
@@ -1209,8 +1223,9 @@
     *                                    nomencladores de esta instancia.
     *            tpl: "id":
     *                        tplConfio: Ver Tpl
-    *                 Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
-    *                 instancia de nomencladores.
+    *                    Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
+    *                   instancia de nomencladores.
+    *            actions: Actions  @see ActionManager
     *
     *  @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
     *                                    agrupa configuraciones de UI.

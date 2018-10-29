@@ -301,15 +301,27 @@
 		return nom.getEnumSelectorClass.apply(this, arguments);
 	});
 
-	exp.getStoreReaderPrototype = function(instanceName){};
-	addService('getStoreReaderPrototype', function(instanceName){
-		return nom.interfaces.EnumStoreReader;
+	exp.getStoreReaderPrototype = function(instanceName,configName){};
+	addService('getStoreReaderPrototype', function(instanceName,configName){
+		return exp.getStoreReaderPrototypeSync(instanceName,configName);
 	});
+	exp.getStoreReaderPrototypeSync = function(instanceName,configName){
+		var enumInstance = nom.enums.getInstance(instanceName,configName);
+		return Ext.extend(nom.interfaces.EnumStoreReader,{
+			enumInstance:enumInstance
+		});
+	};
 
-    exp.getStoreWriterPrototype = function(instanceName){};
-    addService('getStoreWriterPrototype', function(instanceName){
-        return nom.interfaces.EnumStoreWriter;
+    exp.getStoreWriterPrototype = function(instanceName,configName){};
+    addService('getStoreWriterPrototype', function(instanceName,configName){
+        return exp.getStoreWriterPrototypeSync(instanceName,configName);
     });
+    exp.getStoreWriterPrototypeSync= function(instanceName,configName){
+        var enumInstance = nom.enums.getInstance(instanceName,configName);
+        return Ext.extend(nom.interfaces.EnumStoreWriter,{
+            enumInstance:enumInstance
+        });
+	};
 	exp.getEnumTreePanelPrototype = function(instanceName){};
 	addService('getEnumTreePanelPrototype', function(instanceName){
 		return nom.nomencladorTree;
