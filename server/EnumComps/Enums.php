@@ -66,6 +66,10 @@ class Enum
         return $this->enum_tree['denomField'];
     }
 
+    public function getTemplate(){
+        return $this->enum_tree['tpl'];
+    }
+
 
     /**
      * Devuelve un arreglo de campos de acorde al tipo de dataSource que tenga el nomenclador.
@@ -175,9 +179,9 @@ class Enum
 
         return true;
     }
-    public function getTableName(){
+    public function getTableName($includeSchema=true){
         $d = $this->getDataSource();
-        return "\"{$d->getSchema()}\".\"{$this->getId()}\"";
+        return ($includeSchema ? "\"{$d->getSchema()}\"." : '')."\"{$this->getId()}\"";
     }
     public function getDataBaseName(){
         return $this->getDataSource()->getDataBaseName();
