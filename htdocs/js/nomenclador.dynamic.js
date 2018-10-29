@@ -224,8 +224,8 @@
                 actions._each_(function (v, k) {
                     v._each_(function (v2, k2) {
                         this.addAction(k, k2, v);
-                    })
-                });
+                    },this);
+                },this);
         }
     });
     nom.InstanceManager = function() {
@@ -1239,7 +1239,7 @@
         var instance = enums.getInstance(instanceName,instanceModifier),
             instanceId = instance.getInstanceId();
 
-        if(config === null)
+        if(utils.isObject(config))
             instance.setInstanceConfig(config);
 
 
