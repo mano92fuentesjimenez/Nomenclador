@@ -180,15 +180,18 @@ class Postgree_9_1 extends DBConn
             $query.="UPDATE \"$schema\".\"$tableName\" SET ";
     
             $primaryKeyVal = null;
+            $fields = array();
             foreach ($record as $fieldName => $fieldValue){
                 if ($fieldName == PrimaryKey::ID) {
                     $primaryKeyVal = $fieldValue;
                     continue;
-                }                    
+                }
+                $fields[] = $fieldName;
                 $query.="\"$fieldName\"=$fieldValue,";
             }
             $query =substr($query,0,-1);
-            $query.="WHERE ".PrimaryKey::ID." = $primaryKeyVal;\n ";
+            $fields = implode(',',$fields);
+            $query.="WHERE ".PrimaryKey::ID." = $primaryKeyVal returning $fields; ";
         }
         
         return $this->query($query);

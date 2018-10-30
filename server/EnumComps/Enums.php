@@ -19,18 +19,6 @@ class Enum
         $this->actions = null;
     }
 
-    private function getPlugin($action){
-
-        $v = array();
-        $arr = explode('.',$action);
-        $plugin = reset($arr);
-        $action = end($arr);
-        $server = ServerPlugin::requirePlugin($plugin);
-
-        $v['server'] = $server;
-        $v['action'] = $action;
-        return $v;
-    }
     public function saveEnum()
     {
         $this->enums->saveEnums();

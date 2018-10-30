@@ -305,13 +305,13 @@ class EnumsRequests
                 $updateData[$recordId][PrimaryKey::ID] = $lastRecord[PrimaryKey::ID];
             }
 
-//            $updateData = $enum->getValueArrayToDb($updateData);
+            $updateData = $enum->getValueArrayToDb($updateData);
             if ($c != 0 && !$conn->updateData($enum->getId(), $enum->getDataSource()->getSchema(), $updateData)) {
                 throw new EnumException($conn->getLastError());
             }
+            $data = $conn->fetchData(false);
 
-
-            $actionsM->callPostModActions($enum,$enum->getValueArrayFromDb($updateData));
+            $actionsM->callPostModActions($enum,$enum->getValueArrayFromDb($data));
         }
 
         //eliminar
