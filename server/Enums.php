@@ -267,7 +267,8 @@ class EnumsRequests
                     }
                 }
             }
-            $actionsM->callPostAddActions($enum,$addedData);
+
+            $actionsM->callPostAddActions($enum,$enum->getValueArrayFromDb($addedData));
         }
 
 
@@ -304,14 +305,13 @@ class EnumsRequests
                 $updateData[$recordId][PrimaryKey::ID] = $lastRecord[PrimaryKey::ID];
             }
 
-            $modifiedData = $updateData;
-            $updateData = $enum->getValueArrayToDb($updateData);
+//            $updateData = $enum->getValueArrayToDb($updateData);
             if ($c != 0 && !$conn->updateData($enum->getId(), $enum->getDataSource()->getSchema(), $updateData)) {
                 throw new EnumException($conn->getLastError());
             }
 
 
-            $actionsM->callPostModActions($enum,$modifiedData);
+            $actionsM->callPostModActions($enum,$enum->getValueArrayFromDb($updateData));
         }
 
         //eliminar

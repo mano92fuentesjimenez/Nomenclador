@@ -152,7 +152,7 @@ class ActionManager
         }
     }
 
-    public function callPostModActions($enum, &$data){
+    public function callPostModActions($enum, $data){
         $actions = $this->getActions('mod','post');
 
         foreach ($actions as $action){

@@ -712,7 +712,7 @@ class Enum
      * @throws  Exception
      * @return array
      */
-    private function getValueArrayFromDb($data, $loadAllData = false)
+    public function getValueArrayFromDb($data, $loadAllData = false)
     {
         $connTypeStr = $this->getDataSource()->getDataSourceType();
         $fields = &$this->enum_tree['fields'];
