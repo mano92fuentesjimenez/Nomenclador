@@ -56,20 +56,24 @@
 			this.checks = [];
 			this.checks.push(new myCheckbox({
 				boxLabel :"Entero Mediano",
+                legacyCheckBox : true,
 				scope :this,
 				value :true,
 				checked :true
 			}));
 			this.checks.push(new myCheckbox({
 				boxLabel :"Entero Grande",
+                legacyCheckBox : true,
 				scope :this
 			}));
 			this.checks.push(new myCheckbox({
 				boxLabel :"Reales de alta precision",
+                legacyCheckBox : true,
 				scope :this
 			}));
 			this.checks.push(new myCheckbox({
 				boxLabel :"Reales de baja precision",
+                legacyCheckBox : true,
 				scope :this
 			}));
 			for (var j = 0; j < this.checks.length; j++){
