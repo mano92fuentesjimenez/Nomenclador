@@ -281,6 +281,7 @@
 				autoLoadTree :false,
 				excludeEnum :excludeEnums,
 				enumInstance:args['enumInstance'],
+				allowReferencing:true,
 				listeners :{
 					scope :this,
 					loadedheaders :function (pTree){
