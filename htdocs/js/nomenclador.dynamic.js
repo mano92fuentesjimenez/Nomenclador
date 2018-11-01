@@ -1236,6 +1236,10 @@
     };
     nom.getUI = function(instanceName, config, instanceModifier){
         instanceName = instanceName ? instanceName : nom.export.DEFAULT_INSTANCE;
+        if(instanceModifier === undefined){
+            instanceModifier = config;
+            config = null;
+        }
         var instance = enums.getInstance(instanceName,instanceModifier),
             instanceId = instance.getInstanceId();
 
@@ -1300,17 +1304,16 @@
         params['action'] =action;
 
         if(params.enumInstance) {
-            var instanceModifier = nom.export.DEFAULT_INSTANCE_MODIFIER;
             if(params.enumInstance instanceof nom.EnumInstance) {
-                instanceModifier = params.enumInstance.getInstanceNameModifier();
-                params.enumInstance = params.enumInstance.getName();
-            }
 
-            var actions = nom.enums.getActionManager(params.enumInstance, instanceModifier).getActions();
-            if(params['actions'])
-                params['actions']._apply_(actions);
-            else
-                params['actions'] = actions;
+                var actions =params.enumInstance.getActionManager().getActions();
+                params.enumInstance = params.enumInstance.getName();
+
+                if(params['actions'])
+                    params['actions']._apply_(actions);
+                else
+                    params['actions'] = actions;
+            }
         }
 
         var p = {params:Ext.encode( params)};
