@@ -527,23 +527,18 @@
         addNomenclador: function (tpl) {
             var self = this,
                 instanceConfig = this.enumInstance.getInstanceConfig();
-            nom.request('hasDataSources',{enumInstance:this.enumInstance},function (resp) {
-                if (!resp) {
-                    errorMsg( "Debe crear una fuente de datos para poder crear un nomenclador");
-                    return;
-                }
-                (new nom.nomencladorCreator({
-                    listeners: {
-                        "finishedCreation": self.addEnumInServer,
-                        scope: self
-                    },
-                    enumInstance:self.enumInstance,
-                    entityType:self.entityType,
-                    tpl:tpl,
-                    tplConfig:instanceConfig.getTpl(tpl),
-                    defaultDataSource: instanceConfig.getDefaultDataSource(tpl)
-                })).show();
-            });
+
+            (new nom.nomencladorCreator({
+                listeners: {
+                    "finishedCreation": self.addEnumInServer,
+                    scope: self
+                },
+                enumInstance: self.enumInstance,
+                entityType: self.entityType,
+                tpl: tpl,
+                tplConfig: instanceConfig.getTpl(tpl),
+                defaultDataSource: instanceConfig.getDefaultDataSource(tpl)
+            })).show();
 
         },
         getAddModRank : function(pName,pCallback,pScope){
