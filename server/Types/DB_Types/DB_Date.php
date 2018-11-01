@@ -10,7 +10,7 @@ class DB_Date extends BaseType{
 
     public static function getDBTypeCreation($enumInstance, $connType,$typeProperties, $enum)
     {
-        return 'timestamp';
+        return 'timestampz';
     }
 
     public static function getValueToDB($record, $value, $field, $connType){
