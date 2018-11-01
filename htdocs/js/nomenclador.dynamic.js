@@ -1236,7 +1236,7 @@
     };
     nom.getUI = function(instanceName, config, instanceModifier){
         instanceName = instanceName ? instanceName : nom.export.DEFAULT_INSTANCE;
-        if(instanceModifier === undefined){
+        if(instanceModifier === undefined && !utils.isObject(config)){
             instanceModifier = config;
             config = null;
         }
