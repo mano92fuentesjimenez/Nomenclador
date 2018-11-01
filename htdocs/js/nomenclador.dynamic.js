@@ -405,7 +405,7 @@
                 },
                 config = null;
             //if tpl:default == true
-            if(utils.isArray(this.defaultFields))
+            if(utils.isObject(this.defaultFields))
                 config = this.defaultFields;
             else
                 config = enums.getDefaultFields();
