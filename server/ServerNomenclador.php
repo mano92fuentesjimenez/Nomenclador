@@ -633,7 +633,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     $id,
                     $dsn['username'],
                     $dsn['password'],
-                    $config->schema,
+                    $config['schema'],
                     $dsn['database'],
                     $dsn['hostspec'],
                     $dsn['port']
