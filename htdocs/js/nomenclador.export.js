@@ -416,19 +416,19 @@
 
 	exp.getEnumInstanceSync = function(instanceName, instanceModifier){
 	    return nom.enums.getInstance(instanceName,instanceModifier);
-    }
+    };
 
     var cache = {};
-    exp.checkDatasource = function (instance,datasources) {
+    exp.checkDatasource = function (instanceName,datasources) {
 		var src = Ext.encode(datasources),
-			hash = instance+src;
+			hash = instanceName+src;
 
 		if(!cache[hash]){
 			cache[hash] = new Promise(function (sc) {
 				nom.request('Nomenclador.checkDatasource',{
 					action: 'checkDatasource',
-					instance: instance,
-					datasources : src
+					instanceName: instanceName,
+					sourcesConfig : datasources
 				},function (resp) {
 					sc();
                 });

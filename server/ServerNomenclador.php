@@ -28,7 +28,7 @@ class ServerNomenclador extends ClientResponderAdapter
         try{
             switch ($requ->action) {
                 case 'Nomenclador.checkDatasource':
-                    $enumResult->resp = $this->verifyDatasource($requ->value['instance'],$requ->value['datasources']);
+                    $enumResult->resp = $this->verifyDatasource($requ->value['instance'],$requ->value['sourcesConfig']);
                     break;
                 case 'modEnum': {
                     EnumsRequests::modEnum(
@@ -630,13 +630,11 @@ class ServerNomenclador extends ClientResponderAdapter
         return $rec;
     }
 
-    public function verifyDatasource($instance,$datasources){
+    public function verifyDatasource($instance, $configs){
         $dts = DataSources::getInstance($instance);
 
-        $dts_ = Utils::json_decode($datasources);
-
-        foreach ($dts_ as $id=>$datasource){
-            $conn = $this->getConnectionTo($datasource->datasource);
+        foreach ($configs as $id=> $config){
+            $conn = $this->getConnectionTo($config->moduleConfigId);
             //todo verificar que exista la coneccion
             $dsn = $conn->dsn;
             $dataObj = $dts->getSource($id);
@@ -646,7 +644,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     $id,
                     $dsn['username'],
                     $dsn['password'],
-                    $datasource->schema,
+                    $config->schema,
                     $dsn['database'],
                     $dsn['hostspec'],
                     $dsn['port']
@@ -655,8 +653,6 @@ class ServerNomenclador extends ClientResponderAdapter
                 $dts->saveDataSources();
             }
         }
-
-        $r=6;
     }
 
 }
