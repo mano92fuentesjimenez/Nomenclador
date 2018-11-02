@@ -68,10 +68,10 @@ abstract class DBConn{
     public abstract function tableExists($tablename, $schema);
     
     public abstract function startSelect();
-    public abstract function continueSelect($schema, $tableName, $field, $alias, $query,$foo);
-    public abstract function endSelect($query, $schema, $tableName, $foo);
+    public abstract function continueSelect($schema, $tableName, $field, $alias, $query);
+    public abstract function endSelect($query, $schema, $tableName);
     
-    public abstract function startFrom($enumScheman,$tableName, $query);
+    public abstract function startFrom($enumScheman,$tableName);
     public abstract function continueFrom($enumSchema,$enumTableName,$currentSchema,$currentTableName,$currentField, $query);
     public abstract function continueFromMultiSelect($enumSchema,$enumTableName,$currentSchema,$currentTableName, $multiTableName,$query);
     public abstract function endFrom($query);
@@ -295,20 +295,20 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->startSelect();
     }
 
-    public function continueSelect($schema, $tableName, $field, $alias, $query,$foo = false)
+    public function continueSelect($schema, $tableName, $field, $alias, $query)
     {
-        return $this->dbConn->continueSelect($schema, $tableName, $field, $alias,$query,$foo);
+        return $this->dbConn->continueSelect($schema, $tableName, $field, $alias,$query);
             
     }
 
-    public function endSelect($query, $schema, $tableName, $foo = false)
+    public function endSelect($query, $schema, $tableName)
     {
-        return $this->dbConn->endSelect($query, $schema, $tableName,$foo);
+        return $this->dbConn->endSelect($query, $schema, $tableName);
     }
 
-    public function startFrom($enumSchema, $tableName,$start = false)
+    public function startFrom($enumSchema, $tableName)
     {
-        return $this->dbConn->startFrom($enumSchema, $tableName,$start);
+        return $this->dbConn->startFrom($enumSchema, $tableName);
             
     }
 

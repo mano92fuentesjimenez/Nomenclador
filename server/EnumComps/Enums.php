@@ -167,9 +167,12 @@ class Enum
 
         return true;
     }
+    private function getRawTableName(){
+        return $this->getId();
+    }
     public function getTableName($includeSchema=true, $schemaPrefix='', $tablePrefix=''){
         $d = $this->getDataSource();
-        return ($includeSchema ? "\"{$schemaPrefix}{$d->getSchema()}\"." : '')."\"{$tablePrefix}{$this->getId()}\"";
+        return ($includeSchema ? "\"{$schemaPrefix}{$d->getSchema()}\"." : '')."\"{$tablePrefix}{$this->getRawTableName()}\"";
     }
     public function getDataBaseName(){
         return $this->getDataSource()->getDataBaseName();
@@ -409,25 +412,15 @@ class Enum
         $ds = $this->getDataSource();
         $conn = EnumsUtils::getDBConnection($this);
         $enums = Enums::getInstance($this->enumInstance);
-        $currentEnum = $this;
         $select = $conn->startSelect();
-        $from = null;
-        $selectSubq = $select;
-        $fromSubq = $conn->startFrom($ds->getSchema(), $currentEnum->getId());
+        $from = $conn->startFrom($ds->getSchema(), $this->getRawTableName());
 
-        $first = true;
         $multiField = null;
         unset($fields[Primarykey::ID]);
 
         //recorro todos los campos que tienen la misma conneccion, tipo de fuente de datos construyendo la consulta
-        while (count($fields) > 0) {
+
             $fieldsWalking = $fields;
-            //Arreglo donde voy a guardar los enums visitados. Normalmente desde una misma tabla no se puede referenciar
-            //2 veces a una misma tabla, en nomencladores esto si se puede, pero como el soporte se lo da mayormente
-            //sistemas que no lo soportan, ent debo hacer varias consultas.
-            $enumsVisited = array();
-            //en la primera pasada me llevo todos los datos que tienen mismo datasource que este enum, y el primero de
-            //todos los enums que apunten a la  misma tabla.
 
             foreach ($fieldsWalking as $key => $value) {
 
@@ -538,8 +531,8 @@ class Enum
                 unset($fields[$key]);
             }
             if ($first) {
-                $select = $conn->endSelect($select, $ds->getSchema(), $currentEnum->getId(),true);
-                $selectSubq = $conn->endSelect($selectSubq, $ds->getSchema(), $currentEnum->getId());
+                $select = $conn->endSelect($select, $ds->getSchema(), $this->getId(),true);
+                $selectSubq = $conn->endSelect($selectSubq, $ds->getSchema(), $this->getId());
 
                 if(!is_null($from))
                     $from = $conn->endFrom($from);
@@ -577,7 +570,7 @@ class Enum
                 }
                 $first = false;
             }
-        }
+
 
 
         return $data;

@@ -342,18 +342,15 @@ class Postgree_9_1 extends DBConn
         return "$query foo.\"$field\" as \"$alias\", ";
     }
 
-    public function endSelect($query, $schema, $tableName,$foo=false)
+    public function endSelect($query, $schema, $tableName)
     {
-        if(!$foo)
-            return $query."\"$schema\".\"$tableName\".".PrimaryKey::ID;
-        return "$query foo.".PrimaryKey::ID;
+
+       return $query."\"$schema\".\"$tableName\".".PrimaryKey::ID;
+
     }
 
-    public function startFrom($enumSchema, $tableName, $start)
+    public function startFrom($enumSchema, $tableName)
     {
-        if(is_string($start))
-            return "FROM ($start) as foo";
-
         return "FROM \"$enumSchema\".\"$tableName\" ";
     }
 
