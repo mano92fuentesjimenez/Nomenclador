@@ -109,7 +109,7 @@
 				disabled = true,
 				dbFld = this.fields.dbname,
 				self = this;
-			nom.request('getDataBasesNames',this.getFieldsValues()._apply_({enumInstance:this.enumInstance}),function(r,o) {
+			nom.request('getDataBasesNames',this.getFieldsValues()._apply_({instanceName:this.enumInstance}),function(r,o) {
 				infoMsg('La conexi&oacute;n se ha realizado satisfactoriamente.');
 
 				var st = dbFld.store;
@@ -147,7 +147,7 @@
 				callcb = this._default_(pCallback,function(){}),
 				self = this;
 
-			nom.request('getDbConfigs',{enumInstance:this.enumInstance},function (r) {
+			nom.request('getDbConfigs',{instanceName:this.enumInstance},function (r) {
                 self.dataConfigs = Ext.util.JSON.decode(r.responseText);
                 callcb(self.dataConfigs);
                 mask();
@@ -195,7 +195,7 @@
                 var mask = Genesig.Utils.mask(this, 'Cargando esquemas.');
 
                 nom.request('getDbSchemas', {
-                	enumInstance:this.enumInstance,
+                    instanceName:this.enumInstance,
                     conn:this.getFieldsValues()
                 }, function (r) {
                     mask();
@@ -325,7 +325,7 @@
         managing:true,
 		dataProxy : function(pCallback){
             var self = this;
-			nom.request('getDbConfigs',{enumInstance:this.enumInstance},function (r) {
+			nom.request('getDbConfigs',{instanceName:this.enumInstance},function (r) {
                 pCallback(r._map_(function(o){
                     return o;
                 },self,false));
@@ -444,7 +444,7 @@
 
 				nom.request(mode,{
                     "config" :dataSource,
-					enumInstance:self.enumInstance
+                    instanceName:self.enumInstance
                 },function (r){
                     infoMsg(info);
                     callback(true, r);
@@ -549,7 +549,7 @@
                     var selected = self.gridPanel.getSelectionModel().getSelected();
                     var mask = Genesig.Utils.mask(self.gridPanel, 'Eliminando fuente de datos');
                     nom.request('delDataSource',
-						{id: selected.get('id'), enumInstance:self.enumInstance},
+						{id: selected.get('id'), instanceName:self.enumInstance},
 						function (r) {
                             self.gridPanel.getStore().remove(selected);
                         }, null, mask);

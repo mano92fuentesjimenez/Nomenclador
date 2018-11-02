@@ -115,7 +115,7 @@
         },
         load: function (instanceName, callback, onError,mask){
             var self =this;
-            nom.request('getServerHeaders',{enumInstance:instanceName},function (response, o){
+            nom.request('getServerHeaders',{instanceName:instanceName},function (response, o){
                 self.loaded[instanceName] = true;
                 var enums = self.getEnums(instanceName);
                 response.enums._each_(function (_enum){
@@ -556,7 +556,7 @@
             });
 
         nom.request('getEnumData',{
-            enumInstance:instanceName,
+            instanceName:instanceName,
             enum: enumId,
             enumLoadPageSize: this._default_(enumDataLoadConfig.pageSize, 100000),
             enumLoadPageOffset: this._default_(enumDataLoadConfig.offset,0),
@@ -1303,11 +1303,11 @@
             params = {};
         params['action'] =action;
 
-        if(params.enumInstance) {
-            if(params.enumInstance instanceof nom.EnumInstance) {
+        if(params.instanceName) {
+            if(params.instanceName instanceof nom.EnumInstance) {
 
-                var actions =params.enumInstance.getActionManager().getActions();
-                params.enumInstance = params.enumInstance.getName();
+                var actions =params.instanceName.getActionManager().getActions();
+                params.instanceName = params.instanceName.getName();
 
                 if(params['actions'])
                     params['actions']._apply_(actions);

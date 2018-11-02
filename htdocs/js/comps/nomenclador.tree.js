@@ -99,7 +99,7 @@
 			var targetPos = dragObj.target.getPath('idNode');
 
 			nom.request('MoveNodeInSimpleTree',{
-				enumInstance:this.enumInstance,
+                instanceName:this.enumInstance,
                 point :point,
                 previousPath :previousPath,
                 newPath :newPath,

@@ -173,7 +173,7 @@
 				self = this;
 			nom.request('getRowFromEnumField',
                 {
-                	enumInstance:instance,
+                    instanceName:instance,
                     enumId :enumId,
                     enumRow :enumRow,
                     enumField :enumField,
@@ -396,7 +396,7 @@
                 };
 			if(_enumId)
 				nom.request('enumHasData',{
-					enumInstance:enumInstance,
+                    instanceName:enumInstance,
 					enumId :_enumId
 					},f);
 			else

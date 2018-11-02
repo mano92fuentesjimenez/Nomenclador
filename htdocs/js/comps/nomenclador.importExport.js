@@ -81,7 +81,7 @@ Ext.onReady(function(){
 		accept :function (){
 			var mask = utils.mask(this);
 			nom.request('exportEnums',{
-				enumInstance:this.enumInstance,
+                instanceName:this.enumInstance,
                 config:this.exportConfig
             },function(r) {
                 window.open(r);

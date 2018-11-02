@@ -612,7 +612,7 @@
                 var mask = utils.mask(this, "Adicionando "+self.addRankButtonText);
 
                 nom.request('addRank',{
-                    enumInstance: this.enumInstance,
+                    instanceName: this.enumInstance,
                     newRank: node.getPath('idNode')+'/'+text
                 },function (r) {
                     infoMsg('La categor&iacute;a ha sido adicionada satisfactoriamente.');
@@ -628,7 +628,7 @@
                 tplConfig = instanceConfig.getTpl(tpl),
                 self = this,
                 f = function(){
-                    nom.request('modEnumData',{ enumId:_enum.id, enumInstance:self.enumInstance},function (response) {
+                    nom.request('modEnumData',{ enumId:_enum.id, instanceName:self.enumInstance},function (response) {
 
                         new nom.nomencladorCreator({
                             listeners: {
@@ -637,7 +637,7 @@
                             },
                             _enum: _enum,
                             refs: response['refs'],
-                            enumInstance:self.enumInstance,
+                            instanceName:self.enumInstance,
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
                             tpl:tpl,
@@ -661,7 +661,7 @@
                 var path = node.getPath("idNode");
                 var mask = utils.mask(self, "Modificando "+self.addRankButtonText);
                 nom.request('modRank',{
-                    enumInstance:self.enumInstance,
+                    instanceName:self.enumInstance,
                     path: path,
                     name: text
                 },function (r) {
@@ -687,7 +687,7 @@
 
                 if (b == 'ok') {
                     nom.request('removeEnum',{
-                        enumInstance:this.enumInstance,
+                        instanceName:this.enumInstance,
                         enumId: enums.getEnumByName(self.enumInstance.getName(), node.text).id,
                         path: node.getPath('idNode')
                     },function (response) {
@@ -724,7 +724,7 @@
                     var mask = utils.mask(this, "Eliminando categoria.");
 
                     if (node.id == this.getRootNode().id) {
-                        nom.request('removeAll', {enumInstance:self.enumInstance}, function (r) {
+                        nom.request('removeAll', {instanceName:self.enumInstance}, function (r) {
                             infoMsg('Se han borrado todos los nomencladores y categor&iacute;s satisfactoriamente');
                             self.initValues();
                         },null,mask);
@@ -732,7 +732,7 @@
                     }
 
                     nom.request('removeRank', {
-                        enumInstance:this.enumInstance,
+                        instanceName:this.enumInstance,
                         path: path
                     }, function () {
                         infoMsg('La categor&iacute;a ha sido eliminada satisfactoriamente.');
@@ -757,7 +757,7 @@
                 mask =this.maskObj? Genesig.Utils.mask(this.maskObj, 'An&ntilde;adiendo '+this.entityType) :null;
 
             nom.request('addEnum', {
-                enumInstance:this.enumInstance,
+                instanceName:this.enumInstance,
                 _enum: _enum,
                 _enumPath: _enumPath,
                 refs: obj.refs
@@ -772,7 +772,7 @@
             var mask = Genesig.Utils.mask(this, 'Modificando '+this.entityType);
             var self = this;
             nom.request('modEnum', {
-                enumInstance:this.enumInstance,
+                instanceName:this.enumInstance,
                 'changes': changes,
                 'original': enums.getEnumByName(self.enumInstance.getName(),node.text)
             }, function (r) {
@@ -793,7 +793,7 @@
                     var path = node.getPath('text');
                     var mask = Genesig.Utils.mask(self);
                     nom.request('delOnCascade',{
-                        enumInstance:self.enumInstance,
+                        instanceName:self.enumInstance,
                         _enumId:_enum.id,
                         path:path
                     },function (fp, o) {

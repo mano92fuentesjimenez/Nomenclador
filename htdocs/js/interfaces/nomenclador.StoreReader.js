@@ -209,7 +209,7 @@
 				};
 			if(!this.offlineMode)
                 nom.request('getTotalRecordsFromEnum', {
-                    enumInstance: this.enumInstance,
+                    instanceName: this.enumInstance,
                     _enum: this._enum.id,
                     where: this.getEnumLoadConfig(0).where,
                     actions:this.getActions(this)

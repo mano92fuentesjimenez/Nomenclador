@@ -142,7 +142,7 @@
 	 */
 	exp.getEnumTreeStructure=function(instanceName,callback){};
 	addService('getEnumTreeStructure',function (instanceName,callback){
-		nom.request('getServerHeaders',{enumInstance:instanceName},function (response, o) {
+		nom.request('getServerHeaders',{instanceName:instanceName},function (response, o) {
            callback(buildTree(instanceName,response.simpleTree));
         });
 	},true);
@@ -241,7 +241,7 @@
 	exp.getEnumColumnData=function(instanceName,enumId, config, columnId, callback){};
 	addService('getEnumColumnData',function (instanceName,enumId, config, columnId, callback){
 		nom.request('getEnumColumnData',{
-			enumInstance:instanceName,
+            instanceName:instanceName,
             enumId:enumId,
             config:config,
             columnId:columnId
@@ -427,7 +427,7 @@
 			cache[hash] = new Promise(function (sc) {
 				nom.request('Nomenclador.checkDatasource',{
 					action: 'checkDatasource',
-					instanceName: instanceName,
+                    instanceName: instanceName,
 					sourcesConfig : datasources
 				},function (resp) {
 					sc();

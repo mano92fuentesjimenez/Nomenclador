@@ -21,7 +21,7 @@ class ServerNomenclador extends ClientResponderAdapter
     public function handlePreDrawing($requ)
     {
         $enumResult = new NomencladorResult();
-        $enumInstance = $requ->value['enumInstance'];
+        $enumInstance = $requ->value['instanceName'];
         $actionM = ActionManager::getInstance($enumInstance);
         $actionM->setActions($requ->value['actions']);
         
@@ -32,7 +32,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'modEnum': {
                     EnumsRequests::modEnum(
-                        $requ->value['enumInstance'],
+                        $enumInstance,
                         $requ->value['changes'],
                         $requ->value['original']
                     );
@@ -40,7 +40,6 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'modEnumData': {
                     $enumId = $requ->value['enumId'];
-                    $enumInstance = $requ->value['enumInstance'];
                     $enums = Enums::getInstance($enumInstance);
                     $enum = $enums->getEnum($enumId);
 
@@ -57,7 +56,7 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'getServerHeaders': {
-                    $enumResult->resp = $this->getSeverHeaders($requ->value['enumInstance']);
+                    $enumResult->resp = $this->getSeverHeaders($enumInstance);
                 }
                     break;
                 case 'getModels': {
@@ -78,21 +77,19 @@ class ServerNomenclador extends ClientResponderAdapter
                 } break;
                 case 'addEnum': {
                     EnumsRequests::addEnum(
-                        $requ->value['enumInstance'],
+                        $enumInstance,
                         $requ->value['_enum'],
                         $requ->value['_enumPath'],
                         $requ->value["refs"]);
                 }
                     break;
                 case 'modRank': {
-                    $enumInstance =$requ->value['enumInstance'];
                     $simpleTree = SimpleTree::getInstance($enumInstance);
                     $simpleTree->modRank($requ->value['path'], $requ->value['name']);
                     $simpleTree->saveSimpleTree($enumInstance);
                 }
                     break;
                 case 'addRank': {
-                    $enumInstance =$requ->value['enumInstance'];
                     $simpleTree = SimpleTree::getInstance($enumInstance);
                     $simpleTree->addRank($requ->value['newRank']);
                     $simpleTree->saveSimpleTree($enumInstance);
@@ -100,21 +97,20 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'getDbConfigs': {
 
-                    $dataSources = DataSources::getInstance($requ->value['enumInstance']);
+                    $dataSources = DataSources::getInstance($enumInstance);
                     $enumResult->resp = $dataSources->getSources();
                 }
                     break;
                 case 'getDbSchemas': {
 
                     $dataSource = $requ->value["conn"];
-                    $dataS = new DataSource($requ->value['enumInstance'],$dataSource);
+                    $dataS = new DataSource($enumInstance,$dataSource);
                     $conn = new DBConnProxy($dataS);
                     $conn->getSchemas();
                     $enumResult->resp = $conn->fetchData();
                 }
                     break;
                 case 'addDbConfig': {
-                    $enumInstance = $requ->value['enumInstance'];
                     $dataSources = DataSources::getInstance($enumInstance);
 
                     $newDataSource = new DataSource($enumInstance, $requ->value['config']);
@@ -124,7 +120,6 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'modDbConfig':{
-                    $enumInstance = $requ->value['enumInstance'];
                     $dataSources = DataSources::getInstance($enumInstance);
 
                     $newDataSource = new DataSource($enumInstance, $requ->value['config']);
@@ -136,7 +131,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'delDataSource': {
 
-                    $dataSources = DataSources::getInstance($requ->value['enumInstance']);
+                    $dataSources = DataSources::getInstance($enumInstance);
                     $dataSources->remove($requ->value['id']);
                     $dataSources->saveDataSources();
                 }
@@ -146,12 +141,11 @@ class ServerNomenclador extends ClientResponderAdapter
                     $data = $requ->value['data'];
                     $enum = $requ->value['_enum'];
 
-                    $enumResult->resp= EnumsRequests::submitChanges($requ->value['enumInstance'],$enum, $data);
+                    $enumResult->resp= EnumsRequests::submitChanges($enumInstance,$enum, $data);
                 }
                     break;
                 case 'getEnumData': {
                     $params = $requ->value;
-                    $enumInstance = $requ->value['enumInstance'];
                     $enumId = $params['enum'];
 
                     $loadAll = $params['enumLoadEnums'] ? true : false;
@@ -171,7 +165,6 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'getEnumDataIds': {
                     $params = $requ->value;
-                    $enumInstance = $requ->value['enumInstance'];
                     $enumId = $params['enum'];
 
                     $enumResult->resp = $this->queryEnumsIds(
@@ -182,7 +175,6 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'getTotalRecordsFromEnum':{
-                    $enumInstance = $requ->value['enumInstance'];
                     $enum_id = $requ->value['_enum'];
                     $enums = Enums::getInstance($enumInstance);
                     $enum = $enums->getEnum($enum_id);
@@ -196,7 +188,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     if (isset($config["dbname"])) {
                         unset($config["dbname"]);
                     }
-                    $dataS = new DataSource($requ->value['enumInstance'],$config);
+                    $dataS = new DataSource($enumInstance,$config);
                     $conn = new DBConnProxy($dataS);
                     if (!$conn->getDBNames()) {
                         throw new EnumException('No se ha podido realizar la conecci&oacute;n');
@@ -206,7 +198,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'removeEnum': {
                     $enumResult->resp = EnumsRequests::removeEnum(
-                        $requ->value['enumInstance'],
+                        $enumInstance,
                         $requ->value['enumId'],
                         $requ->value['path']
                     );
@@ -214,18 +206,17 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'removeRank': {
                     EnumsRequests::removeRank(
-                        $requ->value['enumInstance'],
+                        $enumInstance,
                         $requ->value['path']
                     );
                 }
                     break;
                 case 'hasDataSources': {
-                    $dataS = DataSources::getInstance($requ->value['enumInstance']);
+                    $dataS = DataSources::getInstance($enumInstance);
                     $enumResult->resp =$dataS->count();;
                 }
                     break;
                 case 'removeAll': {
-                    $enumInstance = $requ->value['enumInstance'];
                     $enums = Enums::getInstance($enumInstance);
                     $enums->removeAll();
 
@@ -249,19 +240,18 @@ class ServerNomenclador extends ClientResponderAdapter
                 case 'importEnums': {
                     EnumsUtils::saveNewEnumConfigZip($_FILES['enum_import_input']['tmp_name']);
                     EnumsUtils::importEnums(
-                        $requ->value['enumInstance'],
+                        $enumInstance,
                         $requ->value['join_enums'],
                         $requ->value['prefix_path']);
                 }
                     break;
                 case 'enumHasData':{
-                    $enums = Enums::getInstance($requ->value['enumInstance']);
+                    $enums = Enums::getInstance($enumInstance);
                     $enum = $enums->getEnum($requ->value['enumId']);
                     $enumResult->resp =$enum->hasData();
                 }
                     break;
                 case 'delOnCascade':{
-                    $enumInstance = $requ->value['enumInstance'];
                     $enums = Enums::getInstance($enumInstance);
                     $enum = $enums->getEnum($requ->value['_enumId']);
                     $enum->delOnCascade($enumInstance);
@@ -269,7 +259,7 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'MoveNodeInSimpleTree':{
-                    $simpleTree = SimpleTree::getInstance($requ->value['enumInstance']);
+                    $simpleTree = SimpleTree::getInstance($enumInstance);
                     $simpleTree->moveNode(
                         $requ->value['previousPath'],
                         $requ->value['point'],
@@ -281,7 +271,6 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumId = $requ->value['enumId'];
                     $config = $requ->value['config'];
                     $columnId = $requ->value['columnId'];
-                    $enumInstance = $requ->value['enumInstance'];
 
                     $fieldFilter = null;
                     $fieldValue = null;
