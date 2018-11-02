@@ -330,7 +330,7 @@ class Postgree_9_1 extends DBConn
 
     public function startFrom($enumSchema, $tableName, $baseName)
     {
-        return "FROM \"$enumSchema\".\"$tableName\" as $baseName";
+        return "FROM \"$enumSchema\".\"$tableName\" as $baseName ";
     }
 
     public function continueFrom($currentSchema, $currentTableName, $currentField, $query, $baseName)    {
