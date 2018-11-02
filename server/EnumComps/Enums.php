@@ -427,6 +427,7 @@ class Enum
 
             if ($field->isEnum()){
                 $currentReferencedEnum = $field->getReferencedEnum($this->enumInstance);
+                $rField = $field->getReferencedField($this->enumInstance);
                 $ds2 = $currentReferencedEnum->getDataSource();
 
                 if ($ds2->distinctDs($ds)) {
@@ -438,7 +439,6 @@ class Enum
 
                         $multiField = $field;
                         $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
-                        $rField = $field->getReferencedField($this->enumInstance);
 
                         $from = $conn->continueFromMultiSelect($ds->getSchema(), $currentReferencedEnum->getRawTableName(),$this->getRawTableName(),$multiName,$from, $baseName);
                         //poner el valor verdadero del enum en $key (id del campo)
@@ -447,10 +447,10 @@ class Enum
                     }
                     else {
 
-                        $from = $conn->continueFrom($ds->getSchema(),$currentReferencedEnum->getRawTableName(), $key, $from, $baseName);
+                        $from = $conn->continueFrom($ds2->getSchema(),$currentReferencedEnum->getRawTableName(), $key, $from, $baseName);
                         //poner el valor verdadero del enum en $key (id del campo)
                         $select = $conn->continueSelect(null,null, $key,$key, $select,$baseName);
-                        $select = $conn->continueSelect($ds->getSchema(),$currentReferencedEnum->getRawTableName(), $key . BaseType::REF_TYPE_VALUE_HEADER,
+                        $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),
                             $key . BaseType::REF_TYPE_VALUE_HEADER, $select,$baseName);
                     }
                 }
