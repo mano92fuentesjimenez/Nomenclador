@@ -28,7 +28,7 @@ class ServerNomenclador extends ClientResponderAdapter
         try{
             switch ($requ->action) {
                 case 'Nomenclador.checkDatasource':
-                    $enumResult->resp = $this->verifyDatasource($requ->value['instance'],$requ->value['sourcesConfig']);
+                    $enumResult->resp = $this->verifyDatasource($enumInstance,$requ->value['sourcesConfig']);
                     break;
                 case 'modEnum': {
                     EnumsRequests::modEnum(
