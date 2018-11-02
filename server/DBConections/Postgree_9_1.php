@@ -113,26 +113,6 @@ class Postgree_9_1 extends DBConn
         return $this->query($createStr);
     }
 
-    public function getData($tableName, $schema, $start = null, $limit = null, $fieldFilter = null, 
-                            $fieldValue = null, $fields = null,$select, $from, $idRow = null)
-    {
-        $query = $select.$from;
-        if($fieldFilter){
-            $query .= " WHERE \"$fieldFilter\" = '$fieldValue'";
-        }
-        $query .= ' order by '. PrimaryKey::ID;
-        if($start) {
-            $query .= " offset $start";
-        }
-        if($limit) {
-            $query .= " limit $limit";
-        }
-        $query .= ';';
-
-        return $this->query($query);
-        
-    }
-
     public function getFieldSingleValue($tableName, $schema, $fieldName, $rowIndex, $getAll = false, $fields = null)
     {
         $query = 'SELECT';
@@ -335,28 +315,27 @@ class Postgree_9_1 extends DBConn
         return "SELECT ";
     }
 
-    public function continueSelect($schema, $tableName, $field, $alias, $query, $foo = false)
+    public function continueSelect($schema, $tableName, $field, $alias, $query, $baseName)
     {
-        if(!$foo)
-          return $query."\"$schema\".\"$tableName\".\"$field\" as \"$alias\", ";
-        return "$query foo.\"$field\" as \"$alias\", ";
+        if(is_string($schema))
+            return $query."\"$schema\".\"$tableName\".\"$field\" as \"$alias\", ";
+        return "$query $baseName.\"$field\" as $alias,";
     }
 
-    public function endSelect($query, $schema, $tableName)
+    public function endSelect($query, $baseName)
     {
-
-       return $query."\"$schema\".\"$tableName\".".PrimaryKey::ID;
-
+        $pk = PrimaryKey::ID;
+        return  "$query $baseName.$pk";
     }
 
-    public function startFrom($enumSchema, $tableName)
+    public function startFrom($enumSchema, $tableName, $baseName)
     {
-        return "FROM \"$enumSchema\".\"$tableName\" ";
+        return "FROM \"$enumSchema\".\"$tableName\" as $baseName";
     }
 
-    public function continueFrom($enumSchema, $enumTableName,$currentSchema, $currentTableName, $currentField, $query)    {
+    public function continueFrom($currentSchema, $currentTableName, $currentField, $query, $baseName)    {
 
-        $r = "left JOIN \"$currentSchema\".\"$currentTableName\" on \"$enumSchema\".\"$enumTableName\".\"$currentField\"";
+        $r = "left JOIN \"$currentSchema\".\"$currentTableName\" on $baseName.\"$currentField\"";
         $r.= "=\"$currentSchema\".\"$currentTableName\".".PrimaryKey::ID." ";
         return $query.$r;
 
@@ -367,30 +346,23 @@ class Postgree_9_1 extends DBConn
         return $query;
     }
 
-    public function getEnumData($schema, $tableName, $select, $from, $where, $offset=null, $limit=null, $idRow=null, $selectsubq, $fromSubq)
+    public function getEnumData($schema, $tableName, $select, $from, $where, $offset=null, $limit=null, $idRow=null)
     {
         $search_path ="set search_path = $schema ";
-        $query = $selectsubq.' '.$fromSubq;
+        $query = "$select $from";
         
         if($idRow){
-            $query.= " WHERE \"$schema\".\"$tableName\".\"".PrimaryKey::ID."\"='$idRow' ";
+            $query= "$query WHERE \"$schema\".\"$tableName\".\"".PrimaryKey::ID."\"='$idRow' ";
         }
         else if($where){
-            $query.= " $where ";
+            $query= "$query $where ";
         }
         if($offset){
-            $query.=" OFFSET $offset";
-        }
-        if(!is_null($from)) {
-            $f = $this->startFrom(null, null, $query);
-            $f = " $f $from " ;
-            $query = " $select $f";
-
+            $query="$query OFFSET $offset";
         }
         if($limit){
-            $query.=" LIMIT $limit";
+            $query="$query LIMIT $limit";
         }
-
         $query = "$search_path ; $query ;";
         return $this->query($query);
     }
@@ -402,11 +374,10 @@ class Postgree_9_1 extends DBConn
         return 'WHERE ';
     }
     public function continueWhere($where1, $where2){
-        if($where1 && $where2)
-            return " $where1 and $where2 ";
+        return " $where1 and $where2 ";
     }
 
-    public function inWhere($field, $inData, $query)
+    public function inWhere($field, $inData, $query, $baseName)
     {
         $q ='';
         foreach ($inData as $value) {
@@ -416,7 +387,7 @@ class Postgree_9_1 extends DBConn
                 $q.="$value,";
         }
         $q = substr($q,0,-1);
-        return "$query $field in ( $q )";
+        return "$query $baseName.$field in ( $q )";
     }
 
     public function endWhere($query)
@@ -426,17 +397,18 @@ class Postgree_9_1 extends DBConn
         $s_e = array_pop($s);
         $s = implode(' ',$s);
 
+        //Removing trailing and
         if($s_e != 'and')
             $s = $s.$s_e;
         return $s;
     }
 
-    public function continueFromMultiSelect($enumSchema, $enumTableName, $currentSchema, $currentTableName, $multiTableName, $query)
+    public function continueFromMultiSelect( $enumSchema, $enumTableName,$currentTableName, $multiTableName, $query, $baseName)
     {
         $primaryKey = PrimaryKey::ID;
         //El nombre de la tabla de un nomenclador es el identificador de un nomenclador.
-        $query = "$query inner join \"$enumSchema\".\"$multiTableName\" on (foo.$primaryKey=\"$enumTableName\") ";
-        $query = "$query inner join \"$currentSchema\".\"$currentTableName\" on (\"$currentSchema\".\"$currentTableName\".$primaryKey = \"$currentTableName\") ";
+        $query = "$query inner join \"$enumSchema\".\"$multiTableName\" on ($baseName.$primaryKey=\"$currentTableName\") ";
+        $query = "$query inner join \"$enumSchema\".\"$enumTableName\" on ( \"$enumTableName\" = \"$enumSchema\".\"$enumTableName\".$primaryKey) ";
         return $query;
     }
 

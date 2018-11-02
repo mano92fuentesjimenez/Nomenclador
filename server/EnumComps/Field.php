@@ -84,4 +84,20 @@ class Field
     public function isEnum(){
         return $this->getType() == 'DB_Enum';
     }
+
+    /**
+     * @param $enumInstance
+     * @return Enum
+     * @throws Exception
+     */
+    public function getReferencedEnum($enumInstance){
+        $enums = Enums::getInstance($enumInstance);
+        $prop = $this->getProperties();
+        return $enums->getEnum($prop['_enum']);
+    }
+    public function getReferencedField($enumInstance){
+        $prop = $this->getProperties();
+        $enum = $this->getReferencedEnum($enumInstance);
+        return $enum->getField($prop['field']);
+    }
 }
