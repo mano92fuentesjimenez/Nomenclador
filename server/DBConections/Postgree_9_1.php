@@ -352,7 +352,7 @@ class Postgree_9_1 extends DBConn
         $query = "$select $from";
         
         if($idRow){
-            $query= "$query WHERE $baseName.".PrimaryKey::ID."\"='$idRow' ";
+            $query= "$query WHERE $baseName.".PrimaryKey::ID."='$idRow' ";
         }
         else if($where){
             $query= "$query $where ";
