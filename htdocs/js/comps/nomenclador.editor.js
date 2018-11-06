@@ -637,7 +637,7 @@
                             },
                             _enum: _enum,
                             refs: response['refs'],
-                            instanceName:self.enumInstance,
+                            enumInstance:self.enumInstance,
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
                             tpl:tpl,
