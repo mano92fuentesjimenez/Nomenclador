@@ -68,7 +68,7 @@
                                     objs._each_(function (v) {
                                         dv.store.add(new dv.store.recordType({
                                             code: v.id,
-                                            url: manageImagesExport.getImageURL(v.id,20,20)
+                                            url: manageImagesExport.getImageURL(v.id,100,100)
                                         }))
                                     });
                                     input.fireEvent('datachanged');
