@@ -68,7 +68,7 @@
                                     objs._each_(function (v) {
                                         dv.store.add(new dv.store.recordType({
                                             code: v.id,
-                                            url: manageImagesExport.getImageURL(v.id)
+                                            url: manageImagesExport.getImageURL(v.id,20,20)
                                         }))
                                     });
                                     input.fireEvent('datachanged');
@@ -141,7 +141,6 @@
             this.tpl = new Ext.XTemplate(
                 '<tpl for=".">',
                     '<div class="_enum_image_ct" image_id="{code}">' +
-                        '<p>dddd</p>',
                         '<img src="{url}">',
                     '</div>',
                 '</tpl>');
