@@ -52,6 +52,19 @@ class Refs
         }
         return self::$instance[$enumInstance];
     }
+    public static function InstanceExist($enumInstance){
+        $conn = EnumsUtils::getConn();
+        $projName = EnumsUtils::getProjectName();
+        $sql = "select exists(select * from mod_nomenclador.refs where enum_instance = '$enumInstance' and proj ='$projName' ) as e";
+        $data = $conn->getAll($sql, DB_FETCHMODE_ASSOC);
+        $data = reset($data);
+        return $data['e'];
+    }
+    public static function AddRefsToDB($enumInstance, $refs){
+        $conn = EnumsUtils::getConn();
+        $projName = EnumsUtils::getProjectName();
+        $conn->simpleQuery("insert into mod_nomenclador.refs(v,proj,enum_instance) values ('$refs', '$projName','$enumInstance')");
+    }
 
 
     public function addRefs($refs)

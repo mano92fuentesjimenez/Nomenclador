@@ -653,6 +653,19 @@ class Enums
         }
         return self::$instance[$enumInstance];
     }
+    public static function InstanceExist($enumInstance){
+        $conn = EnumsUtils::getConn();
+        $projName = EnumsUtils::getProjectName();
+        $sql = "select exists(select * from mod_nomenclador.enums where enum_instance = '$enumInstance' and proj ='$projName' ) as e";
+        $data = $conn->getAll($sql, DB_FETCHMODE_ASSOC);
+        $data = reset($data);
+        return $data['e'];
+    }
+    public static function AddEnumsToDb($enumInstance, $enums){
+        $enums = self::getInstance($enumInstance);
+        $enums->addEnums($enums);
+        $enums->saveEnums();
+    }
 
     public static function getEnumsPath()
     {

@@ -644,6 +644,19 @@ class ServerNomenclador extends ClientResponderAdapter
         }
     }
 
+    public function verifySimpleTree($enumInstance,$tree){
+        if(!SimpleTree::InstanceExist($enumInstance))
+            SimpleTree::AddSimpleTree($enumInstance,$tree);
+    }
+    public function verifyEnums($enumInstance,$enums){
+        if(!Enums::InstanceExist($enumInstance))
+            Enums::AddEnumsToDb($enumInstance,$enums);
+    }
+    public function verifyRefs($enumInstance,$refs){
+        if(Refs::InstanceExist($enumInstance))
+            Refs::AddRefsToDB($enumInstance,$refs);
+    }
+
 }
 class EnumRestMethods{
 

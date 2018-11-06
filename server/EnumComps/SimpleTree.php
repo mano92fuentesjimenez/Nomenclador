@@ -105,6 +105,19 @@ class SimpleTree
         }
         $f($last, $walking);
     }
+    public static function InstanceExist($enumInstance){
+        $conn = EnumsUtils::getConn();
+        $projName = EnumsUtils::getProjectName();
+        $sql = "select exists(select * from mod_nomenclador.simpletree where enum_instance = '$enumInstance' and proj ='$projName' ) as e";
+        $data = $conn->getAll($sql, DB_FETCHMODE_ASSOC);
+        $data = reset($data);
+        return $data['e'];
+    }
+    public static function AddSimpleTree($enumInstance, $simpleTree){
+        $conn = EnumsUtils::getConn();
+        $projName = EnumsUtils::getProjectName();
+        $conn->simpleQuery("insert into mod_nomenclador.simpletree(v,proj,enum_instance) values ('$simpleTree', '$projName','$enumInstance')");
+    }
 
     private function f($id, &$nodes){
         foreach ($nodes as $key=> &$node){
