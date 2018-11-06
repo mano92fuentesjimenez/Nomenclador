@@ -111,7 +111,7 @@ class SimpleTree
         $sql = "select exists(select * from mod_nomenclador.simpletree where enum_instance = '$enumInstance' and proj ='$projName' ) as e";
         $data = $conn->getAll($sql, DB_FETCHMODE_ASSOC);
         $data = reset($data);
-        return $data['e'];
+        return $data['e']==='t';
     }
     public static function AddSimpleTree($enumInstance, $simpleTree){
         $conn = EnumsUtils::getConn();

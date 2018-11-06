@@ -58,7 +58,7 @@ class Refs
         $sql = "select exists(select * from mod_nomenclador.refs where enum_instance = '$enumInstance' and proj ='$projName' ) as e";
         $data = $conn->getAll($sql, DB_FETCHMODE_ASSOC);
         $data = reset($data);
-        return $data['e'];
+        return $data['e']=='t';
     }
     public static function AddRefsToDB($enumInstance, $refs){
         $conn = EnumsUtils::getConn();
