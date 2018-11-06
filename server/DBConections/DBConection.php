@@ -47,7 +47,7 @@ abstract class DBConn{
     public abstract function beginTransaction();
     public abstract function commitTransaction();
     
-    public abstract function getEnumData($schema, $tableName, $select, $from, $whereSubq, $offset, $limit, $idRow );
+    public abstract function getEnumData($schema, $baseName, $select, $from, $whereSubq, $offset, $limit, $idRow );
 
     public abstract function countRows($tableName, $schema, $where);
     public abstract function getFieldSingleValue($tableName, $schema, $fieldName, $rowIndex, $getAll = false, $fields = null);
@@ -317,9 +317,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->endFrom($query);
     }
 
-    public function getEnumData($schema, $tableName, $select, $from, $where, $offset=null, $limit=null,  $idRow=null)
+    public function getEnumData($schema, $baseName, $select, $from, $where, $offset=null, $limit=null,  $idRow=null)
     {
-        return $this->dbConn->getEnumData($schema, $tableName, $select, $from, $where, $offset, $limit, $idRow);
+        return $this->dbConn->getEnumData($schema, $baseName, $select, $from, $where, $offset, $limit, $idRow);
     }
 
     public function startWhere($where)

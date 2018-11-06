@@ -346,13 +346,13 @@ class Postgree_9_1 extends DBConn
         return $query;
     }
 
-    public function getEnumData($schema, $tableName, $select, $from, $where, $offset=null, $limit=null, $idRow=null)
+    public function getEnumData($schema, $baseName, $select, $from, $where, $offset=null, $limit=null, $idRow=null)
     {
         $search_path ="set search_path = $schema ";
         $query = "$select $from";
         
         if($idRow){
-            $query= "$query WHERE \"$schema\".\"$tableName\".\"".PrimaryKey::ID."\"='$idRow' ";
+            $query= "$query WHERE $baseName.".PrimaryKey::ID."\"='$idRow' ";
         }
         else if($where){
             $query= "$query $where ";

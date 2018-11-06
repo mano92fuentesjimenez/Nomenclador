@@ -484,7 +484,7 @@ class Enum
             $whereSql = $conn->endWhere($whereSql);
         }
 
-        if (!$conn->getEnumData($ds->getSchema(), $this->getRawTableName(), $select, $from, $whereSql,$offset, $limit,  $idRow)
+        if (!$conn->getEnumData($ds->getSchema(), $baseName, $select, $from, $whereSql,$offset, $limit,  $idRow)
         ) {
             throw new EnumException($conn->getLastError());
         }
