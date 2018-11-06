@@ -68,7 +68,7 @@
                                     objs._each_(function (v) {
                                         dv.store.add(new dv.store.recordType({
                                             code: v.id,
-                                            url: manageImagesExport.getImageURL(v.id,100,100)
+                                            url: manageImagesExport.getImageURL(v.id,null,null,null,'thumb')
                                         }))
                                     });
                                     input.fireEvent('datachanged');
@@ -94,7 +94,7 @@
                             values._each_(function(v){
                                 dv.store.add(new dv.store.recordType({
                                     code:v,
-                                    url:manageImagesExport.getImageURL(v)
+                                    url:manageImagesExport.getImageURL(v,null,null,null,'thumb')
                                 }))
                             });
                         if(dv.rendered)
