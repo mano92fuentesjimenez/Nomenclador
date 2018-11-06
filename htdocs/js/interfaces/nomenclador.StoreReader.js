@@ -119,9 +119,20 @@
                     }},
                     goToPreviousPage:{handler:function () {
                         self.previousPage();
+                        if(self.isFirstPage())
+                            this.setDisabled(true);
+                        var goToNextPage = self.getButtonInstance('goToNextPage');
+                        if(goToNextPage)
+                            goToNextPage.setDisabled(false);
                     }},
                     goToNextPage:{handler:function () {
                         self.nextPage();
+                        if(self.isLastPage())
+                            this.setDisabled(true);
+                        var goToPreviousPage = self.getButtonInstance('goToPreviousPage');
+                        if(goToPreviousPage)
+                            goToPreviousPage.setDisabled(false);
+
                     }},
                     goToLastPage:{handler:function () {
                         self.lastPage();
@@ -295,9 +306,15 @@
 
 
         },
+        isLastPage:function(){
+            return (this.pagePosition + 1) * this.pageSize > this.totalCount;
+        },
+        isFirstPage:function() {
+            return (this.pagePosition === 0);
+        },
         nextPage: function () {
             var self = this;
-            if ((this.pagePosition + 1) * this.pageSize > this.totalCount)
+            if (this.isLastPage())
                 Logger.error('Se esta llamando a avanzar pagina en la ultima pagina');
             this.loadEnumData(this.pagePosition + 1, function(){
                 self.pagePosition += 1;
@@ -305,7 +322,7 @@
         },
         previousPage: function () {
             var self = this;
-            if ((this.pagePosition === 0))
+            if (this.isFirstPage())
                 Logger.error('Se esta llamando a retroceder la pagina en la primera pagina');
             this.loadEnumData(this.pagePosition - 1,function(){
                 self.pagePosition -=1;
