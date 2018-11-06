@@ -405,6 +405,9 @@ class Enum
     {
         $fields = $fieldsToGet;
         $baseName = 'base';
+        if(is_string($where)){
+            $where = $this->processWhere($where,$baseName);
+        }
 
         $ds = $this->getDataSource();
         $conn = EnumsUtils::getDBConnection($this);
@@ -498,6 +501,30 @@ class Enum
         }
 
         return $data;
+    }
+    private function processWhere($where,$baseName){
+        $glue = '(?:(?i)or|and)';
+        $operators = '((?i)like|=|>|<|>=|<=|<>|in)';
+        $id = '[-_[:alnum:]]+?';
+        $v = "'.*?'|\d+";
+        $value = "$id|$v|\($v(?:,$v)*\)";
+        $clause = "(?:(?<table>$id)\.)?(?<field>$id)\s*(?<operator>$operators)\s*(?<value>$value)\s*(?<glue>$glue?)";
+        $regEx = "~$clause~";
+
+        preg_match_all($regEx,$where,$matches,PREG_SET_ORDER);
+
+        $ret = '';
+        foreach ($matches as $match){
+            $table = $match['table'];
+            if($match['table'] ==='' || $match['table'] === $this->getRawTableName())
+                $table = $baseName;
+            $field = $match['field'];
+            $op = $match['operator'];
+            $value = $match['value'];
+            $glue = $match['glue'];
+            $ret = "$ret \"$table\".\"$field\" $op $value $glue";
+        }
+        return $ret;
     }
     private function mixDataFromAnyWhere(&$data, &$anyWhereData){
 
