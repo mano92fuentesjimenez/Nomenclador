@@ -234,10 +234,10 @@
         },
         getEnumLoadConfig: function (pagePosition) {
             var where = null,
-                _enumStr = '"'+this._enum.id.toString()+'"';
-                primary = _enumStr +'."'+types.PrimaryKey.UNIQUE_ID+'"';
+                _enumStr = this._enum.id.toString();
+                primary = _enumStr +'.'+types.PrimaryKey.UNIQUE_ID+'';
             if (this.fieldFilter)
-                where = _enumStr+'."' + this.fieldFilter + '" = ' + this.fieldFilterValue + ' ';
+                where = _enumStr+'.' + this.fieldFilter + ' = ' + this.fieldFilterValue + ' ';
             if(utils.isArray(this.excludeEnums) && this.excludeEnums._length_() > 0 ){
                 if(!utils.isString(where))
                     where = '';
@@ -310,9 +310,15 @@
 
 
         },
+        isLastPage:function(){
+            return (this.pagePosition + 1) * this.pageSize > this.totalCount;
+        },
+        isFirstPage:function() {
+            return (this.pagePosition === 0);
+        },
         nextPage: function () {
             var self = this;
-            if ((this.pagePosition + 1) * this.pageSize > this.totalCount)
+            if (this.isLastPage())
                 Logger.error('Se esta llamando a avanzar pagina en la ultima pagina');
             this.loadEnumData(this.pagePosition + 1, function(){
                 self.pagePosition += 1;
@@ -320,7 +326,7 @@
         },
         previousPage: function () {
             var self = this;
-            if ((this.pagePosition === 0))
+            if (this.isFirstPage())
                 Logger.error('Se esta llamando a retroceder la pagina en la primera pagina');
             this.loadEnumData(this.pagePosition - 1,function(){
                 self.pagePosition -=1;

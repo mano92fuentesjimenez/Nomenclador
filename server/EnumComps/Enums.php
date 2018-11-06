@@ -167,9 +167,12 @@ class Enum
 
         return true;
     }
+    private function getRawTableName(){
+        return $this->getId();
+    }
     public function getTableName($includeSchema=true, $schemaPrefix='', $tablePrefix=''){
         $d = $this->getDataSource();
-        return ($includeSchema ? "\"{$schemaPrefix}{$d->getSchema()}\"." : '')."\"{$tablePrefix}{$this->getId()}\"";
+        return ($includeSchema ? "\"{$schemaPrefix}{$d->getSchema()}\"." : '')."\"{$tablePrefix}{$this->getRawTableName()}\"";
     }
     public function getDataBaseName(){
         return $this->getDataSource()->getDataBaseName();
@@ -400,187 +403,128 @@ class Enum
 
     private function getData($offset = null, $limit = null, $idRow = null,$fieldsToGet = null, $inData = null, $loadAllData, $where)
     {
-        $data = array();
-
-        //Debo recorrer todas las fuentes de datos y por cada una hacer un query que coja todos los datos de todos los
-        //campos pertenecientes a dicha fuente de datos en el nomenclador que estoy procesando
         $fields = $fieldsToGet;
+        $baseName = 'base';
+        if(is_string($where)){
+            $where = $this->processWhere($where,$baseName);
+        }
 
         $ds = $this->getDataSource();
         $conn = EnumsUtils::getDBConnection($this);
-        $enums = Enums::getInstance($this->enumInstance);
-        $currentEnum = $this;
         $select = $conn->startSelect();
-        $from = null;
-        $selectSubq = $select;
-        $fromSubq = $conn->startFrom($ds->getSchema(), $currentEnum->getId());
+        $from = $conn->startFrom($ds->getSchema(), $this->getRawTableName(), $baseName);
 
-        $first = true;
         $multiField = null;
         unset($fields[Primarykey::ID]);
 
-        //recorro todos los campos que tienen la misma conneccion, tipo de fuente de datos construyendo la consulta
-        while (count($fields) > 0) {
-            $fieldsWalking = $fields;
-            //Arreglo donde voy a guardar los enums visitados. Normalmente desde una misma tabla no se puede referenciar
-            //2 veces a una misma tabla, en nomencladores esto si se puede, pero como el soporte se lo da mayormente
-            //sistemas que no lo soportan, ent debo hacer varias consultas.
-            $enumsVisited = array();
-            //en la primera pasada me llevo todos los datos que tienen mismo datasource que este enum, y el primero de
-            //todos los enums que apunten a la  misma tabla.
+        //recorro todos los campos
+        $fieldsWalking = $fields;
 
-            foreach ($fieldsWalking as $key => $value) {
+        foreach ($fieldsWalking as $key => $value) {
 
-                $field = $this->getField($key);
+            $field = $this->getField($key);
 
-                $prop =$field->getProperties();
-                $currentReferencedEnum =null;
-                $isMulti = $field->isMulti();
-                if ($field->getType() == "DB_Enum"){
-                    $currentReferencedEnum = $enums->getEnum($prop['_enum']);
+            $prop =$field->getProperties();
+            $currentReferencedEnum =null;
+            $isMulti = $field->isMulti();
+
+            if ($field->isEnum()){
+                $currentReferencedEnum = $field->getReferencedEnum($this->enumInstance);
+                $rField = $field->getReferencedField($this->enumInstance);
+                $ds2 = $currentReferencedEnum->getDataSource();
+
+                if ($ds2->distinctDs($ds)) {
+                    throw new EnumException('2 nomencladores no pueden ser referenciados desde datasources distintos');
+                    //continue;
                 }
+                else {
+                    if($isMulti){
 
-                //En este primer paso se captura toda la tabla guardada en bd y se hace join con los enums que pueda
-                //si hay un enum que apunta a una tabla que ya se referencio, se cogen sus datos en un segundo paso
-                //si hay un enum que apunta a un campo que depende de otros valores de su tabla y que se calcula en el
-                //servidor, sus datos se cogen en la segunda ronda.
-                if ($first && (is_null($multiField) || !($isMulti && $field->isEnum()))) {
-                    if ($field->isEnum()) {
-                        $ds2 = $currentReferencedEnum->getDataSource();
+                        $multiField = $field;
+                        $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
 
-                        //si el campo del enum depende de otros campos, no se puede coger el valor con un join de bd.
-                        $fieldRef = $currentReferencedEnum->getField($prop['field']);
-                        $fieldRefType = $fieldRef->getType();
-
-                        //Este caso ya no deberia pasar
-                        //si se repite la tabla o depende de otros igual se llena la tabla.
-//                        if (isset($enumsVisited[$currentReferencedEnum->getId()]) || $fieldRefType::dependsOnOtherFields($currentReferencedEnum, $fieldRef)) {
-//
-//                            if($isMulti) {
-//                                $multiField = $field;
-//                                if(is_null($from))
-//                                    $from ='';
-//                                $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
-//
-//                                $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(),
-//                                    $ds2->getSchema(),$currentReferencedEnum->getId(),$multiName,$from);
-//
-//                                $select = $conn->continueSelect($ds2->getSchema(), $multiName,$currentReferencedEnum->getId(),$key,$select);
-//                            }
-//                            else {
-//                                $selectSubq = $conn->continueSelect($ds2->getSchema(), $this->getId(), $key,
-//                                    $key, $selectSubq);
-//                                $select = $conn->continueSelect(null, null, $key,
-//                                    $key, $select, true);
-//                            }
-//                            continue;
-//                        }
-
-                        //coger los valores de esta tabla que para poder unir con los de las otras.
-                        if ($ds2->distinctDs($ds)) {
-                            throw new EnumException('2 nomencladores no pueden ser referenciados desde datasources distintos');
-                            //continue;
-                        }
-                        else {
-                            $enumsVisited[$currentReferencedEnum->getId()] = true;
-
-                            if($isMulti){
-                                if(is_null($from))
-                                    $from = '';
-
-                                $multiField = $field;
-                                $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
-                                $from = $conn->continueFromMultiSelect($this->getDataSource()->getSchema(), $this->getId(), $ds2->getSchema(),$currentReferencedEnum->getId(),$multiName,$from);
-                                //poner el valor verdadero del enum en $key (id del campo)
-                                $select = $conn->continueSelect($this->getDataSource()->getSchema(), $multiName, $currentReferencedEnum->getId(),
-                                    $key, $select);
-                                $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getId(),$prop['field'],$key . BaseType::REF_TYPE_VALUE_HEADER,$select);
-                            }
-                            else {
-
-                                $fromSubq = $conn->continueFrom($this->getDataSource()->getSchema(), $this->getId(), $ds2->getSchema(),
-                                    $currentReferencedEnum->getId(), $key, $fromSubq);
-                                //poner el valor verdadero del enum en $key (id del campo)
-                                $select = $conn->continueSelect($this->getDataSource()->getSchema(), $this->getId(), $key,
-                                    $key, $select,true);
-                                $select = $conn->continueSelect(null, null, $key . BaseType::REF_TYPE_VALUE_HEADER,
-                                    $key . BaseType::REF_TYPE_VALUE_HEADER, $select,true);
-
-                                $selectSubq = $conn->continueSelect($this->getDataSource()->getSchema(), $this->getId(), $key,
-                                    $key, $selectSubq);
-                                //poner el valor del enum en $key.BaseType::REF_TYPE_VALUE_HEADER
-                                $selectSubq = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getId(),$prop['field'],
-                                    $key . BaseType::REF_TYPE_VALUE_HEADER, $selectSubq);
-                            }
-                        }
+                        $from = $conn->continueFromMultiSelect($ds->getSchema(), $currentReferencedEnum->getRawTableName(),$this->getRawTableName(),$multiName,$from, $baseName);
+                        //poner el valor verdadero del enum en $key (id del campo)
+                        $select = $conn->continueSelect($ds->getSchema(),$multiName,$currentReferencedEnum->getRawTableName(),$key,$select,$baseName);
+                        $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),$key . BaseType::REF_TYPE_VALUE_HEADER,$select,$baseName);
                     }
                     else {
-                        $selectSubq = $conn->continueSelect($ds->getSchema(), $this->getId(), $key, $key, $selectSubq);
-                        $select = $conn->continueSelect(null, null, $key,
-                            $key, $select, true);
+
+                        $from = $conn->continueFrom($ds2->getSchema(),$currentReferencedEnum->getRawTableName(), $key, $from, $baseName);
+                        //poner el valor verdadero del enum en $key (id del campo)
+                        $select = $conn->continueSelect(null,null, $key,$key, $select,$baseName);
+                        $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),
+                            $key . BaseType::REF_TYPE_VALUE_HEADER, $select,$baseName);
                     }
                 }
-//                else {
-//                    //esto nunca debe pasar
-//                    //unir esta tabla con los otros enum que pertenecen a otros datasources
-////                    if (!$field->isEnum()) {
-////                        throw new Exception('Esto nunca debe pasaaaaar');
-////                    }
-////                    $enumField = $currentReferencedEnum->getField($prop['field']);
-////
-////                    $inData = $this->getInData($data, $field);
-////
-////                    $dataToAdd = $this->getEnumData(null, null, $loadAllData, null, $field->getId(), $field->getId(), null, null,
-////                        null, $inData);
-////                    $this->mixData($data, $dataToAdd, $field, $enumField);
-//
-//                }
-                unset($fields[$key]);
             }
-            if ($first) {
-                $select = $conn->endSelect($select, $ds->getSchema(), $currentEnum->getId(),true);
-                $selectSubq = $conn->endSelect($selectSubq, $ds->getSchema(), $currentEnum->getId());
-
-                if(!is_null($from))
-                    $from = $conn->endFrom($from);
-
-                if (is_array($inData)) {
-                    $whereSql = $conn->startWhere($where);
-                    $whereSql= $conn->inWhere(PrimaryKey::ID, $inData, $whereSql);
-                    $whereSql = $conn->endWhere($whereSql);
-                }
-                if($where && $whereSql) {
-                    $whereSql = $conn->continueWhere($whereSql, $where);
-                    $whereSql = $conn->endWhere($whereSql);
-                }
-                else if($where){
-                    $whereSql = $conn->startWhere($where);
-                    $whereSql = $conn->endWhere($whereSql);
-                }
-
-                $ds = null;
-                if (!$conn->getEnumData($this->getDataSource()->getSchema(), $this->getId(), $select, $from, $whereSql,
-                    $offset, $limit,  $idRow, $selectSubq, $fromSubq)
-                ) {
-                    throw new EnumException($conn->getLastError());
-                }
-                $data = $conn->fetchData(true, $multiField);
-
-                if(is_array($inData)){
-                    if(is_array(reset($inData))){
-                        $this->mixDataFromAnyWhere($data,$inData);
-                    }
-                }
-
-                if (count($data) == 0) {
-                    return $data;
-                }
-                $first = false;
+            else {
+                $select = $conn->continueSelect(null, null, $key,
+                    $key, $select, $baseName);
             }
+            unset($fields[$key]);
         }
 
 
+        $select = $conn->endSelect($select,$baseName);
+
+        $from = $conn->endFrom($from);
+
+        if (is_array($inData)) {
+            $whereSql = $conn->startWhere($where);
+            $whereSql= $conn->inWhere(PrimaryKey::ID, $inData, $whereSql, $baseName);
+            $whereSql = $conn->endWhere($whereSql);
+        }
+        if($where && $whereSql) {
+            $whereSql = $conn->continueWhere($whereSql, $where);
+            $whereSql = $conn->endWhere($whereSql);
+        }
+        else if($where){
+            $whereSql = $conn->startWhere($where);
+            $whereSql = $conn->endWhere($whereSql);
+        }
+
+        if (!$conn->getEnumData($ds->getSchema(), $this->getRawTableName(), $select, $from, $whereSql,$offset, $limit,  $idRow)
+        ) {
+            throw new EnumException($conn->getLastError());
+        }
+        $data = $conn->fetchData(true, $multiField);
+
+        if(is_array($inData)){
+            if(is_array(reset($inData))){
+                $this->mixDataFromAnyWhere($data,$inData);
+            }
+        }
+
+        if (count($data) == 0) {
+            return $data;
+        }
+
         return $data;
+    }
+    private function processWhere($where,$baseName){
+        $glue = '(?:(?i)or|and)';
+        $operators = '((?i)like|=|>|<|>=|<=|<>|in)';
+        $id = '[-_[:alnum:]]+?';
+        $v = "'.*?'|\d+";
+        $value = "$id|$v|\($v(?:,$v)*\)";
+        $clause = "(?:(?<table>$id)\.)?(?<field>$id)\s*(?<operator>$operators)\s*(?<value>$value)\s*(?<glue>$glue?)";
+        $regEx = "~$clause~";
+
+        preg_match_all($regEx,$where,$matches,PREG_SET_ORDER);
+
+        $ret = '';
+        foreach ($matches as $match){
+            $table = $match['table'];
+            if($match['table'] ==='' || $match['table'] === $this->getRawTableName())
+                $table = $baseName;
+            $field = $match['field'];
+            $op = $match['operator'];
+            $value = $match['value'];
+            $glue = $match['glue'];
+            $ret = "$ret \"$table\".\"$field\" $op $value $glue";
+        }
+        return $ret;
     }
     private function mixDataFromAnyWhere(&$data, &$anyWhereData){
 

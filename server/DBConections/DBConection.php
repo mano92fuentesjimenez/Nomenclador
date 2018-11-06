@@ -47,9 +47,8 @@ abstract class DBConn{
     public abstract function beginTransaction();
     public abstract function commitTransaction();
     
-    public abstract function getEnumData($schema, $tableName, $select, $from, $whereSubq, $offset, $limit, $idRow, $selectsubq, $fromSubq );
+    public abstract function getEnumData($schema, $tableName, $select, $from, $whereSubq, $offset, $limit, $idRow );
 
-    public abstract function getData($tableName, $schema, $start =0, $limit =null, $fieldFilter = null, $fieldValue = null, $fields=null, $select,$from, $idRow);
     public abstract function countRows($tableName, $schema, $where);
     public abstract function getFieldSingleValue($tableName, $schema, $fieldName, $rowIndex, $getAll = false, $fields = null);
     public abstract function getFieldValuesFilteredWithPrimaryKey($tableName, $schema, $fieldName, $fieldToFilter, $filterValue, $offset = null, $limit = null);
@@ -68,17 +67,17 @@ abstract class DBConn{
     public abstract function tableExists($tablename, $schema);
     
     public abstract function startSelect();
-    public abstract function continueSelect($schema, $tableName, $field, $alias, $query,$foo);
-    public abstract function endSelect($query, $schema, $tableName, $foo);
+    public abstract function continueSelect($schema, $tableName, $field, $alias, $query, $baseName);
+    public abstract function endSelect($query, $baseName);
     
-    public abstract function startFrom($enumScheman,$tableName, $query);
-    public abstract function continueFrom($enumSchema,$enumTableName,$currentSchema,$currentTableName,$currentField, $query);
-    public abstract function continueFromMultiSelect($enumSchema,$enumTableName,$currentSchema,$currentTableName, $multiTableName,$query);
+    public abstract function startFrom($enumScheman,$tableName,$baseName);
+    public abstract function continueFrom($enumSchema,$enumTableName,$currentField, $query, $baseName);
+    public abstract function continueFromMultiSelect($enumSchema,$enumTableName, $currentTableName, $multiTableName,$query, $baseName);
     public abstract function endFrom($query);
 
     public abstract function startWhere($where);
     public abstract function continueWhere($where1, $where2);
-    public abstract function inWhere($field, $inData, $query);
+    public abstract function inWhere($field, $inData, $query, $baseName);
     public abstract function endWhere($query);
     
 }
@@ -140,10 +139,6 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->insertData($tableName, $fieldsOrder, $schema, $data, $returning);
     }
 
-    public function getData($tableName, $schema, $start = 0, $limit=null, $fieldFilter = null, $fieldValue = null, $fields = null, $select, $from, $idRow = null)
-    {
-        return $this->dbConn->getData($tableName, $schema, $start, $limit, $fieldFilter, $fieldValue, $fields, $select, $from, $idRow);
-    }
 
     public function getFieldSingleValue($tableName, $schema, $fieldName, $rowIndex, $getAll = false, $fields = null)
     {
@@ -295,26 +290,26 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->startSelect();
     }
 
-    public function continueSelect($schema, $tableName, $field, $alias, $query,$foo = false)
+    public function continueSelect($schema, $tableName, $field, $alias, $query, $baseName)
     {
-        return $this->dbConn->continueSelect($schema, $tableName, $field, $alias,$query,$foo);
+        return $this->dbConn->continueSelect($schema, $tableName, $field, $alias,$query, $baseName);
             
     }
 
-    public function endSelect($query, $schema, $tableName, $foo = false)
+    public function endSelect($query, $baseName)
     {
-        return $this->dbConn->endSelect($query, $schema, $tableName,$foo);
+        return $this->dbConn->endSelect($query, $baseName);
     }
 
-    public function startFrom($enumSchema, $tableName,$start = false)
+    public function startFrom($enumSchema, $tableName, $baseName)
     {
-        return $this->dbConn->startFrom($enumSchema, $tableName,$start);
+        return $this->dbConn->startFrom($enumSchema, $tableName, $baseName);
             
     }
 
-    public function continueFrom($enumSchema, $enumTableName, $currentSchema, $currentTableName, $currentField, $query)
+    public function continueFrom($enumSchema, $enumTableName,  $currentField, $query,$baseName)
     {
-        return $this->dbConn->continueFrom($enumSchema, $enumTableName,$currentSchema, $currentTableName, $currentField, $query);
+        return $this->dbConn->continueFrom($enumSchema, $enumTableName, $currentField, $query, $baseName);
     }
 
     public function endFrom($query)
@@ -322,9 +317,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->endFrom($query);
     }
 
-    public function getEnumData($schema, $tableName, $select, $from, $where, $offset=null, $limit=null,  $idRow=null, $selectsubq, $fromSubq)
+    public function getEnumData($schema, $tableName, $select, $from, $where, $offset=null, $limit=null,  $idRow=null)
     {
-        return $this->dbConn->getEnumData($schema, $tableName, $select, $from, $where, $offset, $limit, $idRow, $selectsubq, $fromSubq);
+        return $this->dbConn->getEnumData($schema, $tableName, $select, $from, $where, $offset, $limit, $idRow);
     }
 
     public function startWhere($where)
@@ -336,9 +331,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->continueWhere($where1, $where2);
     }
 
-    public function inWhere($field, $inData, $query)
+    public function inWhere($field, $inData, $query, $baseName)
     {
-        return $this->dbConn->inWhere($field, $inData, $query);
+        return $this->dbConn->inWhere($field, $inData, $query, $baseName);
             
     }
 
@@ -350,9 +345,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->createIndex($schema, $tablename, $column);
     }
 
-    public function continueFromMultiSelect($enumSchema, $enumTableName, $currentSchema, $currentTableName, $multiTableName, $query)
+    public function continueFromMultiSelect($enumSchema, $enumTableName,$currentTableName,  $multiTableName, $query, $baseName)
     {
-        return $this->dbConn->continueFromMultiSelect($enumSchema, $enumTableName, $currentSchema, $currentTableName, $multiTableName, $query);
+        return $this->dbConn->continueFromMultiSelect($enumSchema, $enumTableName,$currentTableName,  $multiTableName, $query, $baseName);
     }
 }
 
