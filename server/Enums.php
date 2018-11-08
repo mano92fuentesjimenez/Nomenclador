@@ -661,9 +661,9 @@ class Enums
         $data = reset($data);
         return $data['e']==='t';
     }
-    public static function AddEnumsToDb($enumInstance, $enums){
+    public static function AddEnumsToDb($enumInstance, $enums_){
         $enums = self::getInstance($enumInstance);
-        $enums->addEnums($enums);
+        $enums->addEnums($enums_);
         $enums->saveEnums();
     }
 
