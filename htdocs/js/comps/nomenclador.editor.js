@@ -149,7 +149,7 @@
         //
 		// }._defaults_({},function(){return true;}),
 
-		constructor: function () {
+		constructor: function nomencladorEditor() {
 
 			this.enumInstance = arguments[0].enumInstance;
 
