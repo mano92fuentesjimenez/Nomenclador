@@ -646,15 +646,15 @@ class ServerNomenclador extends ClientResponderAdapter
 
     public function verifySimpleTree($enumInstance,$tree){
         if(!SimpleTree::InstanceExist($enumInstance))
-            SimpleTree::AddSimpleTree($enumInstance,$tree);
+            SimpleTree::AddSimpleTree($enumInstance,Utils::json_encode($tree));
     }
     public function verifyEnums($enumInstance,$enums){
         if(!Enums::InstanceExist($enumInstance))
             Enums::AddEnumsToDb($enumInstance,$enums);
     }
     public function verifyRefs($enumInstance,$refs){
-        if(Refs::InstanceExist($enumInstance))
-            Refs::AddRefsToDB($enumInstance,$refs);
+        if(!Refs::InstanceExist($enumInstance))
+            Refs::AddRefsToDB($enumInstance,Utils::json_encode($refs));
     }
 
     public function verifyConfigurations($instance,$dataSources,$enums,$simpleTree,$refs=array()){
