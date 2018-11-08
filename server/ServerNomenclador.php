@@ -623,7 +623,7 @@ class ServerNomenclador extends ClientResponderAdapter
         $dts = DataSources::getInstance($instance);
 
         foreach ($configs as $id=> $config){
-            $conn = $this->getConnectionTo($config['datasource']);
+            $conn = $this->getConnectionTo($config['moduleConfigId']);
             //todo verificar que exista la coneccion
             $dsn = $conn->dsn;
             $dataObj = $dts->getSource($id);
