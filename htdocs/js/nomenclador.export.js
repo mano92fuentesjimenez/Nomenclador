@@ -436,6 +436,6 @@
 		}
 
 		return cache[hash];
-    }
+    };
 
 })();
