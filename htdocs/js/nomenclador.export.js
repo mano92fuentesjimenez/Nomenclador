@@ -419,23 +419,25 @@
     };
 
     var cache = {};
-    exp.checkDatasource = function (instanceName,datasources) {
-		var src = Ext.encode(datasources),
-			hash = instanceName+src;
+    exp.checkDatasource = function (instanceName,datasources){};
+    addService('checkDatasource', function (instanceName,datasources) {
+        var src = Ext.encode(datasources),
+            hash = instanceName+src;
 
-		if(!cache[hash]){
-			cache[hash] = new Promise(function (sc) {
-				nom.request('Nomenclador.checkDatasource',{
-					action: 'checkDatasource',
+        if(!cache[hash]){
+            cache[hash] = new Promise(function (sc) {
+                nom.request('Nomenclador.checkDatasource',{
+                    action: 'checkDatasource',
                     instanceName: instanceName,
-					sourcesConfig : datasources
-				},function (resp) {
-					sc();
+                    sourcesConfig : datasources
+                },function (resp) {
+                    sc();
                 });
             });
-		}
+        }
 
-		return cache[hash];
-    }
+        return cache[hash];
+    });
+
 
 })();
