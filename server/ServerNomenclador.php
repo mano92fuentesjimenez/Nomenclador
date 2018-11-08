@@ -657,6 +657,13 @@ class ServerNomenclador extends ClientResponderAdapter
             Refs::AddRefsToDB($enumInstance,$refs);
     }
 
+    public function verifyConfigurations($instance,$dataSources,$enums,$simpleTree,$refs=array()){
+        $this->verifyDatasource($instance,$dataSources);
+        $this->verifyEnums($instance,$enums);
+        $this->verifySimpleTree($instance,$simpleTree);
+        $this->verifyRefs($instance,$refs);
+    }
+
 }
 class EnumRestMethods{
 
