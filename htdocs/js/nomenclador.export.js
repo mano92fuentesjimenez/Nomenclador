@@ -424,15 +424,11 @@
 			hash = instanceName+src;
 
 		if(!cache[hash]){
-			cache[hash] = new Promise(function (sc) {
-				return _require_('nomenclador');
-            }).then(function () {
+			cache[hash] = _require_('nomenclador').then(function () {
                 nom.request('Nomenclador.checkDatasource',{
                     action: 'checkDatasource',
                     instanceName: instanceName,
                     sourcesConfig : datasources
-                },function (resp) {
-                    sc();
                 });
             });
 		}
