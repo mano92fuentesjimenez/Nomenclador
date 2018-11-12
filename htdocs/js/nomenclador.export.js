@@ -419,18 +419,16 @@
     };
 
     var cache = {};
-    exp.checkDatasource = function (instanceName,datasources) {
+    exp.checkDatasourceSync = function (instanceName,datasources) {
 		var src = Ext.encode(datasources),
 			hash = instanceName+src;
 
 		if(!cache[hash]){
-			cache[hash] = new Promise(function (sc) {
-				nom.request('Nomenclador.checkDatasource',{
-					action: 'checkDatasource',
+			cache[hash] = _require_('nomenclador').then(function () {
+                nom.request('Nomenclador.checkDatasource',{
+                    action: 'checkDatasource',
                     instanceName: instanceName,
-					sourcesConfig : datasources
-				},function (resp) {
-					sc();
+                    sourcesConfig : datasources
                 });
             });
 		}

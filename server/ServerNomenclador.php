@@ -619,11 +619,18 @@ class ServerNomenclador extends ClientResponderAdapter
         return $rec;
     }
 
+    /**
+     * Verifica si existe la configuracion de los origigenes de datos de los nomencladores para una instancia y la crea en caso de no existir
+     * @param $instance                     {String}        Instancia de nomencladores
+     * @param $configs                      {jsonObject}    Objeto con los origenes de datos para cada id de datasource
+     * @throws CartocommonException
+     * @throws CartoserverException
+     */
     public function verifyDatasource($instance, $configs){
         $dts = DataSources::getInstance($instance);
 
         foreach ($configs as $id=> $config){
-            $conn = $this->getConnectionTo($config->moduleConfigId);
+            $conn = $this->getConnectionTo($config['moduleConfigId']);
             //todo verificar que exista la coneccion
             $dsn = $conn->dsn;
             $dataObj = $dts->getSource($id);
@@ -644,17 +651,62 @@ class ServerNomenclador extends ClientResponderAdapter
         }
     }
 
+    /**
+     * Verifica si existe la configuracion de nomencladores con el arbol de modelos para una instancia y la crea en caso de no existir
+     * @param $enumInstance     {String}        Instancia de nomencladores
+     * @param $tree             {jsonObject}    Arbol de nomencladores   ej: {childs:[{text:'asd'}]}
+     * @return bool             Retorna true si no existia y se creo y false si ya existia la configracion
+     */
     public function verifySimpleTree($enumInstance,$tree){
-        if(!SimpleTree::InstanceExist($enumInstance))
-            SimpleTree::AddSimpleTree($enumInstance,$tree);
+        if(!SimpleTree::InstanceExist($enumInstance)){
+            SimpleTree::AddSimpleTree($enumInstance,Utils::json_encode($tree));
+            return true;
+        }else
+            return false;
+
     }
+
+    /**
+     * Verifica si existe la configuracion con las definiciones de los nomencladores para una instancia y la crea en caso de no existir
+     * @param $enumInstance     {String}        Instancia de nomencladores
+     * @param $enums            {jsonObject}    Objeto con las definiciones de los nomencladores
+     * @return bool             Retorna true si no existia y se creo y false si ya existia la configracion
+     */
     public function verifyEnums($enumInstance,$enums){
-        if(!Enums::InstanceExist($enumInstance))
+        if(!Enums::InstanceExist($enumInstance)){
             Enums::AddEnumsToDb($enumInstance,$enums);
+            return true;
+        }else
+            return false;
     }
-    public function verifyRefs($enumInstance,$refs){
-        if(Refs::InstanceExist($enumInstance))
-            Refs::AddRefsToDB($enumInstance,$refs);
+
+    /**
+     * Verifica si existe la configuracion con las dependencias entre los nomencladores para una instancia y la crea en caso de no existir
+     * @param $enumInstance     {String}        Instancia de nomencladores
+     * @param $refs             {jsonObject}      Objecto con las dependencias de los nomencladores
+     * @return bool             Retorna true si no existia y se creo y false si ya existia la configracion
+     */
+    public function verifyRefs($enumInstance,$refs=array()){
+        if(!Refs::InstanceExist($enumInstance)){
+            Refs::AddRefsToDB($enumInstance,Utils::json_encode($refs));
+            return true;
+        }else
+            return false;
+    }
+
+    /**
+     * Verifica todas las configuraciones de nomenclador
+     * @param $instance             {String}        Instancia de nomencladores
+     * @param $dataSources          {jsonObject}    Objeto con los origenes de datos para cada id de datasource
+     * @param $enums                {jsonObject}    Objeto con las definiciones de los nomencladores
+     * @param $simpleTree           {jsonObject}    Arbol de nomencladores   ej: {childs:[{text:'asd'}]}
+     * @param array $refs           {jsonObject}      Objecto con las dependencias de los nomencladores
+     */
+    public function verifyConfigurations($instance,$dataSources,$enums,$simpleTree,$refs=array()){
+        $this->verifyDatasource($instance,$dataSources);
+        $this->verifyEnums($instance,$enums);
+        $this->verifySimpleTree($instance,$simpleTree);
+        $this->verifyRefs($instance,$refs);
     }
 
 }
@@ -664,7 +716,7 @@ class EnumRestMethods{
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnum($enumId);
 
-        $columnId = $columnId != null ? $columnId : $enum->getDefaultFieldId();
+        $columnId = isset($columnId) ? $columnId : $enum->getDefaultFieldId();
 
         $limit = is_array($config) ? (
             is_numeric($config['limit']) ? $config['limit'] : 999999)
