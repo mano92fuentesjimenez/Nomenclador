@@ -504,7 +504,7 @@ class Enum
     }
     private function processWhere($where,$baseName){
         $glue = '(?:(?i)or|and)';
-        $operators = '((?i)like|=|>|<|>=|<=|<>|in)';
+        $operators = '((?i)like|=|>|<|>=|<=|<>)';
         $id = '[-_[:alnum:]]+?';
         $v = "'.*?'|\d+";
         $value = "$id|$v|\($v(?:,$v)*\)";
