@@ -37,7 +37,7 @@ class NomencladorRestAdapter implements PluginRestFulAdapter{
         $req =  new NomencladorRequest();
         $req->action = $params['action'];
         $req->value=array_merge($params['arguments'],array(
-            'enumInstance'=>$params['arguments']['instance']
+            'instanceName'=>$params['arguments']['instance']
         ));
         return $req;
     }
