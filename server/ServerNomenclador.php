@@ -38,6 +38,10 @@ class ServerNomenclador extends ClientResponderAdapter
                     );
                 }
                     break;
+                case 'addRecords':{
+
+                }
+                    break;
                 case 'modEnumData': {
                     $enumId = $requ->value['enumId'];
                     $enums = Enums::getInstance($enumInstance);
@@ -348,6 +352,12 @@ class ServerNomenclador extends ClientResponderAdapter
 ////        if($enum->getName() == 'pais')
 ////            return 1;
 //    }
+    public function addRecords($enumInstance, $enumId, $records){
+        $enums = Enums::getInstance($enumInstance);
+        $enum = $enums->getEnum($enumId);
+        $enum->addRecords($records);
+
+    }
     public function getResumeViewTpl(){
         $path = $this->serverContext->getProjectHandler()->getPluginPath('nomenclador');
         $tplPath = $path.'templates/resumeView/resumeViewTable.tpl';

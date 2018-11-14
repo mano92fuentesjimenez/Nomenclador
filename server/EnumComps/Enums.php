@@ -316,6 +316,9 @@ class Enum
         $res = reset($res);
         return $res['count'];
     }
+    public function addRecords($records){
+
+    }
     /**
      * Funcion para recuperar los datos de un enum
      *

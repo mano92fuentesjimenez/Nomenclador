@@ -644,6 +644,11 @@ class Enums
     }
     public static $instance = array();
 
+    /**
+     * @param $enumInstance
+     * @return Enums
+     * @throws Exception
+     */
     public static function getInstance($enumInstance)
     {
         if(!$enumInstance)
