@@ -70,7 +70,7 @@ class ServerNomenclador extends ClientResponderAdapter
                         $enumResult->resp = $enum;
                     }catch(Exception $e){
                         $enumResult->error = array(
-                            'code'=>404,
+                            'code'=>500,
                             'message'=>$e->getMessage()
                         );
                     }
