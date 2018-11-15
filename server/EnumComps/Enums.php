@@ -507,11 +507,11 @@ class Enum
     }
     private function processWhere($where,$baseName){
         $glue = '(?:(?i)or|and)';
-        $operators = '((?i)like|=|>|<|>=|<=|<>)';
+        $operators = '(?:not )?((?i)like|=|>|<|>=|<=|<>|in)';
         $id = '[-_[:alnum:]]+?';
-        $v = "'.*?'|\d+";
-        $value = "$id|$v|\($v(?:,$v)*\)";
-        $clause = "(?:(?<table>$id)\.)?(?<field>$id)\s*(?<operator>$operators)\s*(?<value>$value)\s*((?<glue>$glue)|$)";
+        $v = "('.*?'|\d+)";
+        $value = "($id)|($v)|(\($v(?:,$v)*\))";
+        $clause = "^\s*(?:(?<table>$id)\.)?(?<field>$id)\s+(?<operator>$operators)\s*(?<value>$value)\s*((?<glue>$glue)|$)";
         $regEx = "~$clause~";
 
         preg_match_all($regEx,$where,$matches,PREG_SET_ORDER);
