@@ -189,17 +189,24 @@
                     Object.keys(changes.add).length != 0;
             };
             self.store.getRawChanges = function () {
-                var r = {mod: {}, del: {}, add: {}};
+                var r = {mod: [], del: {}, add: {}};
                 for (var record in changes.add)
                     r.add[record] = changes.add[record].data;
                 for (var record in changes.del)
                     r.del[record] = changes.del[record].data;
                 for (var record in changes.mod)
-                    if (Ext.util.JSON.encode(record.modified) != "{}")
-                        r.mod[record] = {
-                            last: changes.mod[record].data,
-                            modified: changes.mod[record].modified
-                        };
+                    if (Ext.util.JSON.encode(record.modified) != "{}") {
+                        var modified =changes.mod[record].modified,
+                            data = changes.mod[record].data,
+                            recordToPush = {};
+                        modified._each_(function(v,k){
+                            recordToPush[k]=data[k];
+                        });
+                        recordToPush[nom.Type.PrimaryKey.UNIQUE_ID] = data[nom.Type.PrimaryKey.UNIQUE_ID];
+                        recordToPush[nom.Type.Revision.UNIQUE_ID] = data[nom.Type.Revision.UNIQUE_ID];
+                        r.mod.push(recordToPush);
+                    }
+
                 return r;
             };
             self.store.oldRejectChanges = self.store.rejectChanges;

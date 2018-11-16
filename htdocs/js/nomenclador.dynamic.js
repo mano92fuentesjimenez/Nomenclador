@@ -1097,7 +1097,9 @@
             text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(enumInstance.getName(), pAtrs.idNode).name,
             enumFields = config.showFields && isEnum ? (
                 enums.getEnumById(enumInstance.getName(), pAtrs.idNode).fields._queryBy_(function (pV){
-                    return pV.id !== nom.Type.PrimaryKey.UNIQUE_ID && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
+                    return pV.id !== nom.Type.PrimaryKey.UNIQUE_ID
+                        && pV.id !== nom.Type.Revision.UNIQUE_ID
+                        && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
                 }, this, true)
             ) : [];
         if(isCat) {

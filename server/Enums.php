@@ -277,34 +277,26 @@ class EnumsRequests
         if (count($data['mod']) > 0) {
             $updateData = array();
             $c = 0;
-            foreach ($data['mod'] as $recordId => $record) {
-                $updateData[$recordId] = array();
-                $lastRecord = $data['mod'][$recordId]['last'];
-
-                foreach ($record['modified'] as $fieldId => $fieldValue) {
+            foreach ($data['mod'] as $record) {
+                $updateData[] = array();
+                $key = count($updateData)-1;
+                foreach ($record as $fieldId => $value){
                     $field = $enum->getField($fieldId);
                     $type = $field->getType();
                     $props = $field->getProperties();
                     if($type == 'DB_Enum' && $props['multiSelection']){
-                        $pId = $lastRecord[PrimaryKey::ID];
+                        $pId = $record[PrimaryKey::ID];
                         $multiTable = DB_Enum::getMultiTableName($enum, $enums->getEnum($props['_enum']));
                         $conn->deleteData($multiTable, $enum->getDataSource()->getSchema(), array($enum->getId()=>$pId),$enum->getId());
                         $conn->insertData($multiTable, array($enum->getId(), $enums->getEnum($props['_enum'])->getId()),
-                            $enum->getDataSource()->getSchema(),$enum->getMultiValueFieldFromMod($lastRecord[$fieldId], $lastRecord[PrimaryKey::ID]));
+                            $enum->getDataSource()->getSchema(),$enum->getMultiValueFieldFromMod($record[$fieldId], $pId));
                     }
                     else {
-                        $updateData[$recordId][$fieldId] = $lastRecord[$fieldId];
+                        $updateData[$key][$fieldId] = $record[$fieldId];
                         $c++;
                     }
                 }
-                foreach ($record['last'] as $fieldId => $fieldValue) {
-                    if (strstr($fieldId, BaseType::REF_VALUE_ID)) {
-                        $updateData[$recordId][$fieldId] = $fieldValue;
-                    }
-                }
-                $updateData[$recordId][PrimaryKey::ID] = $lastRecord[PrimaryKey::ID];
             }
-
             $updateData = $enum->getValueArrayToDb($updateData);
             if ($c != 0 && !$conn->updateData($enum->getId(), $enum->getDataSource()->getSchema(), $updateData)) {
                 throw new EnumException($conn->getLastError());
