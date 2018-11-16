@@ -117,7 +117,7 @@ class Revision extends BaseType{
     }
     public static function getValueToDB($record, $value, $field, $connType)
     {
-        if(!isset($value) || is_null($value)){
+        if(!is_numeric($value)){
             $value = -1;
         }
         return $value + 1;
@@ -128,6 +128,10 @@ class Revision extends BaseType{
             $value = 0;
         }
         return $value;
+    }
+    public static function getDefaultValue($connType, $typeProperties)
+    {
+        return 0;
     }
 }
 

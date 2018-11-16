@@ -222,14 +222,14 @@ class EnumsRequests
         }
     }
 
-    public static function submitChanges($enumInstance, $enum, $data)
+    public static function submitChanges($enumInstance, $enum_tree, $data)
     {
         if (!$data) {
             return;
         }
         $enums = Enums::getInstance($enumInstance);
-        $enum2 = new Enum($enumInstance,$enum, null);
-        $enum = $enums->getEnum($enum);
+        $enum2 = new Enum($enumInstance,$enum_tree, null);
+        $enum = $enums->getEnum($enum2->getId());
         $actionsM = ActionManager::getInstance($enumInstance);
 
         if (!Enum::enumEquals($enum, $enum2)) {
