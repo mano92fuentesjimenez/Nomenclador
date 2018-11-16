@@ -1042,7 +1042,13 @@
 
 			fields[nom.Type.PrimaryKey.UNIQUE_ID] = {
 				"type" :nom.Type.PrimaryKey.type,
-				"id" :nom.Type.PrimaryKey.UNIQUE_ID
+				"id" :nom.Type.PrimaryKey.UNIQUE_ID,
+				"header": nom.Type.PrimaryKey.header
+			};
+			fields[nom.Type.Revision.UNIQUE_ID] = {
+				"type" :nom.Type.Revision.type,
+				"id" :nom.Type.Revision.UNIQUE_ID,
+				"header" :nom.Type.Revision.header
 			};
 
 			if (this.creating)

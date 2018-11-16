@@ -597,8 +597,8 @@
             return a.order>b.order;
         });
         fields._each_(function (field){
-            if (field.id === nom.Type.PrimaryKey.UNIQUE_ID) {
-                cmFields.push({header: "Llave primaria", dataIndex: field.id, hidden: true, sortable: true});
+            if (field.id === nom.Type.PrimaryKey.UNIQUE_ID || field.id === nom.Type.Revision.UNIQUE_ID  ) {
+                cmFields.push({header: field.header, dataIndex: field.id, hidden: true, sortable: true});
                 return;
             }
             var type = nom.Type.Utils.getType(field.type);

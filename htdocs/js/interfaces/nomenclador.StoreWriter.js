@@ -120,6 +120,9 @@
             };
 
             nom.interfaces.EnumStoreWriter.superclass.constructor.apply(this, arguments);
+
+            if(this.columns.indexOf(nom.Type.Revision.UNIQUE_ID)=== -1)
+                this.columns.push(nom.Type.Revision.UNIQUE_ID);
             this.configureStore();
             this.on('storeinitialized', function () {
                 this.configureStore();

@@ -211,7 +211,13 @@
 
     nom.Type.PrimaryKey ={
         UNIQUE_ID :"id_enum_1100",
-        type:"PrimaryKey"
+        type:"PrimaryKey",
+        header: 'Identificador primario de nomencladores'
+    };
+    nom.Type.Revision={
+        UNIQUE_ID :"id_enum_rev_1100",
+        type:"Revision",
+        header: 'Campo de revision'
     };
     nom.Type.REF_VALUE_ID = "_32enum_REF_ID4792";
     nom.Type.REF_Type = "ref";

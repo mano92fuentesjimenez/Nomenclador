@@ -8,15 +8,21 @@
 class Enum
 {
     public $enum_tree;
+    /**
+     * @var $enums Enums
+     */
     private $enums;
     public $enumInstance;
 
     public function __construct($enumInstance, &$enum_tree, $enums)
     {
         $this->enumInstance = $enumInstance;
-        $this->enum_tree = $enum_tree;
-        $this->enums = isset($enums) ? $enums->enums : null;
+        $this->enum_tree = &$enum_tree;
+        $this->enums = isset($enums) ? $enums : null;
         $this->actions = null;
+        if(isset($enums)) {
+            $this->addRevisionField();
+        }
     }
 
     public function saveEnum()
@@ -58,6 +64,24 @@ class Enum
         return $this->enum_tree['tpl'];
     }
 
+    public function getRevisionField(){
+        return $this->getField(Revision::ID);
+    }
+    public function addRevisionField(){
+        if(!is_null($this->getRevisionField()) ){
+            return;
+        }
+        $this->enum_tree['fields'][Revision::ID]=array(
+            'id'=>Revision::ID,
+            'type'=>'Revision'
+        );
+        $this->saveEnum();
+        $conn = $this->getConnection();
+        $conn->addColumn($this->getRawTableName(),$this->getRawSchemaName(),Revision::ID,Revision::getDBTypeCreation($this->enumInstance,$this->getDataSource()->getDataSourceType()),'Campo Revision');
+    }
+    public function getConnection(){
+        return EnumsUtils::getDBConnection($this);
+    }
 
     /**
      * Devuelve un arreglo de campos de acorde al tipo de dataSource que tenga el nomenclador.
@@ -167,8 +191,11 @@ class Enum
 
         return true;
     }
-    private function getRawTableName(){
+    public function getRawTableName(){
         return $this->getId();
+    }
+    public function getRawSchemaName(){
+        return $this->getDataSource()->getSchema();
     }
     public function getTableName($includeSchema=true, $schemaPrefix='', $tablePrefix=''){
         $d = $this->getDataSource();
@@ -238,8 +265,8 @@ class Enum
             foreach ($refs as $values) {
                 foreach ($values as $from => $boolean) {
                     $splited = explode(':', $from);
-                    $ret .= 'el campo:' . $this->enums[$splited[0]]['fields'][$splited[1]]['header'];
-                    $ret .= ' del nomenclador:' . $this->enums[$splited[0]]['name'] . ', ';
+                    $ret .= 'el campo:' . $this->enums->getEnum($splited[0])->getField([$splited[1]])->getHeader();
+                    $ret .= ' del nomenclador:' . $this->enums->getEnum([$splited[0]])->getName(). ', ';
                 }
             }
             return substr($ret, 0, -2);

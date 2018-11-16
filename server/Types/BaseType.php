@@ -106,6 +106,30 @@ class PrimaryKey extends BaseType{
         }
     }
 }
+class Revision extends BaseType{
+
+    const ID = 'id_enum_rev_1100';
+    public static function getDBTypeCreation($enumInstance=null, $connType=null,$typeProperties=null, $enum=null)
+    {
+        if($connType == DBConnectionTypes::POSTGREE_9_1){
+            return 'bigint';
+        }
+    }
+    public static function getValueToDB($record, $value, $field, $connType)
+    {
+        if(!isset($value) || is_null($value)){
+            $value = -1;
+        }
+        return $value + 1;
+    }
+    public static function getValueFromDB($enumInstance, $record, $value, $field, $connType)
+    {
+        if(!is_numeric($value)){
+            $value = 0;
+        }
+        return $value;
+    }
+}
 
 abstract class FileType extends BaseType{
 
