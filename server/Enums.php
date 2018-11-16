@@ -222,6 +222,32 @@ class EnumsRequests
         }
     }
 
+    public static function getRecordsIds($records){
+        $arr =array();
+        foreach ($records as $value){
+            $arr[] = $value[PrimaryKey::ID];
+        }
+        return $arr;
+    }
+    public static function getRevisionDescription($recordsFromUser, $recordsFromDb){
+        $ret = array('underRevision'=> array(), 'ok'=>array());
+        foreach ($recordsFromDb as $dbR){
+            $pk = $dbR[PrimaryKey::ID];
+            foreach ($recordsFromUser as $userR){
+                if($userR[PrimaryKey::ID] == $pk ){
+                    if($dbR[Revision::ID] == $userR[Revision::ID]){
+                        $ret['ok'][] = $userR;
+                    }
+                    else{
+                        $ret['underRevision'][] = $userR;
+                    }
+                    break;
+                }
+            }
+        }
+        return $ret;
+    }
+
     public static function submitChanges($enumInstance, $enum_tree, $data)
     {
         if (!$data) {
@@ -237,7 +263,7 @@ class EnumsRequests
         }
 
         $conn = EnumsUtils::getDBConnection($enum);
-        $error = array();
+        $underRevision = array();
         $msg = '';
         $addedData = null;
 
@@ -297,7 +323,12 @@ class EnumsRequests
                     }
                 }
             }
-            $updateData = $enum->getValueArrayToDb($updateData);
+
+            $dbRecords = $enum->queryEnum(null,null,null,null,null,array(Revision::ID=>Revision::ID),null,self::getRecordsIds($updateData));
+            $details = self::getRevisionDescription($updateData, $dbRecords);
+            $underRevision = array_merge($details['underRevision'],$underRevision);
+            $updateData = $enum->getValueArrayToDb($details['ok']);
+
             if ($c != 0 && !$conn->updateData($enum->getId(), $enum->getDataSource()->getSchema(), $updateData)) {
                 throw new EnumException($conn->getLastError());
             }
@@ -310,6 +341,8 @@ class EnumsRequests
         if (count($data['del']) > 0) {
             $msg = $enum->canDeleteData($data['del']);
             if (!$msg) {
+                $data = $data['del'];
+                $dbRecords = $enum->queryEnum(null,null,null,null,null,array(Revision::ID=>Revision::ID),null,self::getRecordsIds($data));
                 $delData = $enum->getValueArrayToDb($data['del']);
                 if (!$conn->deleteData($enum->getId(), $enum->getDataSource()->getSchema(), $delData)) {
                     throw new EnumException($conn->getLastError());
@@ -330,7 +363,7 @@ class EnumsRequests
         //$conn->commitTransaction();
 
 
-        return array('delMsg' => $msg, 'add'=>$addedData);
+        return array('delMsg' => $msg, 'add' => $addedData, 'underRevision' => $underRevision);
     }
 
     public static function removeEnum($enumInstance, $enumId, $path)
