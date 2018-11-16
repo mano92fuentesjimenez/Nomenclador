@@ -181,9 +181,15 @@ class Enum
         return PrimaryKey::ID;
     }
 
+    public static function sortFields($a,$b){
+        $fieldA = new Field($a);
+        $fieldB = new Field($b);
+        return ($fieldA->getOrderValue() < $fieldB->getOrderValue()) ? -1 :1;
+    }
     public function getFieldsOrder($data)
     {
         $arr = array();
+        uasort($data,'Enum::sortFields');
         foreach ($data as $key => $value) {
             $field = $this->getField($key);
             $props = $field->getProperties();

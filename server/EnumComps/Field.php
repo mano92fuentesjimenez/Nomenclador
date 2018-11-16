@@ -52,6 +52,9 @@ class Field
     {
         return $this->field_tree['_enumId'];
     }
+    public function getOrderValue(){
+        return $this->field_tree['order'];
+    }
 
     public function getDependencies()
     {
