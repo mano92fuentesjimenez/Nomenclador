@@ -115,7 +115,7 @@
         },
         load: function (instanceName, callback, onError,mask){
             var self =this;
-            nom.request('getServerHeaders',{enumInstance:instanceName},function (response, o){
+            nom.request('getServerHeaders',{instanceName:instanceName},function (response, o){
                 self.loaded[instanceName] = true;
                 var enums = self.getEnums(instanceName);
                 response.enums._each_(function (_enum){
@@ -213,20 +213,24 @@
             if(actionManager instanceof nom.ActionManager){
                 var actions = new nom.ActionManager(this.actions._clone_()),
                     extActions = actionManager.getActions();
-                extActions._each_(function(v,k){
-                    v._each_(function(v2,k2){
-                        actions.addAction(k,k2,v);
-                    })
-                });
+                    actions.setActions(extActions);
                 return actions.getActions();
             }
 
             return this.actions;
         },
+        setActions:function(actions) {
+            if (actions)
+                actions._each_(function (v, k) {
+                    v._each_(function (v2, k2) {
+                        this.addAction(k, k2, v);
+                    },this);
+                },this);
+        }
     });
     nom.InstanceManager = function() {
         this.instances = {};
-        this.defaultInstance = 'default';
+        this.defaultInstance = nom.export.DEFAULT_INSTANCE_MODIFIER;
         this.configs = {};
     };
     nom.InstanceManager.prototype = {
@@ -269,10 +273,20 @@
         },
         /**
          * Sobrescribe la configuracion para esta instancia de nomencladores.
-         * @param config  Objeto de la misma forma q se especifica en InstanceConfigClass
+         * @param config  {Object}  {
+         *                            @see AjaxPlugins.Nomenclador.ActionManager
+         *                            actions: configuration
+         *
+         *                            @see AjaxPlugins.Nomenclador.InstanceConfigClass
+         *                            configs
+         *                          }
          */
         setInstanceConfig:function(config ){
+            var actions = config.actions;
+            if(actions)
+                delete config.actions;
             this.config = new nom.InstanceConfigClass(config);
+            this.actionManager.setActions(actions);
         },
         getInstanceConfig:function() {
             if(this.config === undefined)
@@ -361,6 +375,7 @@
      * header:      Nombre a mostrar en el tpl
      * dataTypes:   Objeto de la forma { dataTypeId:true}. Si el objeto es especificado se mustran los tipos en el objeto
      *             Si el objeto no es especificado, se muestran todos los tipos.
+     * divisions:   Dice en cuantas columnas se van a mostrar las propiedades extras
      * extraProps:  Objeto q contiene un listado de propiedades extras en una entidad, La llave es
      *             el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
      *              Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
@@ -391,7 +406,7 @@
                 },
                 config = null;
             //if tpl:default == true
-            if(utils.isArray(this.defaultFields))
+            if(utils.isObject(this.defaultFields))
                 config = this.defaultFields;
             else
                 config = enums.getDefaultFields();
@@ -542,7 +557,7 @@
             });
 
         nom.request('getEnumData',{
-            enumInstance:instanceName,
+            instanceName:instanceName,
             enum: enumId,
             enumLoadPageSize: this._default_(enumDataLoadConfig.pageSize, 100000),
             enumLoadPageOffset: this._default_(enumDataLoadConfig.offset,0),
@@ -1209,8 +1224,9 @@
     *                                    nomencladores de esta instancia.
     *            tpl: "id":
     *                        tplConfio: Ver Tpl
-    *                 Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
-    *                 instancia de nomencladores.
+    *                    Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
+    *                   instancia de nomencladores.
+    *            actions: Actions  @see ActionManager
     *
     *  @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
     *                                    agrupa configuraciones de UI.
@@ -1221,9 +1237,15 @@
     };
     nom.getUI = function(instanceName, config, instanceModifier){
         instanceName = instanceName ? instanceName : nom.export.DEFAULT_INSTANCE;
+        if(instanceModifier === undefined && !utils.isObject(config)){
+            instanceModifier = config;
+            config = null;
+        }
         var instance = enums.getInstance(instanceName,instanceModifier),
             instanceId = instance.getInstanceId();
-        instance.setInstanceConfig(config);
+
+        if(utils.isObject(config))
+            instance.setInstanceConfig(config);
 
 
         if(!nom.UIDict[instanceId]) {
@@ -1282,16 +1304,17 @@
             params = {};
         params['action'] =action;
 
-        if(params.enumInstance) {
+        if(params.instanceName) {
+            if(params.instanceName instanceof nom.EnumInstance) {
 
-            if(params.enumInstance instanceof nom.EnumInstance)
-                params.enumInstance = params.enumInstance.getName();
+                var actions =params.instanceName.getActionManager().getActions();
+                params.instanceName = params.instanceName.getName();
 
-            var actions = nom.enums.getActionManager(params.enumInstance).getActions(params.enumInstance);
-            if(params['actions'])
-                params['actions']._apply_(actions);
-            else
-                params['actions'] = actions;
+                if(params['actions'])
+                    params['actions']._apply_(actions);
+                else
+                    params['actions'] = actions;
+            }
         }
 
         var p = {params:Ext.encode( params)};

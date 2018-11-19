@@ -234,7 +234,7 @@
                 self = this;
             if(!this.offlineMode)
                 nom.request('submitChanges', {
-                    enumInstance: this.enumInstance,
+                    instanceName: this.enumInstance,
                     data: changes,
                     _enum: this._enum,
                     actions: this.getActions()

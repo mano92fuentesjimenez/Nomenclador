@@ -13,6 +13,7 @@
 		};
 
 	exp._defineConstant_('DEFAULT_INSTANCE','system');
+	exp._defineConstant_('DEFAULT_INSTANCE_MODIFIER','default');
 
 	/**
 	 * Toda funcion de este objeto debe comprobar que los scripts de nomenclador ya esten cargados, asi como los headers
@@ -63,7 +64,7 @@
 	 * @param instanceName {string}    Nombre de la instancia de nomencladores. Para agrupar las entidades
 	 * @param instanceModifier {string}Modificador del nombre de instancia. Para agrupar las configuraciones
      */
-    exp.showManager = function(instanceName,instanceModifier){};
+    exp.showManager = function(instanceName,config,instanceModifier){};
 	addService('showManager',function () {
         nom.getUI.apply(nom,arguments).show();
     });
@@ -147,8 +148,10 @@
 	},true);
 	var buildTree = function(instanceName,simpleTree){
 		if(!simpleTree.childs){
+            var _enum = nom.enums.getEnumById(instanceName,simpleTree.idNode);
 			return {
-				text: nom.enums.getEnumById(instanceName,simpleTree.idNode).name,
+				text:_enum.name,
+				tpl: _enum.tpl,
 				leaf:true,
 				nodeId:simpleTree.idNode
 			}
@@ -238,7 +241,7 @@
 	exp.getEnumColumnData=function(instanceName,enumId, config, columnId, callback){};
 	addService('getEnumColumnData',function (instanceName,enumId, config, columnId, callback){
 		nom.request('getEnumColumnData',{
-			instanceName:instanceName,
+            instanceName:instanceName,
             enumId:enumId,
             config:config,
             columnId:columnId
@@ -298,15 +301,27 @@
 		return nom.getEnumSelectorClass.apply(this, arguments);
 	});
 
-	exp.getStoreReaderPrototype = function(instanceName){};
-	addService('getStoreReaderPrototype', function(instanceName){
-		return nom.interfaces.EnumStoreReader;
+	exp.getStoreReaderPrototype = function(instanceName,configName){};
+	addService('getStoreReaderPrototype', function(instanceName,configName){
+		return exp.getStoreReaderPrototypeSync(instanceName,configName);
 	});
+	exp.getStoreReaderPrototypeSync = function(instanceName,configName){
+		var enumInstance = nom.enums.getInstance(instanceName,configName);
+		return Ext.extend(nom.interfaces.EnumStoreReader,{
+			enumInstance:enumInstance
+		});
+	};
 
-    exp.getStoreWriterPrototype = function(instanceName){};
-    addService('getStoreWriterPrototype', function(instanceName){
-        return nom.interfaces.EnumStoreWriter;
+    exp.getStoreWriterPrototype = function(instanceName,configName){};
+    addService('getStoreWriterPrototype', function(instanceName,configName){
+        return exp.getStoreWriterPrototypeSync(instanceName,configName);
     });
+    exp.getStoreWriterPrototypeSync= function(instanceName,configName){
+        var enumInstance = nom.enums.getInstance(instanceName,configName);
+        return Ext.extend(nom.interfaces.EnumStoreWriter,{
+            enumInstance:enumInstance
+        });
+	};
 	exp.getEnumTreePanelPrototype = function(instanceName){};
 	addService('getEnumTreePanelPrototype', function(instanceName){
 		return nom.nomencladorTree;
@@ -318,13 +333,33 @@
 
 	exp.addAction = function(instanceName,instanceModifier,when, actionType, action){};
     addService('addAction', function(instanceName,instanceModifier,when, actionType, action){
-        var actionM = exp.getActionManager(instanceName,instanceModifier);
-        actionM.addAction(when, actionType,action);
+        exp.getActionManager(instanceName,instanceModifier,function(aM){
+            aM.addAction(when, actionType,action);
+		});
+
     });
 	exp.getEnumManagerTreeProto = function(){};
 	addService('getEnumManagerTreeProto', function(){
 		return nom.treeEditorPanel
 	});
+
+    exp.addAction.ACTIONS = {
+    	MODEL: {
+    		MODIFY:'modEnum',
+    		REMOVE:'remEnum',
+    		ADD:'addEnum'
+		},
+		RECORDS: {
+    		LOAD: 'load',
+			ADD: 'add',
+			MODIFY: 'mod',
+			DELETE: 'del'
+		}
+	};
+    exp.addAction.ACTIONS_MOMENTS = {
+    	BEFORE : 'pre',
+    	AFTER : 'post'
+	};
 
     exp.getPrimaryKeyId= function(){};
     addService('getPrimaryKeyId', function(){
@@ -381,6 +416,24 @@
 
 	exp.getEnumInstanceSync = function(instanceName, instanceModifier){
 	    return nom.enums.getInstance(instanceName,instanceModifier);
+    };
+
+    var cache = {};
+    exp.checkDatasourceSync = function (instanceName,datasources) {
+		var src = Ext.encode(datasources),
+			hash = instanceName+src;
+
+		if(!cache[hash]){
+			cache[hash] = _require_('nomenclador').then(function () {
+                nom.request('Nomenclador.checkDatasource',{
+                    action: 'checkDatasource',
+                    instanceName: instanceName,
+                    sourcesConfig : datasources
+                });
+            });
+		}
+
+		return cache[hash];
     }
 
 })();

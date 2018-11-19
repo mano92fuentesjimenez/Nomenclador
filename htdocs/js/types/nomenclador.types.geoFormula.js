@@ -216,7 +216,7 @@
 			nom.request('getWktOnDemand',{
                 _enumId :pEl.getAttribute('_enumId'),
                 fieldId :pEl.getAttribute('fieldId'),
-                enumInstance :pEl.getAttribute('enum_instance'),
+                instanceName :pEl.getAttribute('enum_instance'),
                 row :pEl.getAttribute('row'),
 				type:'DB_GeoFormula'
                 },

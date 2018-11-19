@@ -9,10 +9,14 @@
 		nameToShow :'N\u00FAmero',
 		propertyNeeded :false,
 		getValueEditExtComp :function (enumInstance, field){
+			var precision =0,
+				property = field.properties.type;
+			if(property === 'decimal' ||property ==='float')
+				precision = 8;
 			return new AjaxPlugins.Ext3_components.fields.numberField({
 				allowBlank :!field.needed,
 				fieldLabel :field.header,
-				decimalPrecision: 8
+				decimalPrecision: precision
 			});
 		},
 		getPropertiesExtComp :function (){
@@ -52,20 +56,24 @@
 			this.checks = [];
 			this.checks.push(new myCheckbox({
 				boxLabel :"Entero Mediano",
+                legacyCheckBox : true,
 				scope :this,
 				value :true,
 				checked :true
 			}));
 			this.checks.push(new myCheckbox({
 				boxLabel :"Entero Grande",
+                legacyCheckBox : true,
 				scope :this
 			}));
 			this.checks.push(new myCheckbox({
 				boxLabel :"Reales de alta precision",
+                legacyCheckBox : true,
 				scope :this
 			}));
 			this.checks.push(new myCheckbox({
 				boxLabel :"Reales de baja precision",
+                legacyCheckBox : true,
 				scope :this
 			}));
 			for (var j = 0; j < this.checks.length; j++){
