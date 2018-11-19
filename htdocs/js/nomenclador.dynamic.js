@@ -375,6 +375,7 @@
      * header:      Nombre a mostrar en el tpl
      * dataTypes:   Objeto de la forma { dataTypeId:true}. Si el objeto es especificado se mustran los tipos en el objeto
      *             Si el objeto no es especificado, se muestran todos los tipos.
+     * divisions:   Dice en cuantas columnas se van a mostrar las propiedades extras
      * extraProps:  Objeto q contiene un listado de propiedades extras en una entidad, La llave es
      *             el identificador de la propiedad. El valor debe ser un input admisible por formValidator.
      *              Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
