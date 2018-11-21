@@ -666,10 +666,12 @@
 
     nom.getEnumDataPanel=function(instanceName, _enum, config,instanceModifier){
         var instance = enums.getInstance(instanceName,instanceModifier),
-            _interface = instance.getEnumDataEditor();
+            _interface = instance.getInstanceConfig().getEnumDataEditor();
 
         _enum =  nom.enums.getEnumById(instanceName, _enum);
+
         instance.setInstanceConfig((config || {}).enumInstanceConfig);
+
         var panel = new Ext.Panel({
                 layout: 'fit',
                 items: []

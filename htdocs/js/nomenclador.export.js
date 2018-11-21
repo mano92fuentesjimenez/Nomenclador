@@ -97,7 +97,7 @@
 	 */
 	exp.getEnumDataPanel=function(instanceName, _enum, config, instanceModifier){};
 	addService('getEnumDataPanel',function(instanceName, _enum, config, instanceModifier){
-		return nom.getEnumDataPanel.apply(arguments);
+		return nom.getEnumDataPanel.apply(this,arguments);
 	});
 	
 	/**

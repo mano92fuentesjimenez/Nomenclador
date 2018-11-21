@@ -131,24 +131,28 @@ AjaxPlugins.Nomenclador.Actions = {};
 
 AjaxPlugins.initializablePlugins.push(AjaxPlugins.Nomenclador);
 
-AjaxPlugins.Nomenclador.obtenerNomencladorCategorias = function (pIntegr,pallb) {
-    var enumInstance = AjaxPlugins.Nomenclador.export.DEFAULT_INSTANCE;
+AjaxPlugins.Nomenclador.obtenerNomencladorCategorias = function (pIntegr,pallb,params) {
+    var ps = params || {},
+        enumInstance = 'instance' in ps ? ps.instance : AjaxPlugins.Nomenclador.export.DEFAULT_INSTANCE;
 
-    _require_('nomenclador').then(function () {
-        AjaxPlugins.Nomenclador.export.showEnumTree(enumInstance,function (pSel) {
-            pallb({
-                id: pSel.id,
-                text: pSel.node.attributes._text_
+    AjaxPlugins.SrlConfiguration.verifyEnumsConfig().then(function () {
+        return _require_('nomenclador').then(function () {
+            AjaxPlugins.Nomenclador.export.showEnumTree(enumInstance,function (pSel) {
+                pallb({
+                    id: pSel.id,
+                    text: pSel.node.attributes._text_
+                });
             });
         });
     });
 };
 
-AjaxPlugins.Nomenclador.obtenerNomencladorArbol = function (pIntegr,pIdCat,pS) {
-    var enumInstance = AjaxPlugins.Nomenclador.export.DEFAULT_INSTANCE;
+AjaxPlugins.Nomenclador.obtenerNomencladorArbol = function (pIntegr,pIdCat,pS,ps,params) {
+    ps = ps || {};
+    var enumInstance = 'instance' in ps ? ps.instance : AjaxPlugins.Nomenclador.export.DEFAULT_INSTANCE;
 
-    _require_('nomenclador').then(function () {
-        AjaxPlugins.Nomenclador.export.getEnumDataPanel(enumInstance,pIdCat,function (pSel) {
+    AjaxPlugins.SrlConfiguration.verifyEnumsConfig().then(function () {
+        _require_('nomenclador').then(function () {
             AjaxPlugins.Nomenclador.export.getEnumSelector(enumInstance,pIdCat,null, true,null,null,{selector_columns:'all'}, function (r){
                 r.on('datachanged',function (d) {
                     pS({

@@ -416,7 +416,7 @@ class ServerNomenclador extends ClientResponderAdapter
     }
 
     public function obtenerNomencladorDetalles($nomenclador, $categoria, $elemento, $extraParams){
-        $enumInstance = 'system';
+        $enumInstance = isset($extraParams) && is_array($extraParams) && array_key_exists('instance',$extraParams) ? $extraParams['instance'] : 'system';
 
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnum($categoria);
