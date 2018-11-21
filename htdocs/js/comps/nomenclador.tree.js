@@ -18,6 +18,7 @@
 		checked:null,
         plgIndexer:null,
 		enumInstance:null,
+		allowReferencing:false,
 		constructor :function (pCfg){
 			var indexer = this.indexedTreePlg = new comps.plugins.tree.indexedTree,
 				plgSearch = new comps.plugins.tree.indexTreeSearch({
@@ -98,7 +99,7 @@
 			var targetPos = dragObj.target.getPath('idNode');
 
 			nom.request('MoveNodeInSimpleTree',{
-				enumInstance:this.enumInstance,
+                instanceName:this.enumInstance,
                 point :point,
                 previousPath :previousPath,
                 newPath :newPath,
@@ -158,7 +159,8 @@
 				includeEnum:this.includeEnum,
 				nodesEvaluator:this.nodesEvaluator,
 				showFields:this.showFields,
-				showEnums:this.showEnums
+				showEnums:this.showEnums,
+				allowReferencing:this.allowReferencing
 			};
 
 			return nom.treeNodesProxy(attr,config);

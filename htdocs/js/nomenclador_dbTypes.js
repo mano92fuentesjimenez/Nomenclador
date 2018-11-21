@@ -202,7 +202,7 @@
         testConn:function(){
             var self =this;
             nom.request('getDataBasesNames',{
-                enumInstance:this.enumInstance,
+                instanceName:this.enumInstance,
                 user:this.user.getValue(),
                 password:this.password.getValue(),
                 port:this.port.getValue(),

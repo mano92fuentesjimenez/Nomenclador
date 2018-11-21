@@ -37,7 +37,7 @@ class NomencladorRestAdapter implements PluginRestFulAdapter{
         $req =  new NomencladorRequest();
         $req->action = $params['action'];
         $req->value=array_merge($params['arguments'],array(
-            'enumInstance'=>$params['arguments']['instance']
+            'instanceName'=>$params['arguments']['instance']
         ));
         return $req;
     }
@@ -45,7 +45,8 @@ class NomencladorRestAdapter implements PluginRestFulAdapter{
     static function handleResult($result, RestFulResponse $response, $arguments){
         if(isset($result->error)){
             $response::error(
-                $result->error['message']
+                $result->error['message'],
+                $result->code
             );
         }else{
             $response->send(json_encode($result->resp));

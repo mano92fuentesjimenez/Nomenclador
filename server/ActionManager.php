@@ -152,6 +152,15 @@ class ActionManager
         }
     }
 
+    public function callPostModActions($enum, $data){
+        $actions = $this->getActions('mod','post');
+
+        foreach ($actions as $action){
+            $p = $this->getPlugin($action);
+            $p['server']->{$p['action']}($enum,$data);
+        }
+    }
+
     public function callPreEnumAddActions($enum){
         $actions = $this->getActions('addEnum','pre');
         foreach ($actions as $action){
@@ -225,6 +234,13 @@ class ActionManager
         foreach ($actions as $action){
             $p = self::getPlugin($action);
             $p['server']->{$p['action']}($this->enumInstance, $compInitializing);
+        }
+    }
+    public function callUndefinedExistDataSourceActions( $idDataSource){
+        $actions = $this->getActions('undefinedDataSource','pre');
+        foreach ($actions as $action){
+            $p = self::getPlugin($action);
+            $p['server']->{$p['action']}($this->enumInstance, $idDataSource);
         }
     }
     public function throwException($actionResult, $pluginServer){

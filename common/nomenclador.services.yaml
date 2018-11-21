@@ -26,7 +26,7 @@ services:
                 description: "Instancia o dominio de trabajo"
                 default: "system"
 
-  getModelRecordsIds:
+  modelRecordsIds:
     description: "Obtener los identificadores de los records de los modelos"
     urls:
       /{enum}:
@@ -51,7 +51,7 @@ services:
               enumLoadColumns:
               enumLoadWhere:
 
-  getModelRecords:
+  modelRecords:
     description: "Interfaz para la interaciion con los records de los modelos"
     urls:
       /{enum}:
@@ -67,12 +67,22 @@ services:
                 description: "Instancia o dominio de trabajo"
                 default: "system"
               enumLoadEnums:
-                default: true
               enumLoadPageOffset:
               enumLoadPageSize:
               enumLoadIdRow:
               enumLoadColumns:
               enumLoadWhere:
+          post:
+            description: "Permite adicionar records y devuelve el listado de identificadores en el mismo orden"
+            out: "application/json"
+            action: "addRecords"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+              records:
+                description: "Records q se van a anhadir"
+                required: true
 
       /{enum}/{enumLoadIdRow}:
         description:
