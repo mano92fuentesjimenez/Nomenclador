@@ -294,18 +294,18 @@
                     function (response, params) {
                         this.store.loadData(response);
                         this.hasLoadedBoolean = true;
-                        this.refreshView();
                         this.fireEvent("finishedloadingenum", this, this._enum, params);
                         nom.execute(cb,[],this);
+                        this.refreshView();
                     },
                     this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj()
                 );
             else setTimeout(function(){
                 self.store.loadData(self.store.data || []);
-                self.hasLoadedBoolean = true
-                self.refreshView();
+                self.hasLoadedBoolean = true;
                 self.fireEvent("finishedloadingenum", self, self._enum);
                 nom.execute(cb, [],self);
+                self.refreshView();
             },0)
 
 
