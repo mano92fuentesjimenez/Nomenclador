@@ -1,7 +1,7 @@
 <?php
 include_once 'Types/BaseType.php';
 include_once 'DBConections/DBConection.php';
-require_once 'Enums.php';
+require_once 'EnumsUtils.php';
 require_once CARTOWEB_HOME.'include/Zend/Crypt/Rsa.php';
 require_once 'Exceptions.php';
 require_once 'ActionManager.php';
@@ -181,7 +181,7 @@ class ServerNomenclador extends ClientResponderAdapter
                 case 'getTotalRecordsFromEnum':{
                     $enum_id = $requ->value['_enum'];
                     $enums = Enums::getInstance($enumInstance);
-                    $enum = $enums->getEnum($enum_id);
+                    $enum = $enums->getEnumQuerier($enum_id);
 
                     $enumResult->resp = $enum->getTotalRecords($requ->value['where']);
                 }
@@ -252,12 +252,13 @@ class ServerNomenclador extends ClientResponderAdapter
                 case 'enumHasData':{
                     $enums = Enums::getInstance($enumInstance);
                     $enum = $enums->getEnum($requ->value['enumId']);
+                    $enum = $enum->getEnumStore();
                     $enumResult->resp =$enum->hasData();
                 }
                     break;
                 case 'delOnCascade':{
                     $enums = Enums::getInstance($enumInstance);
-                    $enum = $enums->getEnum($requ->value['_enumId']);
+                    $enum = $enums->getEnumStore($requ->value['_enumId']);
                     $enum->delOnCascade($enumInstance);
                     $enumResult->resp = array();
                 }
@@ -419,7 +420,7 @@ class ServerNomenclador extends ClientResponderAdapter
         $enumInstance = 'system';
 
         $enums = Enums::getInstance($enumInstance);
-        $enum = $enums->getEnum($categoria);
+        $enum = $enums->getEnumQuerier($categoria);
 
         $result = $enum->queryEnum(null, null, false,$elemento );
 
@@ -480,7 +481,7 @@ class ServerNomenclador extends ClientResponderAdapter
 
     public function queryEnum($enumInstance, $enumId, $pageOffset, $pageSize, $loadAll, $idRow, $fieldLazyToEval, $fields, $where,$inData){
         $enums = Enums::getInstance($enumInstance);
-        $enum = $enums->getEnum($enumId);
+        $enum = $enums->getEnumQuerier($enumId);
 
         return $enum->queryEnum($pageOffset,$pageSize,$loadAll, $idRow,$fieldLazyToEval,$fields,$where,$inData );
     }
@@ -724,7 +725,7 @@ class EnumRestMethods{
 
     public static function getEnumColumnData($enumInstance, $enumId, $config, $columnId, $fieldFilter, $fieldValue){
         $enums = Enums::getInstance($enumInstance);
-        $enum = $enums->getEnum($enumId);
+        $enum = $enums->getEnumQuerier($enumId);
 
         $columnId = isset($columnId) ? $columnId : $enum->getDefaultFieldId();
 

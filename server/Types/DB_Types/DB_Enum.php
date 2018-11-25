@@ -87,7 +87,7 @@ class DB_Enum extends BaseType
         $fieldsToGet = array($prop['field']=>$prop['field']);
 
         $enumToGetData = $field->getProperties();
-        $enumToGetData = $enums->getEnum($enumToGetData['_enum']);
+        $enumToGetData = $enums->getEnumQuerier($enumToGetData['_enum']);
         if(isset($params['filter'])){
             $filter = $params['filter'];
             $values = $enumToGetData->queryEnum(null,null,false,null,false,$filter['fieldFilter'],$filter['fieldValue']
@@ -117,7 +117,7 @@ class DB_Enum extends BaseType
 
         $enumId = $field->getProperties();
         $enumId = $enumId['_enum'];
-        $nextEnum = $enums->getEnum($enumId);
+        $nextEnum = $enums->getEnumQuerier($enumId);
         $nextRow = $conn->fetchData();
         $nextRow = $nextRow[0][$field->getId()];
 
@@ -247,7 +247,7 @@ class DB_Enum extends BaseType
         $prop =$field->getProperties();
         $enums = Enums::getInstance($enumInstance);
 
-        $nextEnum = $enums->getEnum($prop['_enum']);
+        $nextEnum = $enums->getEnumQuerier($prop['_enum']);
         $nextField =$nextEnum->getField($prop['field']);
 
         $data = $nextEnum->queryEnum(null, null, null, $value, $nextField->getId(), null, null, $nextField->getId(),

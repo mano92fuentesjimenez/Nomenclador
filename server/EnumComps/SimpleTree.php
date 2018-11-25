@@ -227,8 +227,8 @@ class SimpleTree
 
     /**
      * @param $tree
-     * @param $enums Enums
-     *
+     * @param $enums
+     * @throws EnumCantBeRemovedIsRefException
      */
     public function canRemoveEnums($tree, $enums)
     {
@@ -236,7 +236,8 @@ class SimpleTree
             if (isset($value['childs'])) {
                 $this->canRemoveEnums($value, $enums);
             } else {
-                $enum = $enums->getEnum($value['idNode']);
+                $enum = $enums->getEnumStore($value['idNode']);
+
                 if(!$enum->canBeDeleted())
                     throw new EnumCantBeRemovedIsRefException($enum->getId(), $enum->getName(), $enum->getCanBeDeletedMessage());
 
