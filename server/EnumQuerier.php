@@ -213,6 +213,7 @@ class EnumQuerier extends Enum
     {
         $fields = $fieldsToGet;
         $baseName = 'base';
+        $subQeryName ='subq';
         if(is_string($where)){
             $where = $this->processWhere($where,$baseName);
         }
@@ -220,7 +221,9 @@ class EnumQuerier extends Enum
         $ds = $this->getDataSource();
         $conn = EnumsUtils::getDBConnection($this);
         $select = $conn->startSelect();
-        $from = $conn->startFrom($ds->getSchema(), $this->getRawTableName(), $baseName);
+        $selectSubq = $conn->startSelect();
+        $fromSubq = $conn->startFrom($ds->getSchema(), $this->getRawTableName(), $baseName);
+        $from = null;
 
         $multiField = null;
         unset($fields[Primarykey::ID]);
@@ -251,32 +254,39 @@ class EnumQuerier extends Enum
                         $multiField = $field;
                         $multiName = DB_Enum::getMultiTableName($this, $currentReferencedEnum);
 
-                        $from = $conn->continueFromMultiSelect($ds->getSchema(), $currentReferencedEnum->getRawTableName(),$this->getRawTableName(),$multiName,$from, $baseName);
+                        $from = $conn->continueFromMultiSelect($ds->getSchema(), $currentReferencedEnum->getRawTableName(),$this->getRawTableName(),$multiName,'', $subQeryName);
                         //poner el valor verdadero del enum en $key (id del campo)
-                        $select = $conn->continueSelect($ds->getSchema(),$multiName,$currentReferencedEnum->getRawTableName(),$key,$select,$baseName);
-                        $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),$key . BaseType::REF_TYPE_VALUE_HEADER,$select,$baseName);
+                        $select = $conn->continueSelect($ds->getSchema(),$multiName,$currentReferencedEnum->getRawTableName(),$key,$select,$subQeryName);
+                        $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),$key . BaseType::REF_TYPE_VALUE_HEADER,$select,$subQeryName);
                     }
                     else {
 
-                        $from = $conn->continueFrom($ds2->getSchema(),$currentReferencedEnum->getRawTableName(), $key, $from, $baseName);
+                        $fromSubq = $conn->continueFrom($ds2->getSchema(),$currentReferencedEnum->getRawTableName(), $key, $fromSubq, $baseName);
                         //poner el valor verdadero del enum en $key (id del campo)
-                        $select = $conn->continueSelect(null,null, $key,$key, $select,$baseName);
-                        $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),
-                            $key . BaseType::REF_TYPE_VALUE_HEADER, $select,$baseName);
+                        $selectSubq = $conn->continueSelect(null,null, $key,$key, $selectSubq,$baseName);
+                        $selectSubq = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),
+                            $key . BaseType::REF_TYPE_VALUE_HEADER, $selectSubq,$baseName);
+
+                        $select = $conn->continueSelect(null,null, $key,$key, $select,$subQeryName);
+                        $select = $conn->continueSelect(null,null,$key . BaseType::REF_TYPE_VALUE_HEADER,
+                            $key . BaseType::REF_TYPE_VALUE_HEADER, $select,$subQeryName);
                     }
                 }
             }
             else {
+                $selectSubq = $conn->continueSelect(null, null, $key,
+                    $key, $selectSubq, $baseName);
                 $select = $conn->continueSelect(null, null, $key,
-                    $key, $select, $baseName);
+                    $key, $select, $subQeryName);
             }
             unset($fields[$key]);
         }
 
 
-        $select = $conn->endSelect($select,$baseName);
+        $select = $conn->endSelect($select,$subQeryName);
+        $selectSubq = $conn->endSelect($selectSubq,$baseName);
 
-        $from = $conn->endFrom($from);
+        $fromSubq = $conn->endFrom($fromSubq);
 
         if (is_array($inData)) {
             $whereSql = $conn->startWhere($where);
@@ -292,7 +302,7 @@ class EnumQuerier extends Enum
             $whereSql = $conn->endWhere($whereSql);
         }
 
-        if (!$conn->getEnumData($ds->getSchema(), $baseName, $select, $from, $whereSql,$offset, $limit,  $idRow)
+        if (!$conn->getEnumData($ds->getSchema(), $baseName, $subQeryName, $selectSubq, $fromSubq,$select,$from, $whereSql,$offset, $limit,  $idRow)
         ) {
             throw new EnumException($conn->getLastError());
         }

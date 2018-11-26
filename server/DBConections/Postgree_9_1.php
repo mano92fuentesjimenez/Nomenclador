@@ -346,22 +346,27 @@ class Postgree_9_1 extends DBConn
         return $query;
     }
 
-    public function getEnumData($schema, $baseName, $select, $from, $where, $offset=null, $limit=null, $idRow=null)
+    public function getEnumData($schema, $baseName, $subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset=null, $limit=null, $idRow=null )
     {
         $search_path ="set search_path = $schema ";
-        $query = "$select $from";
+        $query = "$selectSubq $fromSub";
         
         if($idRow){
             $query= "$query WHERE $baseName.".PrimaryKey::ID."='$idRow' ";
         }
-        else if($where){
-            $query= "$query $where ";
+        else if($whereSubq){
+            $query= "$query $whereSubq ";
         }
+        $query ="$query order by $baseName asc ";
         if($offset){
             $query="$query OFFSET $offset";
         }
         if($limit){
             $query="$query LIMIT $limit";
+        }
+
+        if(is_string($from)){
+            $query = " $select from ($query) as $subQName $from";
         }
         $query = "$search_path ; $query ;";
         return $this->query($query);
@@ -406,9 +411,11 @@ class Postgree_9_1 extends DBConn
     public function continueFromMultiSelect( $enumSchema, $enumTableName,$currentTableName, $multiTableName, $query, $baseName)
     {
         $primaryKey = PrimaryKey::ID;
+        $multiTable = "\"$enumSchema\".\"$multiTableName\"";
+        $baseTable = "\"$enumSchema\".\"$enumTableName\" ";
         //El nombre de la tabla de un nomenclador es el identificador de un nomenclador.
-        $query = "$query inner join \"$enumSchema\".\"$multiTableName\" on ($baseName.$primaryKey=\"$currentTableName\") ";
-        $query = "$query inner join \"$enumSchema\".\"$enumTableName\" on ( \"$enumTableName\" = \"$enumSchema\".\"$enumTableName\".$primaryKey) ";
+        $query = "$query left join $multiTable on ($baseName.$primaryKey= $multiTable.\"$currentTableName\") ";
+        $query = "$query left join $baseTable on ( $multiTable.\"$enumTableName\" = $baseTable.$primaryKey) ";
         return $query;
     }
 
