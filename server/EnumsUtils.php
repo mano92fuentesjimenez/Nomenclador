@@ -269,24 +269,11 @@ class EnumsRequests
 
         //eliminar
         if (count($data['del']) > 0) {
-            $msg = $enum->canDeleteData($data['del']);
-            if (!$msg) {
-                $data = $data['del'];
-                $dbRecords = $enum->queryEnum(null,null,null,null,null,array(Revision::ID=>Revision::ID),null,RecordsManipulator::getRecordsIds($data));
-                $delData = $enum->getValueArrayToDb($data['del']);
-                if (!$conn->deleteData($enum->getId(), $enum->getDataSource()->getSchema(), $delData)) {
-                    throw new EnumException($conn->getLastError());
-                }
-                foreach($enum->getFields() as $f){
-                    $field = new Field($f);
-                    $type = $field->getType();
-                    $props = $field->getProperties();
-                    if($type=='DB_Enum' && $props['multiSelection']){
-                        $multiTable = DB_Enum::getMultiTableName($enum, $enums->getEnum($props['_enum']));
-                        $toDel = RecordsManipulator::getIdsToRemoveMulti($data['del'], $enum->getId());
-                        $conn->deleteData($multiTable, $enum->getDataSource()->getSchema(),$toDel, $enum->getId());
-                    }
-                }
+            $val = $enum->delRecords($data['del']);
+            if(is_string($val))
+                $msg = $val;
+            else if(is_array($val)){
+                $underRevision = array_merge($underRevision,$val);
             }
         }
 

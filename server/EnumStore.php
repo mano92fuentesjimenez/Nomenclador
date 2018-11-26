@@ -109,6 +109,34 @@ class EnumStore extends Enum
         return $details['underRevision'];
     }
 
+    public function delRecords($data){
+        $msg = $this->canDeleteData($data);
+        if (!$msg) {
+            $conn = $this->getConnection();
+            $enumQ = $this->getEnumQuerier();
+            $dbRecords = $enumQ->queryEnum(null,null,null,null,null,
+                array(Revision::ID=>Revision::ID),null,RecordsManipulator::getRecordsIds($data)
+            );
+            $details = RecordsManipulator::getRevisionDescription($data, $dbRecords);
+            $data = $details['ok'];
+            $delData = $this->getValueArrayToDb($data);
+            if (!$conn->deleteData($this->getId(), $this->getDataSource()->getSchema(), $delData)) {
+                throw new EnumException($conn->getLastError());
+            }
+            foreach($this->getFields() as $f){
+                $field = new Field($f);
+                $type = $field->getType();
+                $props = $field->getProperties();
+                if($type=='DB_Enum' && $props['multiSelection']){
+                    $multiTable = DB_Enum::getMultiTableName($this, $this->enums->getEnum($props['_enum']));
+                    $toDel = RecordsManipulator::getIdsToRemoveMulti($data, $this->getId());
+                    $conn->deleteData($multiTable, $this->getDataSource()->getSchema(),$toDel, $this->getId());
+                }
+            }
+            return $details['underRevision'];
+        }
+        return $msg;
+    }
     public function createEnumInDS()
     {
         $enums = Enums::getInstance($this->enumInstance);
@@ -316,5 +344,49 @@ class EnumStore extends Enum
         $conn->countRows($this->getId(), $this->getDataSource()->getSchema());
         $v = reset($conn->fetchData());
         return $v['count'];
+    }
+
+    private function canDeleteData($data)
+    {
+
+        $refs = Refs::getInstance($this->enumInstance);
+        $references = $refs->getReferencesToEnum($this);
+        $enums = Enums::getInstance($this->enumInstance);
+
+        $ids = RecordsManipulator::getColumn($data, PrimaryKey::ID);
+        $records_toDelete = RecordsManipulator::reIndexRecords($data);
+        asort($ids);
+        $ids_str = '(' . implode(',', $ids) . ')';
+        $msg = "";
+        foreach ($references as $values) {
+            foreach ($values as $key => $value) {
+
+                $field = Refs::getField($key);
+                $enum = $enums->getEnum(Refs::getEnum($key));
+                $field = $enum->getField($field);
+                $prop = $field->getProperties();
+                $fieldRef = $enums->getEnum($prop['_enum'])->getField($prop['field']);
+
+                $conn = EnumsUtils::getDBConnection($enum);
+                $conn->getFieldValuesArrayFilteredWithPrimaryKey($enum->getId(),
+                    $enum->getDataSource()->getSchema(),
+                    $field->getId(),
+                    $ids_str);
+                $arr = $conn->fetchData();
+                $id = 0;
+                $fieldProps = $field->getProperties();
+                foreach ($arr as $record) {
+
+                    $idd = $record[$field->getId()];
+                    if ($idd > $id) {
+                        $id = $idd;
+                        $msg .= 'No se puede borrar porque el campo ' . $fieldRef->getHeader() . ' con el dato ';
+                        $msg .= $records_toDelete[$idd][$fieldProps['field']] . ' esta referenciado por el campo ' . $field->getHeader() . '
+                    del nomenclador ' . $enum->getName() . "\n";
+                    }
+                }
+            }
+        }
+        return $msg;
     }
 }
