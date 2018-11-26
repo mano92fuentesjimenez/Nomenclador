@@ -962,7 +962,8 @@
                 var self =this;
                 this.store.removeAll();
                 value._each_(function(v,k){
-                    self.store.add(new self.store.recordType(v));
+                    if(v.valueField !== null)
+                        self.store.add(new self.store.recordType(v));
                 })
             }
         },
