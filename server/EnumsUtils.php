@@ -264,8 +264,7 @@ class EnumsRequests
 
         //modificar
         if (count($data['mod']) > 0) {
-            $details = $enum->modRecords($data['mod']);
-            $underRevision = array_merge($details['underRevision'],$underRevision);
+            $underRevision = $enum->modRecords($data['mod']);
         }
 
         //eliminar
