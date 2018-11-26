@@ -75,32 +75,7 @@ class EnumQuerier extends Enum
         return $arr;
     }
 
-    /**Convierte los valores de data, que tienen el tipo de dato del cliente, al tipo de dato que se va a guardar en
-     * la fuente de datos que posee este enum.
-     * @param $data {array}     Arreglo con los valores a guardar
-     * @return array
-     */
-    public function getValueArrayToDb($data)
-    {
-        $connTypeStr = $this->getDataSource()->getDataSourceType();
-        $arr = array();
-        foreach ($data as $values) {
-            $record = array();
 
-            foreach ($values as $fieldId => $value) {
-                $field = $this->getField($fieldId);
-                $type = $field->getType();
-                $props = $field->getProperties();
-                if (!$field || !$type::savedInBD() || ($type == 'DB_Enum' && $props['multiSelection'])){
-                    continue;
-                }
-                $type = $field->getType();
-                $record[$fieldId] = $type::getValueToDB($values, $value, $field, $connTypeStr);
-            }
-            $arr[] = $record;
-        }
-        return $arr;
-    }
 
     /**
      * Funcion para recuperar los datos de un enum

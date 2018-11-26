@@ -239,7 +239,7 @@ class EnumsRequests
         }
         $enums = Enums::getInstance($enumInstance);
         $enum2 = new Enum($enumInstance,$enum_tree, null);
-        $enum = $enums->getEnumQuerier($enum2->getId());
+        $enum = $enums->getEnumStore($enum2->getId());
         $actionsM = ActionManager::getInstance($enumInstance);
 
         if (!Enum::enumEquals($enum, $enum2)) {
@@ -257,70 +257,15 @@ class EnumsRequests
         //$conn->beginTransaction();
         // insertar los nuevos
         if (count($data['add']) > 0) {
-
-            $addData = $enum->getValueArrayToDb($data['add']);
-            $fieldsOrder = $enum->getFieldsOrder(reset($data['add']));
-            if(!$conn->insertData($enum->getId(), $fieldsOrder, $enum->getDataSource()->getSchema(), $addData, true)){
-                throw new EnumException($conn->getLastError());
-            }
-            $addedData = $conn->fetchData(false);
-            foreach ($enum->getFields() as $value){
-                $field = new Field($value);
-                $type = $field->getType();
-                $props = $field->getProperties();
-                if($type =='DB_Enum' && $props['multiSelection']){
-                    $enum_ref = $enums->getEnum($props['_enum']);
-                    $multiTable = DB_Enum::getMultiTableName($enum, $enum_ref);
-                    $data = RecordsManipulator::getMultiValueField($data['add'],$field->getId(),$addedData);
-                    if(!$conn->insertData($multiTable,array($enum->getId(),$enum_ref->getId()),$enum->getDataSource()->getSchema(),$data)) {
-                        throw new EnumException($conn->getLastError());
-                    }
-                }
-            }
-
-            $enumQ = $enum->getEnumQuerier();
-            $actionsM->callPostAddActions($enum,$enumQ->getValueArrayFromDb($addedData));
+           $addedData = $enum->addRecords($data['add']);
         }
 
 
 
         //modificar
         if (count($data['mod']) > 0) {
-            $updateData = array();
-            $c = 0;
-            foreach ($data['mod'] as $record) {
-                $updateData[] = array();
-                $key = count($updateData)-1;
-                foreach ($record as $fieldId => $value){
-                    $field = $enum->getField($fieldId);
-                    $type = $field->getType();
-                    $props = $field->getProperties();
-                    if($type == 'DB_Enum' && $props['multiSelection']){
-                        $pId = $record[PrimaryKey::ID];
-                        $multiTable = DB_Enum::getMultiTableName($enum, $enums->getEnum($props['_enum']));
-                        $conn->deleteData($multiTable, $enum->getDataSource()->getSchema(), array($enum->getId()=>$pId),$enum->getId());
-                        $conn->insertData($multiTable, array($enum->getId(), $enums->getEnum($props['_enum'])->getId()),
-                            $enum->getDataSource()->getSchema(),RecordsManipulator::getMultiValueFieldFromMod($record[$fieldId], $pId));
-                    }
-                    else {
-                        $updateData[$key][$fieldId] = $record[$fieldId];
-                        $c++;
-                    }
-                }
-            }
-
-            $dbRecords = $enum->queryEnum(null,null,null,null,null,array(Revision::ID=>Revision::ID),null,RecordsManipulator::getRecordsIds($updateData));
-            $details = RecordsManipulator::getRevisionDescription($updateData, $dbRecords);
+            $details = $enum->modRecords($data['mod']);
             $underRevision = array_merge($details['underRevision'],$underRevision);
-            $updateData = $enum->getValueArrayToDb($details['ok']);
-
-            if ($c != 0 && !$conn->updateData($enum->getId(), $enum->getDataSource()->getSchema(), $updateData)) {
-                throw new EnumException($conn->getLastError());
-            }
-            $data = $conn->fetchData(false);
-
-            $enumQ = $enum->getEnumQuerier();
-            $actionsM->callPostModActions($enum,$enumQ->getValueArrayFromDb($data));
         }
 
         //eliminar

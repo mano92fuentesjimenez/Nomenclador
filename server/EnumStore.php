@@ -9,6 +9,103 @@ require_once 'EnumComps/Enum.php';
 class EnumStore extends Enum
 {
 
+    /**Convierte los valores de data, que tienen el tipo de dato del cliente, al tipo de dato que se va a guardar en
+     * la fuente de datos que posee este enum.
+     * @param $data {array}     Arreglo con los valores a guardar
+     * @return array
+     */
+    public function getValueArrayToDb($data)
+    {
+        $connTypeStr = $this->getDataSource()->getDataSourceType();
+        $arr = array();
+        foreach ($data as $values) {
+            $record = array();
+
+            foreach ($values as $fieldId => $value) {
+                $field = $this->getField($fieldId);
+                $type = $field->getType();
+                $props = $field->getProperties();
+                if (!$field || !$type::savedInBD() || ($type == 'DB_Enum' && $props['multiSelection'])){
+                    continue;
+                }
+                $type = $field->getType();
+                $record[$fieldId] = $type::getValueToDB($values, $value, $field, $connTypeStr);
+            }
+            $arr[] = $record;
+        }
+        return $arr;
+    }
+    public function addRecords($data){
+        $conn = $this->getConnection();
+        $actionsM = ActionManager::getInstance($this->enumInstance);
+
+        $addData = $this->getValueArrayToDb($data);
+        $fieldsOrder = $this->getFieldsOrder(reset($data));
+        if(!$conn->insertData($this->getId(), $fieldsOrder, $this->getDataSource()->getSchema(), $addData, true)){
+            throw new EnumException($conn->getLastError());
+        }
+        $addedData = $conn->fetchData(false);
+        foreach ($this->getFields() as $value){
+            $field = new Field($value);
+            $type = $field->getType();
+            $props = $field->getProperties();
+            if($type =='DB_Enum' && $props['multiSelection']){
+                $enum_ref = $this->enums->getEnum($props['_enum']);
+                $multiTable = DB_Enum::getMultiTableName($this, $enum_ref);
+                $data = RecordsManipulator::getMultiValueField($data,$field->getId(),$addedData);
+                if(!$conn->insertData($multiTable,array($this->getRawTableName(),$enum_ref->getRawTableName()),$this->getDataSource()->getSchema(),$data)) {
+                    throw new EnumException($conn->getLastError());
+                }
+            }
+        }
+
+        $enumQ = $this->getEnumQuerier();
+        $actionsM->callPostAddActions($this,$enumQ->getValueArrayFromDb($addedData));
+        return $addedData;
+    }
+
+    public function modRecords($data){
+        $actionsM = ActionManager::getInstance($this->enumInstance);
+        $conn = $this->getConnection();
+
+        $updateData = array();
+        $key = 0;
+        foreach ($data as $record) {
+            $updateData[] = array();
+            foreach ($record as $fieldId => $value){
+                $field = $this->getField($fieldId);
+                $type = $field->getType();
+                $props = $field->getProperties();
+                if($type == 'DB_Enum' && $props['multiSelection']){
+                    $pId = $record[PrimaryKey::ID];
+                    $multiTable = DB_Enum::getMultiTableName($this, $this->getEnum($props['_enum']));
+                    $conn->deleteData($multiTable, $this->getDataSource()->getSchema(), array($this->getId()=>$pId),$this->getId());
+                    $conn->insertData($multiTable, array($this->getId(), $this->getEnum($props['_enum'])->getId()),
+                        $this->getDataSource()->getSchema(),RecordsManipulator::getMultiValueFieldFromMod($record[$fieldId], $pId));
+                }
+                else {
+                    $updateData[$key][$fieldId] = $record[$fieldId];
+                    $key++;
+                }
+            }
+        }
+        $enumQ = $this->getEnumQuerier();
+
+        $dbRecords = $enumQ->queryEnum(null,null,null,null,null,
+            array(Revision::ID=>Revision::ID),null,RecordsManipulator::getRecordsIds($updateData)
+        );
+        $details = RecordsManipulator::getRevisionDescription($updateData, $dbRecords);
+
+        $updateData = $this->getValueArrayToDb($details['ok']);
+
+        if ($key != 0 && !$conn->updateData($this->getId(), $this->getDataSource()->getSchema(), $updateData)) {
+            throw new EnumException($conn->getLastError());
+        }
+        $data = $conn->fetchData(false);
+
+        $actionsM->callPostModActions($this,$enumQ->getValueArrayFromDb($data));
+        return $details;
+    }
 
     public function createEnumInDS()
     {
