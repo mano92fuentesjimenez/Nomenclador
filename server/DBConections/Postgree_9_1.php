@@ -86,6 +86,8 @@ class Postgree_9_1 extends DBConn
 
     public function insertData($tableName, $fieldsOrder, $schema, $data, $returning)
     {
+        if(!is_array($data) || !count($data))
+            return true;
         $f = '(';
         foreach ($fieldsOrder as $value) {
             $f.="\"$value\",";
