@@ -778,7 +778,6 @@
         manageEnum:true,
         enumDirty:false,
         originalValue:null,
-        addModValueSetted:false,
         constructor:function (config) {
             nom.enumInput.superclass.constructor.apply(this,arguments);
 
@@ -851,7 +850,6 @@
             obj['valueField'] = record.get(nom.Type.PrimaryKey.UNIQUE_ID);
             obj['displayField'] = record.get(this._fieldId);
 
-            this.addModValueSetted = true;
             return obj;
         },
         setValue:function(value,toClean){
@@ -899,7 +897,6 @@
         isDirty:function(){
             if(utils.isObject(this.originalValue)){
                 return !(utils.isObject(this.currentValue)
-                    && this.currentValue.displayField === this.originalValue.displayField
                     && this.currentValue.valueField === this.originalValue.valueField);
             }
             return utils.isObject(this.currentValue);
@@ -915,10 +912,7 @@
             var t = nom.Type.Utils.getType(config._enum.fields[config._fieldId].type),
                 self =this,
                 fireDChanged = function(){
-                    this.addModValueSetted = true;
-                    this.setDirtyValue();
                     self.fireEvent('datachanged')
-
                 };
             this.store = new Ext.data.JsonStore({
                 fields:['displayField', 'valueField'],
@@ -943,12 +937,6 @@
                     })
                 ]
             }));
-            this.setValue.createInterceptor(
-                function(value){
-                    if(Ext.isObject(value))
-                        this.setDirtyValue(value);
-                    return true;
-                });
         },
         getExclusion:function(){
             var exclusion = [];
@@ -968,10 +956,6 @@
             v.all.value._each_(function(v, k){
                 self.store.add(new self.store.recordType(self.getValueFromRecord(v)))
             });
-            this.setDirtyValue();
-        },
-        setDirtyValue:function(){
-            this.enumDirty =  this.addModValueSetted;
         },
         setValue:function(value){
             if(utils.isArray(value)){
@@ -992,6 +976,23 @@
         isValid:function(){
             var value = this.getValue();
             return this.allowBlank ? true : value._length_() >0;
+        },
+        isDirty: function(){
+            var value = this.getValue();
+            if(utils.isObject(this.originalValue)){
+                if(utils.isObject((value))){
+                    var values = value._map_(function(v){
+                        return v.valueField;
+                    },false);
+                    var everyEqual = true;
+                    this.originalValue._each_(function(v){
+                        everyEqual &=  values.indexOf(v.valueField) !== -1;
+                    });
+                    return !everyEqual;
+                }
+            }
+            return true;
+
         }
     }));
 
