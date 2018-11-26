@@ -98,8 +98,8 @@ class Postgree_9_1 extends DBConn
         foreach ($data as $values){
             
             $createStr.="(";
-            foreach ($values as $value){                
-                $createStr.=$value.",";
+            foreach ($fieldsOrder as $field){
+                $createStr.=$values[$field].",";
             }
             $createStr = substr($createStr,0,-1);
             $createStr .="),";
