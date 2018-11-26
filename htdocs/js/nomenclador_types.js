@@ -4,6 +4,7 @@
 (function() {
     var nom = AjaxPlugins.Nomenclador,
         buttons = AjaxPlugins.Ext3_components.buttons,
+        utils = Genesig.Utils,
         comps = AjaxPlugins.Ext3_components,
         fields = comps.fields,
         errorMsg = comps.Messages.slideMessage.error;
@@ -123,7 +124,10 @@
          * @returns {*}
          */
         enumTypeRenderer:function(value){
+            if(value === null || value === undefined)
+                return 'null';
             return value.toString();
+
         },
         /**
          * Si un tipo tiene una propiedad que necesita ser evaluada en el servidor para ver si es valida,
