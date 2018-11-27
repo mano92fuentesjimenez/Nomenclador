@@ -38,9 +38,9 @@ abstract class DBConn{
      * @param $data {[]}     Arreglo de arreglo
      * @return bool Retorna true si se pudo insertar, false en caso contrario.
      */
-    public abstract function insertData($tableName, $fieldsOrder, $schema, $data, $returning);
+    public abstract function insertData($tableName, $fieldsOrder, $schema, $data, $returning, $isMultiEnum);
     public abstract function updateData($tableName, $schema, $data);
-    public abstract function deleteData($tableName, $schema, $data, $primaryField, $recordPK);
+    public abstract function deleteData($tableName, $schema, $data, $primaryField, $recordPK, $fromKey);
 
     public abstract function removeTable($tableName, $schema);
 
@@ -134,9 +134,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->createTable($tableName, $schema, $fields);
     }
 
-    public function insertData($tableName, $fieldsOrder, $schema, $data, $returning = false)
+    public function insertData($tableName, $fieldsOrder, $schema, $data, $returning = false, $isMultiEnum = false)
     {
-        return $this->dbConn->insertData($tableName, $fieldsOrder, $schema, $data, $returning);
+        return $this->dbConn->insertData($tableName, $fieldsOrder, $schema, $data, $returning, $isMultiEnum);
     }
 
 
@@ -195,9 +195,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->updateData($tableName, $schema, $data);
     }
 
-    public function deleteData($tableName, $schema, $data, $primaryField = null, $recordPK=null )
+    public function deleteData($tableName, $schema, $data, $primaryField = null, $recordPK=null, $fromKey=false)
     {
-        return $this->dbConn->deleteData($tableName, $schema, $data, $primaryField, $recordPK);
+        return $this->dbConn->deleteData($tableName, $schema, $data, $primaryField, $recordPK, $fromKey);
     }
 
     public function removeTable($tableName, $schema)

@@ -8,7 +8,7 @@
 
 class RecordsManipulator
 {
-    public static function getMultiValueField($data,$fieldId,$ids){
+    public static function getMultiValueField($data,$fieldId,$ids,$leftCol,$rightCol){
         $arr = array();
         $i = -1;
         foreach ($data as $d){
@@ -17,8 +17,8 @@ class RecordsManipulator
                 if ($key == $fieldId) {
                     foreach ($value as $v) {
                         $r = array();
-                        $r[] = $ids[$i][PrimaryKey::ID];
-                        $r[] = $v[BaseType::VALUE_TYPE_VALUE_HEADER];
+                        $r[$leftCol] = $ids[$i][PrimaryKey::ID];
+                        $r[$rightCol] = $v[BaseType::VALUE_TYPE_VALUE_HEADER];
                         $arr[] = $r;
                     }
                 }
@@ -30,7 +30,7 @@ class RecordsManipulator
     public static function getMultiValueFieldFromMod($data, $id){
         $arr = array();
         foreach ($data as $d){
-            $arr[]= array($id, $d['valueField']);
+            $arr[]= array($id, $d[BaseType::VALUE_TYPE_VALUE_HEADER]);
         }
         return $arr;
     }
@@ -104,6 +104,35 @@ class RecordsManipulator
             }
         }
         return $ret;
+    }
+
+    /**
+     * Vira los datos, ahora es un array(fieldId=>array( recordId=>array(data),...)...).
+     * Principalmente para manipular los datos de campos multiples
+     * @param $data
+     * @param Enum $enum
+     * @param bool $onlyMultiField
+     * @param bool $flattenToValueField
+     * @return array    array(fieldId=>array( recordId=>array(data),...)...)
+     */
+    public static function groupRecordsByField($data,Enum $enum,$onlyMultiField =true,$flattenToValueField =true){
+        $recordsField = array();
+
+        foreach ( $data as $record) {
+            foreach ($record as $fieldId=> $values){
+                $field = $enum->getField($fieldId);
+                if($onlyMultiField && $field->isEnum() && $field->isMulti() ) {
+                    if (!isset($recordsField[$fieldId]))
+                        $recordsField[$fieldId] = array();
+                    $fieldValues = array();
+                    foreach ($values as $v){
+                        $fieldValues[]= $flattenToValueField ? $v[BaseType::VALUE_TYPE_VALUE_HEADER] : $v;
+                    }
+                    $recordsField[$fieldId][$record[PrimaryKey::ID]] = $fieldValues;
+                }
+            }
+        }
+        return $recordsField;
     }
 
 

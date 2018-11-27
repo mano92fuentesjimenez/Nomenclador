@@ -84,7 +84,7 @@ class Postgree_9_1 extends DBConn
 
     }
 
-    public function insertData($tableName, $fieldsOrder, $schema, $data, $returning)
+    public function insertData($tableName, $fieldsOrder, $schema, $data, $returning, $isMultiEnum = false)
     {
         if(!is_array($data) || !count($data))
             return true;
@@ -97,14 +97,26 @@ class Postgree_9_1 extends DBConn
 
         $createStr = "INSERT INTO \"$schema\".\"$tableName\" $f VALUES";
         
-        foreach ($data as $values){
-            
-            $createStr.="(";
-            foreach ($values as $value){                
-                $createStr.=$value.",";
+        foreach ($data as $key => $values){
+
+            if(!$isMultiEnum) {
+                $createStr.="(";
+                foreach ($fieldsOrder as $field) {
+                    $createStr .= $values[$field] . ",";
+
+                }
+                $createStr = substr($createStr,0,-1);
+                $createStr .="),";
             }
-            $createStr = substr($createStr,0,-1);
-            $createStr .="),";
+            else{
+                foreach ($values as $v) {
+                    $createStr.="(";
+                    $createStr = "$createStr $key, $v";
+                    $createStr .="),";
+                }
+            }
+
+
         }
         $createStr = substr($createStr,0,-1);
         if($returning) {
@@ -180,7 +192,7 @@ class Postgree_9_1 extends DBConn
 
     }
 
-    public function deleteData($tableName, $schema, $data, $primaryField, $recordPK=null)
+    public function deleteData($tableName, $schema, $data, $primaryField, $recordPK=null,$deleteFromKey=false)
     {
         if(is_null($primaryField))
             $primaryField = PrimaryKey::ID;
@@ -188,8 +200,9 @@ class Postgree_9_1 extends DBConn
             $recordPK = $primaryField;
 
         $query = "DELETE FROM \"$schema\".\"$tableName\" WHERE ";
-        foreach ($data as $record){
-            $query.="\"".$primaryField."\""."=".$record[$recordPK]." or ";
+        foreach ($data as $key => $record){
+            $toDel = $deleteFromKey ? $key : $record[$recordPK];
+            $query.="\"".$primaryField."\""."=".$toDel." or ";
         }
 
         $query = substr($query,0,-3);

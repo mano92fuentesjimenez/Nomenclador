@@ -31,6 +31,8 @@ class EnumStore extends Enum
                 $type = $field->getType();
                 $record[$fieldId] = $type::getValueToDB($values, $value, $field, $connTypeStr);
             }
+            if(count($record) === 0)
+                continue;
             $arr[] = $record;
         }
         return $arr;
@@ -52,7 +54,7 @@ class EnumStore extends Enum
             if($type =='DB_Enum' && $props['multiSelection']){
                 $enum_ref = $this->enums->getEnum($props['_enum']);
                 $multiTable = DB_Enum::getMultiTableName($this, $enum_ref);
-                $data = RecordsManipulator::getMultiValueField($data,$field->getId(),$addedData);
+                $data = RecordsManipulator::getMultiValueField($data,$field->getId(),$addedData,$this->getId(),$enum_ref->getId() );
                 if(!$conn->insertData($multiTable,array($this->getRawTableName(),$enum_ref->getRawTableName()),$this->getDataSource()->getSchema(),$data)) {
                     throw new EnumException($conn->getLastError());
                 }
@@ -68,6 +70,7 @@ class EnumStore extends Enum
         $actionsM = ActionManager::getInstance($this->enumInstance);
         $conn = $this->getConnection();
         $enumQ = $this->getEnumQuerier();
+        $currentSchema = $this->getDataSource()->getSchema();
 
         $dbRecords = $enumQ->queryEnum(null,null,null,null,null,
             array(Revision::ID => Revision::ID),null,RecordsManipulator::getRecordsIds($data)
@@ -75,32 +78,25 @@ class EnumStore extends Enum
 
         $details = RecordsManipulator::getRevisionDescription($data, $dbRecords);
         $data = $details['ok'];
-        
-        $updateData = array();
-        $noMultifield = false;
-        foreach ($data as $record) {
-            $updateData[] = array();
-            $key = count($updateData)-1;
-            foreach ($record as $fieldId => $value){
-                $noMultifield = $this->getField($fieldId);
-                $type = $noMultifield->getType();
-                $props = $noMultifield->getProperties();
-                if($type == 'DB_Enum' && $props['multiSelection']){
-                    $pId = $record[PrimaryKey::ID];
-                    $multiTable = DB_Enum::getMultiTableName($this, $this->enums->getEnum($props['_enum']));
-                    $conn->deleteData($multiTable, $this->getDataSource()->getSchema(), array($this->getId()=>$pId),$this->getId());
-                    $conn->insertData($multiTable, array($this->getId(), $this->enums->getEnum($props['_enum'])->getId()),
-                        $this->getDataSource()->getSchema(),RecordsManipulator::getMultiValueFieldFromMod($record[$fieldId], $pId));
-                }
-                else {
-                    $updateData[$key][$fieldId] = $record[$fieldId];
-                    $noMultifield = true;
-                }
-            }
-        }
-        $updateData = $this->getValueArrayToDb($data);
 
-        if ($noMultifield && !$conn->updateData($this->getId(), $this->getDataSource()->getSchema(), $updateData)) {
+        $this->modifyMultiEnumData($data,true,true);
+
+//        foreach ($data as $record) {
+//            foreach ($record as $fieldId => $value){
+//                $noMultifield = $this->getField($fieldId);
+//                $type = $noMultifield->getType();
+//                $props = $noMultifield->getProperties();
+//                if($type == 'DB_Enum' && $props['multiSelection']){
+//                    $pId = $record[PrimaryKey::ID];
+//                    $multiTable = DB_Enum::getMultiTableName($this, $this->enums->getEnum($props['_enum']));
+//                    $conn->deleteData($multiTable, $this->getDataSource()->getSchema(), array(array(PrimaryKey::ID => $pId)),$this->getId(), PrimPrimaryKey::ID);
+//                    $conn->insertData($multiTable, array($this->getId(), $this->enums->getEnum($props['_enum'])->getId()),
+//                        $this->getDataSource()->getSchema(),RecordsManipulator::getMultiValueFieldFromMod($record[$fieldId], $pId));
+//                }
+//            }
+//        }
+        $data = $this->getValueArrayToDb($data);
+        if (!$conn->updateData($this->getId(), $this->getDataSource()->getSchema(), $data)) {
             throw new EnumException($conn->getLastError());
         }
         $data = $conn->fetchData(false);
@@ -123,21 +119,25 @@ class EnumStore extends Enum
             if (!$conn->deleteData($this->getId(), $this->getDataSource()->getSchema(), $delData)) {
                 throw new EnumException($conn->getLastError());
             }
-            $this->delRecordsFromMultiFieldsInEnum($delData);
+            $this->modifyMultiEnumData($data,true, false);
             return $details['underRevision'];
         }
         return $msg;
     }
-    public function delRecordsFromMultiFieldsInEnum(array $data){
+    private function modifyMultiEnumData($data,$delete,$insert){
+        $multiData = RecordsManipulator::groupRecordsByField($data,$this);
+        $currentSchema = $this->getDataSource()->getSchema();
         $conn = $this->getConnection();
-        foreach($this->getFields() as $f){
-            $field = new Field($f);
-            $type = $field->getType();
-            $props = $field->getProperties();
-            if($type=='DB_Enum' && $props['multiSelection']){
-                $multiTable = DB_Enum::getMultiTableName($this, $this->enums->getEnum($props['_enum']));
-                $conn->deleteData($multiTable, $this->getDataSource()->getSchema(),$data, $this->getId(),PrimaryKey::ID);
-            }
+
+        foreach ($multiData as $fieldId => $fieldData){
+            $field = $this->getField($fieldId);
+            $refEnum = $field->getReferencedEnum($this->enumInstance);
+            $multiTable = DB_Enum::getMultiTableName($this, $refEnum);
+
+            if($delete)
+              $conn->deleteData($multiTable,$currentSchema,$multiData[$fieldId],$this->getId(),null,true);
+            if($insert)
+              $conn->insertData($multiTable,array($this->getId(), $refEnum->getId()),$currentSchema,$multiData[$fieldId],false,true);
         }
     }
     public function createEnumInDS()
