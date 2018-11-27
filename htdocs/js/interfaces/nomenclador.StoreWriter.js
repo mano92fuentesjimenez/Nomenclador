@@ -5,6 +5,7 @@
         utils = Genesig.Utils,
         nom = AjaxPlugins.Nomenclador,
         errorMsg = comps.Messages.slideMessage.error,
+        info = comps.Messages.slideMessage.info,
         enums = nom.enums,
         addW = AjaxPlugins.Ext3_components.Windows.AddModWindow;
 
@@ -255,6 +256,10 @@
                     if (response.delMsg) {
                         errorMsg("Error eliminando datos", response.delMsg);
                         return;
+                    }
+                    //TODO: Adicionar interdaz para controlar versiones por records cuando se eliminan y modifican los mismos
+                    if(utils.isArray(response.underRevision) && response.underRevision.length >0 ){
+                        info('Implementar mecanismo para aceptar los cambios viejos por los nuevos, No se aceptaron los cambios en los records desactualizados');
                     }
                     self.store.commitChanges();
                     self.reloadCurrentPage()
