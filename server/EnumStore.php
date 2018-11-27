@@ -123,19 +123,22 @@ class EnumStore extends Enum
             if (!$conn->deleteData($this->getId(), $this->getDataSource()->getSchema(), $delData)) {
                 throw new EnumException($conn->getLastError());
             }
-            foreach($this->getFields() as $f){
-                $field = new Field($f);
-                $type = $field->getType();
-                $props = $field->getProperties();
-                if($type=='DB_Enum' && $props['multiSelection']){
-                    $multiTable = DB_Enum::getMultiTableName($this, $this->enums->getEnum($props['_enum']));
-                    $toDel = RecordsManipulator::getIdsToRemoveMulti($data, $this->getId());
-                    $conn->deleteData($multiTable, $this->getDataSource()->getSchema(),$toDel, $this->getId());
-                }
-            }
+            $this->delRecordsFromMultiFieldsInEnum($delData);
             return $details['underRevision'];
         }
         return $msg;
+    }
+    public function delRecordsFromMultiFieldsInEnum(array $data){
+        $conn = $this->getConnection();
+        foreach($this->getFields() as $f){
+            $field = new Field($f);
+            $type = $field->getType();
+            $props = $field->getProperties();
+            if($type=='DB_Enum' && $props['multiSelection']){
+                $multiTable = DB_Enum::getMultiTableName($this, $this->enums->getEnum($props['_enum']));
+                $conn->deleteData($multiTable, $this->getDataSource()->getSchema(),$data, $this->getId(),PrimaryKey::ID);
+            }
+        }
     }
     public function createEnumInDS()
     {

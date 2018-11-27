@@ -40,7 +40,7 @@ abstract class DBConn{
      */
     public abstract function insertData($tableName, $fieldsOrder, $schema, $data, $returning);
     public abstract function updateData($tableName, $schema, $data);
-    public abstract function deleteData($tableName, $schema, $data, $primaryField);
+    public abstract function deleteData($tableName, $schema, $data, $primaryField, $recordPK);
 
     public abstract function removeTable($tableName, $schema);
 
@@ -195,9 +195,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->updateData($tableName, $schema, $data);
     }
 
-    public function deleteData($tableName, $schema, $data, $primaryField = null )
+    public function deleteData($tableName, $schema, $data, $primaryField = null, $recordPK=null )
     {
-        return $this->dbConn->deleteData($tableName, $schema, $data, $primaryField);
+        return $this->dbConn->deleteData($tableName, $schema, $data, $primaryField, $recordPK);
     }
 
     public function removeTable($tableName, $schema)

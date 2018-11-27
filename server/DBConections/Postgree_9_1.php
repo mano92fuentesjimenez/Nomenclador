@@ -180,14 +180,16 @@ class Postgree_9_1 extends DBConn
 
     }
 
-    public function deleteData($tableName, $schema, $data, $primaryField)
+    public function deleteData($tableName, $schema, $data, $primaryField, $recordPK=null)
     {
         if(is_null($primaryField))
             $primaryField = PrimaryKey::ID;
+        if(is_null($recordPK))
+            $recordPK = $primaryField;
 
         $query = "DELETE FROM \"$schema\".\"$tableName\" WHERE ";
         foreach ($data as $record){
-            $query.="\"".$primaryField."\""."=".$record[$primaryField]." or ";
+            $query.="\"".$primaryField."\""."=".$record[$recordPK]." or ";
         }
 
         $query = substr($query,0,-3);
