@@ -168,6 +168,8 @@ class Postgree_9_1 extends DBConn
 
     public function updateData($tableName, $schema, $data)
     {
+        if(count($data)===0)
+            return true;
         $query = "";
 
         foreach ($data as $record){
@@ -194,6 +196,8 @@ class Postgree_9_1 extends DBConn
 
     public function deleteData($tableName, $schema, $data, $primaryField, $recordPK=null,$deleteFromKey=false)
     {
+        if(count($data)===0)
+            return true;
         if(is_null($primaryField))
             $primaryField = PrimaryKey::ID;
         if(is_null($recordPK))
