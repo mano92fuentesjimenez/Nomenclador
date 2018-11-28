@@ -144,9 +144,10 @@ class Enums
 
     }
 
-    public function modEnum($enum)
+    public function modEnum(Enum $enum)
     {
-        $this->enums[$enum->getId()] = $enum->enum_tree;
+        $this->enums[$enum->getId()] = &$enum->enum_tree;
+        $enum->incrementModelRevision();
     }
 
     public function delEnum($enum)

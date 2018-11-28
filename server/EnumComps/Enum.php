@@ -67,6 +67,18 @@ class Enum
     public function getRevisionField(){
         return $this->getField(Revision::ID);
     }
+    public function getModelRevision(){
+        return $this->enum_tree['modelRevision'];
+    }
+    public function incrementModelRevision(){
+        $this->enum_tree['modelRevision']++;
+    }
+    public function incrementDataRevision(){
+        $this->enum_tree['dataRevision']++;
+    }
+    public function getDataRevision(){
+        return $this->enum_tree['dataRevision'];
+    }
     public function addRevisionField(){
         if(!is_null($this->getRevisionField()) ){
             return;
@@ -162,6 +174,8 @@ class Enum
         $ret = true;
 //        $ret  =$enum1['name'] == $enum2['name'];
 //        $ret &=$enum1['description'] == $enum2['description'];
+
+        $ret &= $enum1['modelRevision'] == $enum2['modelRevision'];
 
         $ret &= count($enum1['fields']) == count($enum2['fields']);
 

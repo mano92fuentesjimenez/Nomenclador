@@ -1033,6 +1033,9 @@
 			//adicionando las propiedades extras de la entidad.
 			nomenclador.tpl= this.tpl;
 			nomenclador.denomField =denomField;
+			nomenclador.modelRevision = 0;
+			nomenclador.dataRevision = 0;
+
 			if(this.extraProps) {
 				nomenclador.extraProps = {};
 				this.extraProps._each_(function (v) {
@@ -1104,6 +1107,10 @@
 					}
 				}
 			changes.addRefs = self.refs.getAddedReferences(this.enumInstance.getName());
+			if(_enum.modelRevision)
+				nomenclador.modelRevision = _enum.modelRevision;
+			if(_enum.dataRevision)
+				nomenclador.dataRevision = _enum.dataRevision;
 			changes['_enum'] = nomenclador;
 			return changes
 		},
