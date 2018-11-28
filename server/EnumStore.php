@@ -37,7 +37,14 @@ class EnumStore extends Enum
         }
         return $arr;
     }
+    private function isData($data)
+    {
+        return is_array($data) && count($data) !==0;
+    }
     public function addRecords($data){
+        if(!$this->isData($data))
+            return null;
+
         $conn = $this->getConnection();
         $actionsM = ActionManager::getInstance($this->enumInstance);
 
@@ -67,6 +74,8 @@ class EnumStore extends Enum
     }
 
     public function modRecords($data){
+        if(!$this->isData($data))
+            return null;
         $actionsM = ActionManager::getInstance($this->enumInstance);
         $conn = $this->getConnection();
         $enumQ = $this->getEnumQuerier();
@@ -106,6 +115,8 @@ class EnumStore extends Enum
     }
 
     public function delRecords($data){
+        if(!$this->isData($data))
+            return null;
         $msg = $this->canDeleteData($data);
         if (!$msg) {
             $conn = $this->getConnection();

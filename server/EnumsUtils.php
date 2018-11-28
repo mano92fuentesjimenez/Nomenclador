@@ -238,7 +238,7 @@ class EnumsRequests
             return;
         }
         $enums = Enums::getInstance($enumInstance);
-        $enum2 = new Enum($enumInstance,$enum_tree, null);
+        $enum2 = new Enum($enumInstance, $enum_tree, null);
         $enum = $enums->getEnumStore($enum2->getId());
         $actionsM = ActionManager::getInstance($enumInstance);
 
@@ -246,36 +246,34 @@ class EnumsRequests
             throw new EnumException("Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.");
         }
 
-        $conn = EnumsUtils::getDBConnection($enum);
         $underRevision = array();
         $msg = '';
         $addedData = null;
 
-        $actionsM->callPreSubmitActionsForEnum($enum,$data);
+        $actionsM->callPreSubmitActionsForEnum($enum, $data);
 
 
         //$conn->beginTransaction();
         // insertar los nuevos
-        if (count($data['add']) > 0) {
-           $addedData = $enum->addRecords($data['add']);
-        }
 
+        $addedData = $enum->addRecords($data['add']);
 
 
         //modificar
-        if (count($data['mod']) > 0) {
-            $underRevision = $enum->modRecords($data['mod']);
-        }
+
+        $modOut = $enum->modRecords($data['mod']);
+        if(is_array($modOut))
+            $underRevision = array_merge($underRevision, $modOut);
 
         //eliminar
-        if (count($data['del']) > 0) {
-            $val = $enum->delRecords($data['del']);
-            if(is_string($val))
-                $msg = $val;
-            else if(is_array($val)){
-                $underRevision = array_merge($underRevision,$val);
-            }
+
+        $val = $enum->delRecords($data['del']);
+        if (is_string($val))
+            $msg = $val;
+        else if (is_array($val)) {
+            $underRevision = array_merge($underRevision, $val);
         }
+
 
         //$conn->commitTransaction();
 
