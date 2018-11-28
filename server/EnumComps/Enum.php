@@ -67,16 +67,28 @@ class Enum
     public function getRevisionField(){
         return $this->getField(Revision::ID);
     }
+    public function checkModelRevision(){
+        if(!isset($this->enum_tree['modelRevision']))
+            $this->enum_tree['modelRevision'] = 0;
+    }
     public function getModelRevision(){
+        $this->checkModelRevision();
         return $this->enum_tree['modelRevision'];
     }
     public function incrementModelRevision(){
+        $this->checkModelRevision();
         $this->enum_tree['modelRevision']++;
     }
+    public function checkDataRevision(){
+        if(!isset($this->enum_tree['dataRevision']))
+            $this->enum_tree['dataRevision'] = 0;
+    }
     public function incrementDataRevision(){
+        $this->checkDataRevision();
         $this->enum_tree['dataRevision']++;
     }
     public function getDataRevision(){
+        $this->checkDataRevision();
         return $this->enum_tree['dataRevision'];
     }
     public function addRevisionField(){
