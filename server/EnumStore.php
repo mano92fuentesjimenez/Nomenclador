@@ -37,6 +37,42 @@ class EnumStore extends Enum
         }
         return $arr;
     }
+    public function submitChanges($enumInstance, $enum_tree, $data)
+    {
+        if (!$data) {
+            return array();
+        }
+        $enums = Enums::getInstance($enumInstance);
+        $enum2 = new Enum($enumInstance, $enum_tree, null);
+        $actionsM = ActionManager::getInstance($enumInstance);
+
+        if (!Enum::enumEquals($this, $enum2)) {
+            throw new EnumException("Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.");
+        }
+
+        $underRevision = array();
+        $msg = '';
+        $addedData = null;
+
+        $actionsM->callPreSubmitActionsForEnum($this, $data);
+
+        $addedData = $this->addRecords($data['add']);
+
+        $modOut = $this->modRecords($data['mod']);
+        if (is_array($modOut))
+            $underRevision = array_merge($underRevision, $modOut);
+
+        $val = $this->delRecords($data['del']);
+        if (is_string($val))
+            $msg = $val;
+        else if (is_array($val)) {
+            $underRevision = array_merge($underRevision, $val);
+        }
+        $this->incrementDataRevision();
+        $enums->saveEnums();
+
+        return array('delMsg' => $msg, 'add' => $addedData, 'underRevision' => $underRevision);
+    }
     private function isData($data)
     {
         return is_array($data) && count($data) !==0;
@@ -72,7 +108,6 @@ class EnumStore extends Enum
         $actionsM->callPostAddActions($this,$enumQ->getValueArrayFromDb($addedData));
         return $addedData;
     }
-
     public function modRecords($data){
         if(!$this->isData($data))
             return null;
@@ -113,7 +148,6 @@ class EnumStore extends Enum
         $actionsM->callPostModActions($this,$enumQ->getValueArrayFromDb($data));
         return $details['underRevision'];
     }
-
     public function delRecords($data){
         if(!$this->isData($data))
             return null;

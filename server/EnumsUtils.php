@@ -234,51 +234,11 @@ class EnumsRequests
 
     public static function submitChanges($enumInstance, $enum_tree, $data)
     {
-        if (!$data) {
-            return;
-        }
         $enums = Enums::getInstance($enumInstance);
         $enum2 = new Enum($enumInstance, $enum_tree, null);
         $enum = $enums->getEnumStore($enum2->getId());
-        $actionsM = ActionManager::getInstance($enumInstance);
 
-        if (!Enum::enumEquals($enum, $enum2)) {
-            throw new EnumException("Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.");
-        }
-
-        $underRevision = array();
-        $msg = '';
-        $addedData = null;
-
-        $actionsM->callPreSubmitActionsForEnum($enum, $data);
-
-
-        //$conn->beginTransaction();
-        // insertar los nuevos
-
-        $addedData = $enum->addRecords($data['add']);
-
-
-        //modificar
-
-        $modOut = $enum->modRecords($data['mod']);
-        if(is_array($modOut))
-            $underRevision = array_merge($underRevision, $modOut);
-
-        //eliminar
-
-        $val = $enum->delRecords($data['del']);
-        if (is_string($val))
-            $msg = $val;
-        else if (is_array($val)) {
-            $underRevision = array_merge($underRevision, $val);
-        }
-
-
-        //$conn->commitTransaction();
-
-
-        return array('delMsg' => $msg, 'add' => $addedData, 'underRevision' => $underRevision);
+        return $enum->submitChanges($enumInstance, $enum_tree, $data);
     }
 
     public static function removeEnum($enumInstance, $enumId, $path)
