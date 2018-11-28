@@ -1062,7 +1062,7 @@
 			var _enum = this._enum;
 			var getType = nom.Type.Utils.getType;
 			for (var key in nomenclador.fields){
-				if (key == nom.Type.PrimaryKey.UNIQUE_ID)
+				if (key === nom.Type.PrimaryKey.UNIQUE_ID || key === nom.Type.Revision.UNIQUE_ID)
 					continue;
 				//add
 				if (!(key in this._enum.fields))
@@ -1230,7 +1230,8 @@
 						this.properties[key].enum_filled = true;
 					}
 				}
-				if (field.id != nom.Type.PrimaryKey.UNIQUE_ID) {
+				if ( field.id != nom.Type.PrimaryKey.UNIQUE_ID
+					&& field.id != nom.Type.Revision.UNIQUE_ID) {
 					var r = new rT({
 						"name" :field.header,
 						"type" :field.type,
