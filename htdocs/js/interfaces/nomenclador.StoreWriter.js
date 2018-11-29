@@ -247,7 +247,8 @@
                 nom.request('submitChanges', {
                     instanceName: this.enumInstance,
                     data: changes,
-                    _enum: this._enum,
+                    modelRevision: this._enum.modelRevision,
+                    modelId: this._enum.id,
                     actions: this.getActions()
                 }, function (response, o) {
                     changes['add'] = response.add;

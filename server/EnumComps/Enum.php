@@ -180,7 +180,7 @@ class Enum
         return $this->sameRevision($enum);
     }
 
-    private function sameRevision($enum2){
+    public function sameRevision($enum2){
         $revision = $enum2;
         if($enum2 instanceof Enum)
             $revision = $enum2->getModelRevision();

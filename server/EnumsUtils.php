@@ -232,13 +232,11 @@ class EnumsRequests
 
 
 
-    public static function submitChanges($enumInstance, $enum_tree, $data)
+    public static function submitChanges($enumInstance, $modelId, $modelRevision, $data)
     {
         $enums = Enums::getInstance($enumInstance);
-        $enum2 = new Enum($enumInstance, $enum_tree, null);
-        $enum = $enums->getEnumStore($enum2->getId());
-
-        return $enum->submitChanges($enumInstance, $enum_tree, $data);
+        $enum = $enums->getEnumStore($modelId);
+        return $enum->submitChanges($enumInstance,$modelRevision, $data);
     }
 
     public static function removeEnum($enumInstance, $enumId, $path)

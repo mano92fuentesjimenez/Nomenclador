@@ -39,6 +39,7 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'addRecords':{
+                    $v = 4;
 
                 }
                     break;
@@ -143,9 +144,9 @@ class ServerNomenclador extends ClientResponderAdapter
                 case 'submitChanges': {
 
                     $data = $requ->value['data'];
-                    $enum = $requ->value['_enum'];
-
-                    $enumResult->resp= EnumsRequests::submitChanges($enumInstance,$enum, $data);
+                    $modelRevision = $requ->value['modelRevision'];
+                    $modelId = $requ->value['modelId'];
+                    $enumResult->resp= EnumsRequests::submitChanges($enumInstance, $modelId, $modelRevision, $data);
                 }
                     break;
                 case 'getEnumData': {

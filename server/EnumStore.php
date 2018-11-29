@@ -37,16 +37,15 @@ class EnumStore extends Enum
         }
         return $arr;
     }
-    public function submitChanges($enumInstance, $enum_tree, $data)
+    public function submitChanges($enumInstance, $modelRevision, $data)
     {
         if (!$data) {
             return array();
         }
         $enums = Enums::getInstance($enumInstance);
-        $enum2 = new Enum($enumInstance, $enum_tree, null);
         $actionsM = ActionManager::getInstance($enumInstance);
 
-        if (!$this->enumEquals($enum2)) {
+        if (!$this->sameRevision($modelRevision)) {
             throw new EnumException("Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.");
         }
 
