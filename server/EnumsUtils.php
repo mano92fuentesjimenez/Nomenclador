@@ -46,7 +46,7 @@ class EnumsRequests
 
         //Se tiene que verificar que el nomenclador que se esta modificando, es la ultima modificacion del mismo
         //o sea comparar si son iguales el nomenclador en el server y el nomenclador sin modificar en el cliente.
-        if (!Enum::enumEquals($oldEnum, $original)) {
+        if (!$oldEnum->enumEquals($newEnum)) {
             throw new EnumException('En lo que usted modifico el nomenclador, alguien ha modificado o  
              borrado al mismo.');
         }

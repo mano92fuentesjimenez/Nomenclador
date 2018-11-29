@@ -175,37 +175,16 @@ class Enum
         return $this->enum_tree != null;
     }
 
-    public static function enumEquals($enum1, $enum2)
+    public function enumEquals($enum)
     {
-        if (!is_array($enum1)) {
-            $enum1 = $enum1->enum_tree;
-        }
-        if (!is_array($enum2)) {
-            $enum2 = $enum2->enum_tree;
-        }
-        $ret = true;
-//        $ret  =$enum1['name'] == $enum2['name'];
-//        $ret &=$enum1['description'] == $enum2['description'];
+        return $this->sameRevision($enum);
+    }
 
-        $ret &= $enum1['modelRevision'] == $enum2['modelRevision'];
+    private function sameRevision($enum2){
+        $revision = $enum2;
+        if($enum2 instanceof Enum)
+            $revision = $enum2->getModelRevision();
 
-        $ret &= count($enum1['fields']) == count($enum2['fields']);
-
-        foreach ($enum1['fields'] as $key => $value) {
-            $field = new Field($value);
-            $field2 = new Field($enum2['fields'][$key]);
-            $type= $field->getType();
-            $ret &= $type == $field2->getType();
-            $ret &= $field->getHeader() == $field2->getHeader();
-            $ret &= $field->getId() == $field2->getId();
-            $ret &= $field->getNeeded() == $field2->getNeeded();
-
-            if ($field->getProperties()) {
-                if (!$field2->getProperties())
-                    return false;
-                $ret &= $type::compareProperties($field->getProperties(), $field2->getProperties());
-            }
-        }
-        return $ret;
+        return $this->getRevisionField() == $revision;
     }
 }

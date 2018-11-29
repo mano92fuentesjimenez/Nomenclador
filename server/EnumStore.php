@@ -46,7 +46,7 @@ class EnumStore extends Enum
         $enum2 = new Enum($enumInstance, $enum_tree, null);
         $actionsM = ActionManager::getInstance($enumInstance);
 
-        if (!Enum::enumEquals($this, $enum2)) {
+        if (!$this->enumEquals($enum2)) {
             throw new EnumException("Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.");
         }
 
