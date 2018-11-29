@@ -185,6 +185,6 @@ class Enum
         if($enum2 instanceof Enum)
             $revision = $enum2->getModelRevision();
 
-        return $this->getRevisionField() == $revision;
+        return $this->getModelRevision() == $revision;
     }
 }

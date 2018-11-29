@@ -88,7 +88,9 @@ class EnumStore extends Enum
         if(!$conn->insertData($this->getId(), $fieldsOrder, $this->getDataSource()->getSchema(), $addData, true)){
             throw new EnumException($conn->getLastError());
         }
+        $enumQ = $this->getEnumQuerier();
         $addedData = $conn->fetchData(false);
+        $addedData = $enumQ->getValueArrayFromDb($addedData);
         foreach ($this->getFields() as $value){
             $field = new Field($value);
             $type = $field->getType();
@@ -102,9 +104,7 @@ class EnumStore extends Enum
                 }
             }
         }
-
-        $enumQ = $this->getEnumQuerier();
-        $actionsM->callPostAddActions($this,$enumQ->getValueArrayFromDb($addedData));
+        $actionsM->callPostAddActions($this,$addedData);
         return $addedData;
     }
     public function modRecords($data){

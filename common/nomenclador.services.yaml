@@ -83,6 +83,9 @@ services:
               records:
                 description: "Records q se van a anhadir"
                 required: true
+              modelRevision:
+                description: "Numero de revision del modelo, para comprobar de que el cliente trabaje con el mismo modelo que el servidor"
+                required: true
 
       /{enum}/{enumLoadIdRow}:
         description:
