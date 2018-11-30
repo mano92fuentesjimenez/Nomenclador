@@ -6,6 +6,77 @@
  * Time: 10:30
  */
 
+interface EnumsActions {
+
+    /***
+     * ACCIONES SOBRE LOS NOMENCLADORES
+     */
+    /**
+     * Cualquier accion (adicionar, modificar o eliminar) sobre un nomenclador
+     * @param $instance         {string}            Instancia del nomenclador
+     * @param Enum $enum        {Enum}              Clase con el nomenclador
+     * @return {ActionManagerResult|*}
+     */
+    function enumActions($instance,Enum $enum);
+
+    /**
+     * ACCIONES SOBRE LOS RECORDS
+     */
+
+    /**
+     * Accion de precarga de los registros de un nomenclador
+     * @param Enum $enum
+     * @param $offset
+     * @param $limit
+     * @param $idRow
+     * @param $fieldsToGet
+     * @param $inData
+     * @param $loadAllData
+     * @param $where
+     * @return {ActionManagerResult|*}
+     */
+    function enumPreLoad(Enum $enum, $offset, $limit , $idRow, $fieldsToGet, $inData, $loadAllData, $where);
+    /**
+     * Accion de postcarga de un nomenclador
+     * @param Enum $enum
+     * @param $data
+     * @return {ActionManagerResult|*}
+     */
+    function enumPostLoad(Enum $enum, $data);
+
+    /**
+     * Accion de conteo de los registros de un nomenclador
+     * @param Enum $enum
+     * @param $where
+     * @return mixed
+     */
+    function enumCountAction(Enum $enum, $where);
+
+    /**
+     * Accion previa de guardado (adicionar, modificar, eliminar) de los records de nomenclador
+     * @param Enum $enum
+     * @param $data
+     * @return {ActionManagerResult|*}
+     */
+    function enumRowPreSubmitAction(Enum $enum, $data);
+
+    /**
+     * Accion posterior a la adicion de un nomenclador
+     * @param Enum $enum
+     * @param $data
+     * @return {ActionManagerResult|*}
+     */
+    function enumRowPostAddAction(Enum $enum, $data);
+    /**
+     * Accion posterior a la modificacion de un nomenclador
+     * @param Enum $enum
+     * @param $data
+     * @return {ActionManagerResult|*}
+     */
+    function enumRowPostModAction(Enum $enum, $data);
+
+}
+
 class ActionManager
 {
     private $actions;
