@@ -231,7 +231,7 @@
                 items[0].height = 150;
                 northHeigth += 100;
 
-                if (!this.creating) {
+                if (!this.creating && utils.isObject(this._enum.extraProps)) {
                     this._enum.extraProps._each_(function (v,k) {
                         propsInputs[k].setValue(v);
                     })
