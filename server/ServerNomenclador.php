@@ -24,7 +24,8 @@ class ServerNomenclador extends ClientResponderAdapter
         $enumInstance = $requ->value['instanceName'];
         $actionM = ActionManager::getInstance($enumInstance);
         $actionM->setActions($requ->value['actions']);
-        
+        //[{"denominacion":"mena", "id_enum_rev_1100": "2",
+        //        "id_enum_1100": "1"  ]
         try{
             switch ($requ->action) {
                 case 'Nomenclador.checkDatasource':
@@ -45,6 +46,18 @@ class ServerNomenclador extends ClientResponderAdapter
                     $data = array('add'=>$records);
                     $resp = EnumsRequests::submitChanges($enumInstance,$enumId,$modelRevision,$data );
                     $enumResult->resp = $resp['add'];
+                }
+                    break;
+                case 'modRecord':{
+                    $recordId = $requ->value['enumLoadIdRow'];
+                    $modelRevision = $requ->value['modelRevision'];
+                    $model = $requ->value['enum'];
+                    $recordRevision = $requ->value['recordRevision'];
+                    $record = json_decode($requ->value['record'],true);
+                    $record[PrimaryKey::ID] = $recordId;
+                    $record[Revision::ID] = $recordRevision;
+                    $resp = EnumsRequests::submitChanges($enumInstance,$model,$modelRevision,array('mod'=>array($record)));
+                    $enumResult->resp = count($resp['underRevision']) === 0;
                 }
                     break;
                 case 'modEnumData': {
