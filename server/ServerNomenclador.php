@@ -57,10 +57,9 @@ class ServerNomenclador extends ClientResponderAdapter
                     $record[PrimaryKey::ID] = $recordId;
                     $record[Revision::ID] = $recordRevision;
                     $resp = EnumsRequests::submitChanges($enumInstance,$model,$modelRevision,array('mod'=>array($record)));
-                    if(count($resp['underRevision']) !== 0){
-                        $enumResult->error = array('message'=>'Record por debajo de la revision del sistem');
-                        $enumResult->code = 509;
 
+                    if(count($resp['underRevision']) !== 0){
+                        throw new EnumRevisionConflict();
                     }
                 }
                     break;
@@ -338,10 +337,10 @@ class ServerNomenclador extends ClientResponderAdapter
             }
         }
         catch (EnumException $e){
-            $enumResult->error = array('msg'=>$e->getMessage(),'type'=>$e->getExceptionObj());
+            $enumResult->error = array('msg'=>$e->getMessage(),'type'=>$e->getExceptionObj(), 'code'=>$e->getCode());
         }
         catch (Exception $e){
-            $enumResult->error = array('msg'=>"Error desconocido: {$e->getMessage()}");
+            $enumResult->error = array('msg'=>"Error desconocido: {$e->getMessage()}",'code'=>$e->getCode());
         }
 
 

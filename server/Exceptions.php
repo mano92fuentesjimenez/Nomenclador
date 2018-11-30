@@ -67,3 +67,9 @@ class EnumCantBeRemovedIsRefException extends EnumException
 }
 
 class EnumActionRejected extends EnumException{}
+
+class EnumRevisionConflict extends EnumException{
+    public function __construct(){
+        parent::__construct('Hubo conflicto con las revisiones de los records',409,null);
+    }
+}
