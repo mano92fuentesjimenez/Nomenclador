@@ -29,7 +29,7 @@ class EnumStore extends Enum
                     continue;
                 }
                 $type = $field->getType();
-                $record[$fieldId] = $type::getValueToDB($values, $value, $field, $connTypeStr);
+                $record[$fieldId] = $type::getValueToDB($values, $value, $field, $connTypeStr, $this->enumInstance);
             }
             if(count($record) === 0)
                 continue;

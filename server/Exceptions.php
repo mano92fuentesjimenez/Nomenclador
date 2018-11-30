@@ -73,3 +73,11 @@ class EnumRevisionConflict extends EnumException{
         parent::__construct('Hubo conflicto con las revisiones de los records',409,null);
     }
 }
+
+class EnumInvalidModifyingData extends EnumException{
+    public function __construct($enumInstance,$enum,$field, $data)
+    {
+        $msg = "El dato '$data' del campo '$field' del nomenclador '$enum' de la instancia '$enumInstance', no esta formado correctamente";
+        parent::__construct($msg, 400, null);
+    }
+}
