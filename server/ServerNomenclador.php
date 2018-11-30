@@ -57,7 +57,11 @@ class ServerNomenclador extends ClientResponderAdapter
                     $record[PrimaryKey::ID] = $recordId;
                     $record[Revision::ID] = $recordRevision;
                     $resp = EnumsRequests::submitChanges($enumInstance,$model,$modelRevision,array('mod'=>array($record)));
-                    $enumResult->resp = count($resp['underRevision']) === 0;
+                    if(count($resp['underRevision']) !== 0){
+                        $enumResult->error = array('message'=>'Record por debajo de la revision del sistem');
+                        $enumResult->code = 509;
+
+                    }
                 }
                     break;
                 case 'modEnumData': {
