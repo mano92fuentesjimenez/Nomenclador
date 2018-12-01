@@ -5,6 +5,7 @@
         utils = Genesig.Utils,
         nom = AjaxPlugins.Nomenclador,
         errorMsg = comps.Messages.slideMessage.error,
+        info = comps.Messages.slideMessage.info,
         enums = nom.enums,
         addW = AjaxPlugins.Ext3_components.Windows.AddModWindow;
 
@@ -120,6 +121,9 @@
             };
 
             nom.interfaces.EnumStoreWriter.superclass.constructor.apply(this, arguments);
+
+            if(this.columns.indexOf(nom.Type.Revision.UNIQUE_ID)=== -1)
+                this.columns.push(nom.Type.Revision.UNIQUE_ID);
             this.configureStore();
             this.on('storeinitialized', function () {
                 this.configureStore();
@@ -186,17 +190,24 @@
                     Object.keys(changes.add).length != 0;
             };
             self.store.getRawChanges = function () {
-                var r = {mod: {}, del: {}, add: {}};
+                var r = {mod: [], del: {}, add: {}};
                 for (var record in changes.add)
                     r.add[record] = changes.add[record].data;
                 for (var record in changes.del)
                     r.del[record] = changes.del[record].data;
                 for (var record in changes.mod)
-                    if (Ext.util.JSON.encode(record.modified) != "{}")
-                        r.mod[record] = {
-                            last: changes.mod[record].data,
-                            modified: changes.mod[record].modified
-                        };
+                    if (Ext.util.JSON.encode(record.modified) != "{}") {
+                        var modified =changes.mod[record].modified,
+                            data = changes.mod[record].data,
+                            recordToPush = {};
+                        modified._each_(function(v,k){
+                            recordToPush[k]=data[k];
+                        });
+                        recordToPush[nom.Type.PrimaryKey.UNIQUE_ID] = data[nom.Type.PrimaryKey.UNIQUE_ID];
+                        recordToPush[nom.Type.Revision.UNIQUE_ID] = data[nom.Type.Revision.UNIQUE_ID];
+                        r.mod.push(recordToPush);
+                    }
+
                 return r;
             };
             self.store.oldRejectChanges = self.store.rejectChanges;
@@ -236,7 +247,8 @@
                 nom.request('submitChanges', {
                     instanceName: this.enumInstance,
                     data: changes,
-                    _enum: this._enum,
+                    modelRevision: this._enum.modelRevision,
+                    modelId: this._enum.id,
                     actions: this.getActions()
                 }, function (response, o) {
                     changes['add'] = response.add;
@@ -245,6 +257,10 @@
                     if (response.delMsg) {
                         errorMsg("Error eliminando datos", response.delMsg);
                         return;
+                    }
+                    //TODO: Adicionar interdaz para controlar versiones por records cuando se eliminan y modifican los mismos
+                    if(utils.isArray(response.underRevision) && response.underRevision.length >0 ){
+                        info('Implementar mecanismo para aceptar los cambios viejos por los nuevos, No se aceptaron los cambios en los records desactualizados');
                     }
                     self.store.commitChanges();
                     self.reloadCurrentPage()

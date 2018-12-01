@@ -21,7 +21,9 @@
                 return this.enumFieldsCache;
 
             var fields = this._enum.fields._queryBy_(function (f) {
-                return f.id !== nom.Type.PrimaryKey.UNIQUE_ID && this.columns.indexOf(f.id) !== -1;
+                return f.id !== nom.Type.PrimaryKey.UNIQUE_ID
+                    && this.columns.indexOf(f.id) !== -1
+                    && f.id !== nom.Type.Revision.UNIQUE_ID;
             }, this, true);
             fields._each_(function (pValue) {
                 pValue.typeInstance = nom.Type.Utils.getType(pValue.type);

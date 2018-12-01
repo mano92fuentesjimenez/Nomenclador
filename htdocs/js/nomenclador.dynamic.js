@@ -598,8 +598,8 @@
             return a.order>b.order;
         });
         fields._each_(function (field){
-            if (field.id === nom.Type.PrimaryKey.UNIQUE_ID) {
-                cmFields.push({header: "Llave primaria", dataIndex: field.id, hidden: true, sortable: true});
+            if (field.id === nom.Type.PrimaryKey.UNIQUE_ID || field.id === nom.Type.Revision.UNIQUE_ID  ) {
+                cmFields.push({header: field.header, dataIndex: field.id, hidden: true, sortable: true});
                 return;
             }
             var type = nom.Type.Utils.getType(field.type);
@@ -781,7 +781,6 @@
         manageEnum:true,
         enumDirty:false,
         originalValue:null,
-        addModValueSetted:false,
         constructor:function (config) {
             nom.enumInput.superclass.constructor.apply(this,arguments);
 
@@ -854,7 +853,6 @@
             obj['valueField'] = record.get(nom.Type.PrimaryKey.UNIQUE_ID);
             obj['displayField'] = record.get(this._fieldId);
 
-            this.addModValueSetted = true;
             return obj;
         },
         setValue:function(value,toClean){
@@ -902,7 +900,6 @@
         isDirty:function(){
             if(utils.isObject(this.originalValue)){
                 return !(utils.isObject(this.currentValue)
-                    && this.currentValue.displayField === this.originalValue.displayField
                     && this.currentValue.valueField === this.originalValue.valueField);
             }
             return utils.isObject(this.currentValue);
@@ -918,10 +915,7 @@
             var t = nom.Type.Utils.getType(config._enum.fields[config._fieldId].type),
                 self =this,
                 fireDChanged = function(){
-                    this.addModValueSetted = true;
-                    this.setDirtyValue();
                     self.fireEvent('datachanged')
-
                 };
             this.store = new Ext.data.JsonStore({
                 fields:['displayField', 'valueField'],
@@ -946,12 +940,6 @@
                     })
                 ]
             }));
-            this.setValue.createInterceptor(
-                function(value){
-                    if(Ext.isObject(value))
-                        this.setDirtyValue(value);
-                    return true;
-                });
         },
         getExclusion:function(){
             var exclusion = [];
@@ -971,17 +959,14 @@
             v.all.value._each_(function(v, k){
                 self.store.add(new self.store.recordType(self.getValueFromRecord(v)))
             });
-            this.setDirtyValue();
-        },
-        setDirtyValue:function(){
-            this.enumDirty =  this.addModValueSetted;
         },
         setValue:function(value){
             if(utils.isArray(value)){
                 var self =this;
                 this.store.removeAll();
                 value._each_(function(v,k){
-                    self.store.add(new self.store.recordType(v));
+                    if(v.valueField !== null)
+                        self.store.add(new self.store.recordType(v));
                 })
             }
         },
@@ -995,6 +980,23 @@
         isValid:function(){
             var value = this.getValue();
             return this.allowBlank ? true : value._length_() >0;
+        },
+        isDirty: function(){
+            var value = this.getValue();
+            if(utils.isObject(this.originalValue)){
+                if(utils.isObject((value))){
+                    var values = value._map_(function(v){
+                        return v.valueField;
+                    },false);
+                    var everyEqual = true;
+                    this.originalValue._each_(function(v){
+                        everyEqual &=  values.indexOf(v.valueField) !== -1;
+                    });
+                    return !everyEqual;
+                }
+            }
+            return true;
+
         }
     }));
 
@@ -1100,7 +1102,9 @@
             text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(enumInstance.getName(), pAtrs.idNode).name,
             enumFields = config.showFields && isEnum ? (
                 enums.getEnumById(enumInstance.getName(), pAtrs.idNode).fields._queryBy_(function (pV){
-                    return pV.id !== nom.Type.PrimaryKey.UNIQUE_ID && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
+                    return pV.id !== nom.Type.PrimaryKey.UNIQUE_ID
+                        && pV.id !== nom.Type.Revision.UNIQUE_ID
+                        && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
                 }, this, true)
             ) : [];
         if(isCat) {

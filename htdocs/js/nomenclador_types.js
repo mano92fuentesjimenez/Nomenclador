@@ -4,6 +4,7 @@
 (function() {
     var nom = AjaxPlugins.Nomenclador,
         buttons = AjaxPlugins.Ext3_components.buttons,
+        utils = Genesig.Utils,
         comps = AjaxPlugins.Ext3_components,
         fields = comps.fields,
         errorMsg = comps.Messages.slideMessage.error;
@@ -123,7 +124,10 @@
          * @returns {*}
          */
         enumTypeRenderer:function(value){
+            if(value === null || value === undefined)
+                return 'null';
             return value.toString();
+
         },
         /**
          * Si un tipo tiene una propiedad que necesita ser evaluada en el servidor para ver si es valida,
@@ -211,7 +215,13 @@
 
     nom.Type.PrimaryKey ={
         UNIQUE_ID :"id_enum_1100",
-        type:"PrimaryKey"
+        type:"PrimaryKey",
+        header: 'Identificador primario de nomencladores'
+    };
+    nom.Type.Revision={
+        UNIQUE_ID :"id_enum_rev_1100",
+        type:"Revision",
+        header: 'Campo de revision'
     };
     nom.Type.REF_VALUE_ID = "_32enum_REF_ID4792";
     nom.Type.REF_Type = "ref";
