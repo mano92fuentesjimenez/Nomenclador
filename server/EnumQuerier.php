@@ -279,7 +279,7 @@ class EnumQuerier extends Enum
         $id = '[-_[:alnum:]]+?';
         $v = "('.*?'|\d+)";
         $value = "($id)|($v)|(\($v(?:,$v)*\))";
-        $clause = "^\s*(?:(?<table>$id)\.)?(?<field>$id)\s+(?<operator>$operators)\s*(?<value>$value)\s*((?<glue>$glue)|$)";
+        $clause = "^\s*(?:(?<table>$id)\.)?(?<field>$id)\s*(?<operator>$operators)\s*(?<value>$value)\s*((?<glue>$glue)|$)";
         $regEx = "~$clause~";
 
         preg_match_all($regEx,$where,$matches,PREG_SET_ORDER);
