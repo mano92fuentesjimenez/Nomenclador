@@ -48,7 +48,7 @@ class Postgree_9_1 extends DBConn
     }
     public function query($query)
     {
-        $result = pg_query($query);
+        $result = pg_query($this->dbHandler,$query);
         $this->lastResult = $result;
         if(!$result || pg_result_error($result))
             return false;

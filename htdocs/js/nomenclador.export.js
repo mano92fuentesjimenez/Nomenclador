@@ -434,6 +434,11 @@
 		}
 
 		return cache[hash];
-    }
+    };
+
+    exp.getDefaultFormDataEditor = function(){};
+    addService('getDefaultFormDataEditor',function () {
+		return AjaxPlugins.Nomenclador.FormDataEditor_Default;
+    });
 
 })();
