@@ -1035,6 +1035,7 @@
 			nomenclador.denomField =denomField;
 			nomenclador.modelRevision = 0;
 			nomenclador.dataRevision = 0;
+			nomenclador.revisionField = 'id_enum_rev_1100';
 
 			if(this.extraProps) {
 				nomenclador.extraProps = {};
