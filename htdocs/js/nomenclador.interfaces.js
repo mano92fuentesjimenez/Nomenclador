@@ -14,10 +14,46 @@
         writterBtn = nom.interfaces.writterBtns;
 
     nom.FormDataEditor_Default = Ext.extend(nom.interfaces.FormDataEditor, {
-        showEditor: function (data, callb) {
-            var columns = 1,
-                cCol = 0,
+        _fields : null,
+        _fieldItems : null,
+        _gridItems: null,
+        _items: null,
+        formColumns : 1,
+        prepareFields : function(){
+            var enum_fields = this.getEnumFields(),
                 gridItems = [],
+                fieldItems = [],
+                fields = enum_fields._map_(function (pField) {
+                    var type = pField.typeInstance,
+                        field = type.getValueEditExtComp(this.enumInstance, pField, this._enum);
+
+                    if (field)
+                        (field.isGrid ? gridItems : fieldItems).push(field);
+
+                    return field;
+                }, this, true);
+
+            enum_fields._queryBy_(function (pF) {
+                var prop = pF.properties;
+                return !!(prop && prop.filter);
+            }, this, true)._each_(function (enumField, fieldId) {
+                var prop = enumField.properties,
+                    filter = prop.filter,
+                    currentField = fields[fieldId],
+                    dependsField = fields[filter];
+                if (!data)
+                    currentField.disable();
+
+                nom.makeFilter(self.enumInstance.getName(), currentField, dependsField, !!data)
+            }, this);
+
+            this._fields = fields;
+            this._fieldItems = fieldItems;
+            this._gridItems = gridItems;
+        },
+        buildSimpleFieldsForm : function(){
+            var columns = this.formColumns,
+                cCol = 0,
                 items = (function () {
                     var res = [],
                         c = columns;
@@ -32,36 +68,15 @@
                     }
                     return res;
                 })(),
-                enum_fields = this.getEnumFields(),
-                fields = enum_fields._map_(function (pField) {
-                    var type = pField.typeInstance,
-                        field = type.getValueEditExtComp(this.enumInstance, pField, this._enum);
-                    if (field) {
-                        if (field.isGrid)
-                            gridItems.push(field);
-                        else items[cCol].items.push(field);
-                        cCol = (cCol + 1) < columns ? cCol + 1 : 0;
-                    }
-                    return field;
-                }, this, true),
                 self = this,
                 cWidth = 1 / columns;
 
-            enum_fields._queryBy_(function (pF) {
-                var prop = pF.properties;
-                return !!(prop && prop.filter);
-            }, this, true)._each_(function (enumField, fieldId) {
-                var prop = enumField.properties,
-                    filter = prop.filter,
-                    currentField = fields[fieldId],
-                    dependsField = fields[filter];
-                if (!data)
-                    currentField.disable();
+            this._fieldItems._each_(function (field) {
+                items[cCol].items.push(field);
+                cCol = (cCol + 1) < columns ? cCol + 1 : 0;
+            });
 
-                nom.makeFilter(self.enumInstance.getName(), currentField, dependsField, !!data)
-
-            }, this);
-            var config = [{
+            return {
                 layout: 'column',
                 autoScroll: true,
                 defaults: {
@@ -71,19 +86,36 @@
                     columnWidth: cWidth
                 },
                 items: items
-            }];
-            if (gridItems.length > 0)
-                config.push({
-                    layout: 'form',
-                    autoScroll: true,
-                    labelAlign: 'top',
-                    defaults: {
-                        height: 200,
-                        anchor: '100%'
-                    },
-                    items: gridItems
-                });
+            };
+        },
+        buildGridItemsForm : function(){
+            if(this._gridItems.length == 0)  return false;
 
+            return {
+                layout: 'form',
+                autoScroll: true,
+                labelAlign: 'top',
+                defaults: {
+                    height: 200,
+                    anchor: '100%'
+                },
+                items: this._gridItems
+            };
+        },
+        getFormBody : function(){
+            this.prepareFields();
+            var simpleFieldsForm = this.buildSimpleFieldsForm(),
+                gridItemsForm = this.buildGridItemsForm();
+
+            return {
+                autoScroll:true,
+                frame:true,
+                layout:'form',
+                items: ([simpleFieldsForm]).concat(gridItemsForm ? [gridItemsForm] : [])
+            };
+        },
+        showEditor: function (data, callb) {
+            var self = this;
             (new addW({
                 height: 400,
                 modal: true,
@@ -91,17 +123,12 @@
                 layout: "fit",
                 title: (data ? "Modificar " : "Adicionar ") + "datos en el Nomenclador: " + this._enum.name,
                 items: [
-                    {
-                        autoScroll:true,
-                        frame:true,
-                        layout:'form',
-                        items:config
-                    }
+                    this.getFormBody()
                 ],
-                fields: fields,
+                fields: this._fields,
                 fieldsValues: data,
                 callback: function (rowData) {
-                    fields._first_().focus();
+                    self._fields._first_().focus();
                     if (data)
                         callb(rowData.modified);
                     else
