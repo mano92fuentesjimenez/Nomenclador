@@ -310,8 +310,11 @@
 
 
         },
+        beyondLastPage(page){
+            return (page) * this.pageSize > this.totalCount;
+        },
         isLastPage:function(){
-            return (this.pagePosition + 1) * this.pageSize > this.totalCount;
+            return this.beyondLastPage(this.pagePosition+1);
         },
         isFirstPage:function() {
             return (this.pagePosition === 0);
@@ -348,6 +351,16 @@
             this.loadEnumData(0, function(){
                 self.pagePosition = 0;
             });
+        },
+        goToPage: function(page){
+            if(!(page < 0 || this.beyondLastPage(page)))
+            {
+                var self = this;
+                this.loadEnumData(page,function(){
+                    self.pagePosition = page;
+                })
+            }
+            Logger.error('La pagina esta fuera del rango de pagina');
         },
         createStore: function () {
             return nom.getStoreConfigFromEnum(this._enum, this.columns);
