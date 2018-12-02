@@ -50,6 +50,16 @@ class Enum
         return new DataSource($this->enumInstance, $this->enum_tree['dataSource']);
     }
 
+    public function getProps(){
+        $enum = $this->enum_tree;
+        return array_key_exists('extraProps',$enum) && is_array($enum['extraProps']) ? $enum['extraProps'] : array();
+    }
+
+    public function getProp($property){
+        $props = $this->getProps();
+        return array_key_exists($property,$props) ? $props[$property] : -1;
+    }
+
     public function getDefaulField()
     {
         return new Field($this->enum_tree['fields'][$this->getDefaultFieldId()]);

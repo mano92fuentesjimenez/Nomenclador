@@ -14,6 +14,78 @@
         writterBtn = nom.interfaces.writterBtns;
 
     nom.FormDataEditor_Default = Ext.extend(nom.interfaces.FormDataEditor, {
+        getFormBody : function(){
+            var columns = 1,
+                cCol = 0,
+                gridItems = [],
+                items = (function () {
+                    var res = [],
+                        c = columns;
+                    while (c > 0) {
+                        res.push({
+                            defaults: {
+                                anchor: '100%'
+                            },
+                            items: []
+                        });
+                        c--;
+                    }
+                    return res;
+                })(),
+                enum_fields = this.getEnumFields(),
+                fields = enum_fields._map_(function (pField) {
+                    var type = pField.typeInstance,
+                        field = type.getValueEditExtComp(this.enumInstance, pField, this._enum);
+                    if (field) {
+                        if (field.isGrid)
+                            gridItems.push(field);
+                        else items[cCol].items.push(field);
+                        cCol = (cCol + 1) < columns ? cCol + 1 : 0;
+                    }
+                    return field;
+                }, this, true),
+                self = this,
+                cWidth = 1 / columns;
+
+            enum_fields._queryBy_(function (pF) {
+                var prop = pF.properties;
+                return !!(prop && prop.filter);
+            }, this, true)._each_(function (enumField, fieldId) {
+                var prop = enumField.properties,
+                    filter = prop.filter,
+                    currentField = fields[fieldId],
+                    dependsField = fields[filter];
+                if (!data)
+                    currentField.disable();
+
+                nom.makeFilter(self.enumInstance.getName(), currentField, dependsField, !!data)
+
+            }, this);
+            var config = [{
+                layout: 'column',
+                autoScroll: true,
+                defaults: {
+                    layout: 'form',
+                    bodyStyle: 'padding:0 2.5px 0 2.5px',
+                    labelAlign: 'top',
+                    columnWidth: cWidth
+                },
+                items: items
+            }];
+            if (gridItems.length > 0)
+                config.push({
+                    layout: 'form',
+                    autoScroll: true,
+                    labelAlign: 'top',
+                    defaults: {
+                        height: 200,
+                        anchor: '100%'
+                    },
+                    items: gridItems
+                });
+
+            return config;
+        },
         showEditor: function (data, callb) {
             var columns = 1,
                 cCol = 0,
