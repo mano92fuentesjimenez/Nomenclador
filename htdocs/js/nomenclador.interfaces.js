@@ -114,6 +114,9 @@
                 items: ([simpleFieldsForm]).concat(gridItemsForm ? [gridItemsForm] : [])
             };
         },
+        handleSubmitData : function(data){
+            return data;
+        },
         showEditor: function (data, callb) {
             var self = this;
             (new addW({
@@ -129,10 +132,7 @@
                 fieldsValues: data,
                 callback: function (rowData) {
                     self._fields._first_().focus();
-                    if (data)
-                        callb(rowData.modified);
-                    else
-                        callb(rowData.all)
+                    callb(self.handleSubmitData(data ? rowData.modified : rowData.all));
                 }
             })).show();
         }
