@@ -162,44 +162,50 @@ class ActionManager
     public function callPreSubmitActionsForEnum($enum,&$data){
 
         //del
-        $actions = $this->getActions('del','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($enum, $data['del']);
-            if($r instanceof ActionManagerResult && $r->type == self::STOP){
-                unset($data['del']);
-                break;
-            }
-        }
-
-        //mod
-        $actions = $this->getActions('mod','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-
-            $r = $p['server']->{$p['action']}($enum, $data['mod']);
-
-            if($r instanceof ActionManagerResult) {
-                if ($r->type == self::CONVERT_TO_ADD) {
-                    foreach ($data['mod'] as $record) {
-                        unset($record[PrimaryKey::ID]);
-                        $data['add'][] = $record;
-                    }
-                }
-                if ($r->type == self::STOP || $r->type == self::CONVERT_TO_ADD) {
-                    unset($data['mod']);
+        if(array_key_exists('del',$data) && is_array($data['del']) && count($data['del'])){
+            $actions = $this->getActions('del','pre');
+            foreach ($actions as $action){
+                $p = $this->getPlugin($action);
+                $r = $p['server']->{$p['action']}($enum, $data['del']);
+                if($r instanceof ActionManagerResult && $r->type == self::STOP){
+                    unset($data['del']);
                     break;
                 }
             }
         }
 
-        //add
-        $actions = $this->getActions('add','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($enum, $data['mod']);
-            if($r instanceof ActionManagerResult && $r->type == self::STOP) {
-                break;
+        if(array_key_exists('mod',$data) && is_array($data['mod']) && count($data['mod'])){
+            //mod
+            $actions = $this->getActions('mod','pre');
+            foreach ($actions as $action){
+                $p = $this->getPlugin($action);
+
+                $r = $p['server']->{$p['action']}($enum, $data['mod']);
+
+                if($r instanceof ActionManagerResult) {
+                    if ($r->type == self::CONVERT_TO_ADD) {
+                        foreach ($data['mod'] as $record) {
+                            unset($record[PrimaryKey::ID]);
+                            $data['add'][] = $record;
+                        }
+                    }
+                    if ($r->type == self::STOP || $r->type == self::CONVERT_TO_ADD) {
+                        unset($data['mod']);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(array_key_exists('add',$data) && is_array($data['add']) && count($data['add'])){
+            //add
+            $actions = $this->getActions('add','pre');
+            foreach ($actions as $action){
+                $p = $this->getPlugin($action);
+                $r = $p['server']->{$p['action']}($enum, $data['add']);
+                if($r instanceof ActionManagerResult && $r->type == self::STOP) {
+                    break;
+                }
             }
         }
 
