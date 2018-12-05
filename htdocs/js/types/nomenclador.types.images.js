@@ -9,6 +9,10 @@
         utils = Genesig.Utils,
         manageImagesExport = AjaxPlugins.ManageImages.export;
 
+    /**
+     * Tipo imagen. Su valor es un identificador que es el que el plugin [Imagen]{@link AjaxPlugins.Images} reconoce como una imagen.
+     * @class AjaxPlugins.Nomenclador.Type.Types
+     */
     addType('DB_Images',Ext.extend(nom.Type.ValueType, {
         nameToShow :'Im\u00E1genes',
         destroyProp: true,

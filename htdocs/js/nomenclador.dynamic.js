@@ -7,11 +7,17 @@
         fields = comps.fields,
         buttons = comps.buttons,
         utils = Genesig.Utils,
+        /**
+         * @lends AjaxPlugins.Nomenclador
+         */
         nom = AjaxPlugins.Nomenclador,
         errorMsg = comps.Messages.slideMessage.error,
         infoMsg = comps.Messages.slideMessage.info,
         wd = AjaxPlugins.Ext3_components.Windows.AddModWindow;
 
+    /**
+     * @class enums
+     */
     nom.enums = function (){
         this.enums = {};
         this.defaultFields = {};
@@ -32,13 +38,25 @@
         this.instances = new nom.InstanceManager();
     };
 
-    nom.enums = Ext.extend(nom.enums, {
+    nom.enums = Ext.extend(nom.enums,
+        /**
+         * @lends enums
+         */
+    {
+
+
         loaded: null,
         simpleTree:null,
         dataSources:null,
         defaultFields:null,
         instances:null,
 
+        /**
+         * Coge el actionManager de la instancia dada.
+         * @param instanceName  {string}   Nombre de la instancia de nomencladores
+         * @param instanceNameModifier {string}  Nombre modificador de instancia de nomencladores
+         * @returns {ActionManager}
+         */
         getActionManager:function(instanceName,instanceNameModifier){
             return this.getInstance(instanceName,instanceNameModifier).getActionManager();
         },
@@ -177,6 +195,10 @@
         }
 
     });
+    /**
+     * @class ActionManager
+     * @param actions
+     */
     nom.ActionManager = function(actions){
         /**
          * actions =

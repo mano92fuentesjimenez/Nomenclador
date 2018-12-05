@@ -9,6 +9,16 @@
 		types = nom.Type.Types,
 		addType =nom.Type.Utils.addType;
 
+    /**
+	 * Tipo referencia. Su valor es de la forma
+	 * ```json
+	 * {
+	 *    "valueField": "Es un numero, es la referencia a la llave primaria de otro modelo",
+	 *    "displayField": "Es el valor del campo al cual este campo hace referencia"
+	 * }
+	 * ```
+	 * @class AjaxPlugins.Nomenclador.Type.Types.DB_Enum
+     */
 	addType('DB_Enum',Ext.extend(nom.Type.ValueType, {
 		nameToShow :'Nomenclador',
 		valueType :nom.Type.REF_Type,

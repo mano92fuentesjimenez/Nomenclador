@@ -1,11 +1,13 @@
 /**
  * Created by Mano on 10/05/2017.
  */
-
 (function(){
     var comps = AjaxPlugins.Ext3_components,
         buttons = comps.buttons,
         utils = Genesig.Utils,
+        /**
+         * @lends AjaxPlugins.Nomenclador
+         */
         nom = AjaxPlugins.Nomenclador,
         errorMsg = comps.Messages.slideMessage.error,
         enums = nom.enums,
@@ -13,6 +15,10 @@
         readerBtns = nom.interfaces.readerBtns,
         writterBtn = nom.interfaces.writterBtns;
 
+    /**
+     * Es la clase que se encarga de renderizar el formulario para anhadir y modificar datos
+     * @class AjaxPlugins.Nomenclador.FormDataEditor_Default
+      */
     nom.FormDataEditor_Default = Ext.extend(nom.interfaces.FormDataEditor, {
         _fields : null,
         _fieldItems : null,

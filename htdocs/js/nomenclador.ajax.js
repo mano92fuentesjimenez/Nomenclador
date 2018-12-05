@@ -1,7 +1,77 @@
 /**
- * @namespace Nomenclador
- * @type {{UI: {}, handleResponse: AjaxPlugins.Nomenclador.handleResponse, init: AjaxPlugins.Nomenclador.init, nomencladorWindowCaller: AjaxPlugins.Nomenclador.nomencladorWindowCaller}}
+ * @namespace AjaxPlugins
  */
+
+/**
+ * @namespace AjaxPlugins.Nomenclador
+ * @description
+ *Plugin para crear y manipular modelos usando una interfaz grafica. Tambien permite manipular los datos pertenecientes a dichos modelos
+ *Un modelo esta descrito por un como
+ */
+
+    /**
+     * @class AjaxPlugins.Nomenclador.Model
+     * @property {string}  id    - Identificador del modelo
+     * @property {string}  name  - Nombre que el usuario le puso al modelo
+     * @property {object} fields  - Campos del modelo. Cada llave es el identificador y cada valor es un [Field]{@link AjaxPlugins.Nomenclador.Field}
+     * @property {string}  description - Descripcion del modelo
+     * @property {string}  dataSource  - Identificador de la fuente de datos
+     * @property {string}  tpl  - Nombre del tpl que este modelo usa
+     * @property {string}  denomField  - Identificador del campo que se va a usar como descripcion
+     * @property {number}  modelRevision - Revision del modelo, es para llevar un control de versiones en el modelo
+     * @property {number}  dataRevision  - Revision de los datos del modelo, es para llevar un control de versiones en los datos del modelo.
+     */
+
+    /**
+     * @class AjaxPlugins.Nomenclador.Field
+     * @property {string} id       - Identificador
+     * @property {boolean} needed  - Dice si es obligatorio q este campo tenga valor o no
+     * @property {string}  type    - Uno de los nombres de las clases definidas en [Tipos]{@link AjaxPlugins.Nomenclador.Type.Types}
+     * @property {object}  properties - Son las propiedades extras del campo que forman parte de la definicion del tipo del campo
+     * @property {boolean} properties.multiSelection  - Dice si el campo es de tipo multiple.
+     * @property {string}  header  - Nombre que se muestra en la interfaz
+     * @property {string}  _enumId - Identificador del nomenclador al que pertenece este campo
+     * @property {string} isDefault - Dice si este campo forma parte de los campos que debe tener el modelo conformado con el tpl que se especifico
+     * @property {string} isDenom  - Dice si este campo puede ser usado como denominacion
+     * @property {number}  order   - Dice el orden que tiene este campo en la interfaz
+     * @property {string} primaryKey  - Es el identificador del campo que se va a tomar como llave primaria
+     */
+
+    /**
+     * @class AjaxPlugins.Nomenclador.Record
+     * @description  Es un Record devuelto por nomencladores cuando se le hace un query
+     * Si es el resultado de un query a este modelo
+     * ```javascript
+     * {
+     *     id:'id',
+     *     name:'name',
+     *     denomField:'f_1'
+     *     fields:{
+     *         f_1:{
+     *            id: 'f_1',
+     *            type: 'DB_String'
+     *         },
+     *         f_2:{
+     *            id: 'f_2',
+     *            type: 'DB_Number'
+     *         },
+     *         f_3:{
+     *            id: 'f_3',
+     *            type: 'DB_Bool'
+     *         }
+     *     }
+     *
+     * }
+     * ```
+     * Seria un arreglo de records de esta manera
+     * ```javascript
+     * [
+     *   {f_1:'texto,'f_2:1,f3:false},
+     *   {f_1:'texto,'f_2:1,f3:false}
+     * ]
+     * ```
+     *
+     */
 
 _define_('nomenclador',['ext3*','layersWindows','QueryBuilder','nomenclador']);
 

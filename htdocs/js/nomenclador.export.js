@@ -1,11 +1,20 @@
 /**
  * Created by Mano on 08/05/2017.
  */
+
 (function(){
 
+    /**
+	 * @lends AjaxPlugins.Nomenclador
+     */
 	var nom = AjaxPlugins.Nomenclador;
-
+    /**
+	 * @namespace AjaxPlugins.Nomenclador.export
+     */
 	nom.export = {};
+    /**
+	 * @lends AjaxPlugins.Nomenclador.export
+     */
 	var exp = nom.export,
 		utils = Genesig.Utils,
 		connError = function()    {
