@@ -6,6 +6,10 @@
 		buttons = AjaxPlugins.Ext3_components.buttons,
 		addType = nom.Type.Utils.addType;
 
+    /**
+	 * Tipo tabla. Su valor es de la forma {@link AjaxPlugins.Nomenclador.Record  Record[]}
+	 * @class AjaxPlugins.Nomenclador.Type.Types.DB_Table
+     */
 	addType('DB_Table', Ext.extend(nom.Type.ValueType, {
 			nameToShow: "Tabla",
 			getValueEditExtComp: function (enumInstance, field, _enum) {

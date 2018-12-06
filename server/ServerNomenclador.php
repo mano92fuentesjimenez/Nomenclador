@@ -6,6 +6,9 @@ require_once CARTOWEB_HOME.'include/Zend/Crypt/Rsa.php';
 require_once 'Exceptions.php';
 require_once 'ActionManager.php';
 
+/**
+ * Class ServerNomenclador
+ */
 class ServerNomenclador extends ClientResponderAdapter
 {
 
@@ -374,6 +377,13 @@ class ServerNomenclador extends ClientResponderAdapter
 ////        if($enum->getName() == 'pais')
 ////            return 1;
 //    }
+    /**
+     * Adiciona records en la instancia dada en el nomenclador dado
+     * @param $enumInstance  {string} Nombre de instancia de nomencladores
+     * @param $enumId        {string} Identificador del nomenclador
+     * @param $records       {array}  Records
+     * @throws EnumException
+     */
     public function addRecords($enumInstance, $enumId, $records){
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnum($enumId);

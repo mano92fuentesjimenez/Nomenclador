@@ -10,11 +10,18 @@
         errorMsg = comps.Messages.slideMessage.error;
 
     /**
+     * @namespace AjaxPlugins.Nomenclador.Type
+     * @class AjaxPlugins.Nomenclador.Type
+     * @classdesc Es la clase base de todos los tipos en nomencladores. Define lo que un tipo es.
      * @type {*|Function}
      */
     nom.Type = Ext.extend(function(){
         this.valueType = this._default_(this.valueType,nom.Type.VALUE_Type);
-    },{
+    },
+        /**
+         * @lends AjaxPlugins.Nomenclador.Type
+         */
+        {
 
         nameToShow : '',
         /**
@@ -227,7 +234,11 @@
     nom.Type.REF_Type = "ref";
     nom.Type.VALUE_Type = "value";
 
-    //espacio de nombre donde van todos los types.
+    /**
+     * Espacio de nombre en donde estan todos los tipos que se reconocen como validos en nomencladores
+     *@namespace AjaxPlugins.Nomenclador.Type.Types
+     *
+     */
     nom.Type.Types = {};
 
     //Son los tipos que dependen de otros campos en el nomenclador para tener valor.
@@ -269,29 +280,6 @@
                 e.childs[child.text]=self.getSimpleTree(child);
             });
             return e;
-        },
-        /**
-         * Construye el arbol de TreeNode a partir de un arbol especificado en simpleTree.
-         * @param simpleTree    {object}    Arbol en donde idNode es el identificador de un Enum
-         *                                  childs son los hijos que tiene cada nodo.
-         *                                  category dice si es de tipo categoria, en caso contrario es un
-         *                                  nomenclador.
-         * @param enums         {[]}        contiene el arreglo de la especificacion de cada enum creado.
-         * @param toExclude     {enum}      es un nomenclador a excluir en la creacion del arbol.
-         * @returns {Ext.tree.TreeNode | undefined }
-         */
-        getNodes: function (simpleTree,enums, toExclude) {
-
-            return simpleTree.childs._queryBy_(function(pV,pK){
-                return !toExclude || (pK != toExclude.id);
-            },this,true)._map_(function(pV,pK){
-                var isCat = 'childs' in pV;
-
-                return {}._apply_(pV,{
-                    _type_ :  isCat ? 'category' : 'enum',
-                    text: pK
-                })
-            },this,false);//
         }
     });
 

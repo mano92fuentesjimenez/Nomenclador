@@ -8,7 +8,15 @@
         comps = AjaxPlugins.Ext3_components,
         fields = comps.fields;
 
-    addType('DB_Date',Ext.extend(nom.Type.ValueType, {
+    /**
+     * Tipo fecha. El valor que puede tomar es el mismo especificado por ISO 8601. Especificado en la opcion c del objeto fecha de Ext
+     * @class AjaxPlugins.Nomenclador.Type.Types.DB_Date
+     */
+    addType('DB_Date',Ext.extend(nom.Type.ValueType,
+        /**
+         * @lends AjaxPlugins.Nomenclador.Type.Types.DB_Date
+         */
+        {
             nameToShow :'Fecha',
             getValueEditExtComp :function (enumInstance, field) {
                 return new fields.DateField({
