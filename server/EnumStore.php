@@ -23,6 +23,7 @@ class EnumStore extends Enum
 
             foreach ($values as $fieldId => $value) {
                 $field = $this->getField($fieldId);
+                if(!isset($field)) continue;
                 $type = $field->getType();
                 $props = $field->getProperties();
                 if (!$field || !$type::savedInBD() || ($type == 'DB_Enum' && $props['multiSelection'])){
@@ -104,7 +105,7 @@ class EnumStore extends Enum
                 }
             }
         }
-        $actionsM->callPostAddActions($this,$addedData);
+        $actionsM->callPostAddActions($this,$addedData, $data);
         return $addedData;
     }
     public function modRecords($data){
@@ -121,6 +122,8 @@ class EnumStore extends Enum
 
         $details = RecordsManipulator::getRevisionDescription($data, $dbRecords);
         $data = $details['ok'];
+
+        $originalData = $data;
 
         $this->modifyMultiEnumData($data,true,true);
 
@@ -144,7 +147,7 @@ class EnumStore extends Enum
         }
         $data = $conn->fetchData(false);
 
-        $actionsM->callPostModActions($this,$enumQ->getValueArrayFromDb($data));
+        $actionsM->callPostModActions($this,$enumQ->getValueArrayFromDb($data),$originalData);
         return $details['underRevision'];
     }
     public function delRecords($data){
@@ -175,6 +178,7 @@ class EnumStore extends Enum
 
         foreach ($multiData as $fieldId => $fieldData){
             $field = $this->getField($fieldId);
+            if(!isset($field)) continue;
             $refEnum = $field->getReferencedEnum($this->enumInstance);
             $multiTable = DB_Enum::getMultiTableName($this, $refEnum);
 

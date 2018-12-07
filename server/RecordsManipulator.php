@@ -121,7 +121,7 @@ class RecordsManipulator
         foreach ( $data as $record) {
             foreach ($record as $fieldId=> $values){
                 $field = $enum->getField($fieldId);
-                if($onlyMultiField && $field->isEnum() && $field->isMulti() ) {
+                if(isset($field) && $onlyMultiField && $field->isEnum() && $field->isMulti() ) {
                     if (!isset($recordsField[$fieldId]))
                         $recordsField[$fieldId] = array();
                     $fieldValues = array();

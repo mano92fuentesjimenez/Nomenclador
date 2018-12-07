@@ -155,6 +155,7 @@ class Enum
         uasort($data,'Enum::sortFields');
         foreach ($data as $key => $value) {
             $field = $this->getField($key);
+            if(!isset($field)) continue;
             $props = $field->getProperties();
             $type = $field->getType();
             if (!$type::savedInBD() ||( $type =='DB_Enum' && $props['multiSelection'])) {

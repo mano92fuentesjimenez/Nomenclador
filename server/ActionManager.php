@@ -66,14 +66,14 @@ interface EnumsActions {
      * @param $data
      * @return {ActionManagerResult|*}
      */
-    function enumRowPostAddAction(Enum $enum, $data);
+    function enumRowPostAddAction(Enum $enum, $data, $originalData);
     /**
      * Accion posterior a la modificacion de un nomenclador
      * @param Enum $enum
      * @param $data
      * @return {ActionManagerResult|*}
      */
-    function enumRowPostModAction(Enum $enum, $data);
+    function enumRowPostModAction(Enum $enum, $data, $originalData);
 
 }
 
@@ -220,21 +220,21 @@ class ActionManager
         }
         return $r;
     }
-    public function callPostAddActions($enum, &$data){
+    public function callPostAddActions($enum, &$data, $originalData){
         $actions = $this->getActions('add','post');
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($enum,$data);
+            $p['server']->{$p['action']}($enum,$data,$originalData);
         }
     }
 
-    public function callPostModActions($enum, $data){
+    public function callPostModActions($enum, $data, $orgData){
         $actions = $this->getActions('mod','post');
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($enum,$data);
+            $p['server']->{$p['action']}($enum,$data,$orgData);
         }
     }
 
