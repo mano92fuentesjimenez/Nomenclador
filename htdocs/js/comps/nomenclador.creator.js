@@ -1035,7 +1035,7 @@
 			nomenclador.denomField =denomField;
 			nomenclador.modelRevision = 0;
 			nomenclador.dataRevision = 0;
-			nomenclador.revisionField = nom.Type/Revision.UNIQUE_ID;
+			nomenclador.revisionField = nom.Type.Revision.UNIQUE_ID;
 			nomenclador.primaryKey = nom.Type.PrimaryKey.UNIQUE_ID;
 
 			if(this.extraProps) {
