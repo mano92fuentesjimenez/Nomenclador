@@ -176,7 +176,7 @@ class Postgree_9_1 extends DBConn
             $query.="UPDATE \"$schema\".\"$tableName\" SET ";
     
             $primaryKeyVal = null;
-            $fields = array();
+            $fields = array(PrimaryKey::ID);
             foreach ($record as $fieldName => $fieldValue){
                 if ($fieldName == PrimaryKey::ID) {
                     $primaryKeyVal = $fieldValue;
