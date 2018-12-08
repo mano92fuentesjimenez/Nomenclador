@@ -18,6 +18,8 @@
     /**
      * Es la clase que se encarga de renderizar el formulario para anhadir y modificar datos
      * @class AjaxPlugins.Nomenclador.FormDataEditor_Default
+     * @events
+     *      editorCreated       Se dispara cuando se crea el formulario con los campos a editar del nomenclador
       */
     nom.FormDataEditor_Default = Ext.extend(nom.interfaces.FormDataEditor, {
         _fields : null,
@@ -124,23 +126,26 @@
             return data;
         },
         showEditor: function (data, callb) {
-            var self = this;
-            (new addW({
-                height: 400,
-                modal: true,
-                width: '30%',
-                layout: "fit",
-                title: (data ? "Modificar " : "Adicionar ") + "datos en el Nomenclador: " + this._enum.name,
-                items: [
-                    this.getFormBody()
-                ],
-                fields: this._fields,
-                fieldsValues: data,
-                callback: function (rowData) {
-                    self._fields._first_().focus();
-                    callb(self.handleSubmitData(data ? rowData.modified : rowData.all));
-                }
-            })).show();
+            var self = this,
+                editor = new addW({
+                    height: 400,
+                    modal: true,
+                    width: '30%',
+                    layout: "fit",
+                    title: (data ? "Modificar " : "Adicionar ") + "datos en el Nomenclador: " + this._enum.name,
+                    items: [
+                        this.getFormBody()
+                    ],
+                    fields: this._fields,
+                    fieldsValues: data,
+                    callback: function (rowData) {
+                        self._fields._first_().focus();
+                        callb(self.handleSubmitData(data ? rowData.modified : rowData.all));
+                    }
+                });
+
+            this.fireEvent('editorCreated',this,editor);
+            editor.show();
         }
 
     });
