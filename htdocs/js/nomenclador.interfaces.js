@@ -144,7 +144,7 @@
                     }
                 });
 
-            this.fireEvent('editorCreated',this,editor);
+            this.fireEvent('editorCreated',this,editor,data);
             editor.show();
         }
 
