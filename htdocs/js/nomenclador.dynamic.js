@@ -333,6 +333,9 @@
             return new nom.Tpl(v);
         })
     };
+    /**
+     * @class InstanceConfigClass
+     */
     nom.InstanceConfigClass = Ext.extend(nom.InstanceConfigClass, {
         getEnumDataEditor: function(tplName){
             var dataEditor = this.getValueFromTpl('enumDataEditor', tplName);
@@ -371,14 +374,18 @@
         getTpl:function(tplName){
             var tplConfig = new nom.Tpl();
             if(this.tpl)
-                tplConfig = new nom.Tpl(this.tpl[tplName]);
+                tplConfig = new nom.Tpl(this.tpl[tplName],tplName);
             return tplConfig;
+        },
+        getTplsToShow: function () {
+            return this.showTpls
         }
     });
-    nom.Tpl = function(config) {
+    nom.Tpl = function(config,tplName) {
         this._apply_(config);
         if(!utils.isObject(this.extraProps))
             this.extraProps = {};
+        this.tplName = tplName;
     };
     nom.tplDefaultId ='default';
 
@@ -444,6 +451,9 @@
         },
         getDefaultDataSource :function(){
             return this.defaultDataSource;
+        },
+        getTplName: function () {
+            return this.tplName;
         }
     });
 
@@ -767,6 +777,51 @@
         treeWD.registrarXtypes2Validator({'cm': {evt: ['selectionchange']}});
         treeWD.show();
     };
+
+    nom.EnumTreeTrigger =Ext.extend(fields.triggerField,{
+        allowBlank:null,
+        fieldLabel:null,
+        readOnly:true,
+        instanceName:null,
+        instanceNameModifier: null,
+        constructor:function(cfg){
+            nom.EnumTreeTrigger.superclass.constructor.call(this,cfg)
+
+        },
+        onTrigger2Click:function(){
+            var self = this;
+            nom.showEnumTree(this.instanceName, true, function(obj) {
+                var _enum = nom.enums.getEnumById(self.instanceName, obj.id);
+                self.setValue({
+                    valueField: obj.id,
+                    displayField: _enum.name
+                })
+            },undefined,this.instanceNameModifier);
+        },
+        setValue:function(v){
+            if(Genesig.Utils.isObject(v)) {
+                this.currentValue = v;
+                v = v.displayField;
+            }
+            else if(v ==='')
+                this.currentValue = undefined;
+            fields.triggerField.prototype.setValue.call(this, v);
+            this.fireEvent('datachanged');
+        },
+        getValue:function(){
+            return this.currentValue;
+        },
+        getXType:function(){
+            return '_enumselector';
+        },
+        getFormVEvtNames:function(){
+            return 'datachanged';
+        },
+        isDirty:function () {
+            return !this.originalValue ? true:
+                ( this.originalValue.valueField !== this.currentValue.valueField)
+        }
+    });
 
 
     var _refConfig = {
@@ -1096,14 +1151,14 @@
     /**
      * Funcion que modifica el arbol de nomencladores segun la configuracion.
      * @param pAtrs
-     * @param config {object | string}  Es un objeto de configuracion o el string diciendo la instancia de nomencladores.
-     *     excludeEnum  {object | string}  Contiene los nomencladores q se van a excluir, si es un objeto es de la forma {idEnum:true}
-     *     includeEnum  {obectj} Es un nomenclador y si esta presente, solo se va a mostrar este mas todas las categorias
-     *     enumInstance {EnumInstance} Es el nombre de la instancia de nomencladores. Es obligatorio
-     *     showFields   {bool}  Si es true, se van a mostrar los campos de los nomencladores.
-     *     showEnums    {bool}  Dice si se muestran los nomencladores o no.
-     *     checked      {array[string]}  Si este arreglo existe, muestra checkboxes en los nodos de los nomencladores
-     *                        Y esta checked si el identificador del nomenclador esta en el arreglo
+     * @param config {object}  Es un objeto de configuracion o el string diciendo la instancia de nomencladores.
+     * @param config.excludeEnum  {object | string}  Contiene los nomencladores q se van a excluir, si es un objeto es de la forma {idEnum:true}
+     * @oaram config.includeEnum  {obectj} Es un nomenclador y si esta presente, solo se va a mostrar este mas todas las categorias
+     * @oaram config.enumInstance {AjaxPlugins.Nomenclador.InstanceConfigClass} Es la instancia de nomencladores. Es obligatorio
+     * @param config.showFields   {bool}  Si es true, se van a mostrar los campos de los nomencladores.
+     * @param config.showEnums    {bool}  Dice si se muestran los nomencladores o no.
+     * @param config.checked      {array[string]}  Si este arreglo existe, muestra checkboxes en los nodos de los nomencladores
+     *                            Y esta checked si el identificador del nomenclador esta en el arreglo
      *     nodesEvaluator {function}  Funcion q dice si un nodo va a formar parte del arbol o no
      *     allowReferencing  {bool}   Dice si este renderizador fue llamado por el tipo enum para hacer refenrencias entre
      *                         nomencladores.
@@ -1111,8 +1166,7 @@
      */
     nom.treeNodesProxy = function (pAtrs, config){
         //Si config no es un objeto o string, entonces q de error.
-        var config = utils.isString(config) ? {enumInstance:config}: config,
-            enumInstance = config.enumInstance,
+        var enumInstance = config.enumInstance,
             instanceConfig = enumInstance.getInstanceConfig(),
             toExclude = config.excludeEnum,
             toInclude = config.includeEnum,
@@ -1133,11 +1187,13 @@
             children = this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK) {
                 var _enum = nom.enums.getEnumById(enumInstance.getName(), pV.idNode),
                     tplName = _enum.tpl,
-                    tplConfig = instanceConfig.getTpl(tplName);
+                    tplConfig = instanceConfig.getTpl(tplName),
+                    showTpls = instanceConfig.getTplsToShow();
 
                 return 'childs' in pV || (
                     (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode !== toExclude))
                     && (!tplConfig.isHidden() || (tplConfig.allowReferencing && config.allowReferencing))
+                    && (!utils.isArray(showTpls) ||  showTpls.indexOf(tplConfig.getTplName()) !== -1)
                     && (!toInclude || toInclude.id === pV.idNode)
                     && (config.showEnums && !('childs' in pV))
                 );
@@ -1242,22 +1298,24 @@
      * Muestra la ventana principal de nomencladores de la instancia enumInstance usando la configuracion config.
      * @param instanceName  {string}    Nombre de la instancia de nomencladores. Nuevo nombre crea una instancia nueva.
      * @param config    {object}        Configuracion con la cual se va a ejecutar esta instancia de nomencladores.
-     *                       formDataEditor: Debe contener el prototipo de la clase que se va a usar como formulario
-     *                                      a la hora de insertar datos. Debe heredar de FormDataEditor.
-     *                       enumDataEditor: Debe contener el prototipo de la clase que se va a usar como interfaz para
+     * @param config.formDataEditor {object}  - Debe contener el prototipo de la clase que se va a usar como formulario
+     *                                        a la hora de insertar datos. Debe heredar de FormDataEditor.
+     * @param config.enumDataEditor {object} Debe contener el prototipo de la clase que se va a usar como interfaz para
      *                                      visualizar los datos. Debe heredar de EnumStoreWriter si esta interfaz va a
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
-    *                        defaultTpl:  Identificador del tpl que va a mostrar por defecto.
-    *                        defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
-    *                                    nomencladores de esta instancia.
-    *            tpl: "id":
-    *                        tplConfio: Ver Tpl
-    *                    Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
-    *                   instancia de nomencladores.
-    *            actions: Actions  @see ActionManager
-    *
-    *  @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
-    *                                    agrupa configuraciones de UI.
+     * @param config.defaultTpl {string} - Identificador del tpl que va a mostrar por defecto.
+     * @param config.defaultDataSource {string} - Si es especificado este dataSource, este es el q se usa para crear todos los
+     *                                            nomencladores de esta instancia.
+     * @param config.tpl {object}  - Objeto con configuracion por tpl.Si el nombre de un tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
+     *                               instancia de nomencladores.
+     *
+     * @param config.tpl.tplConfio {object} - Configuracion de Tpl {@link AjaxPlugins.Nomenclador.Tpl}
+     *
+     * @param config.actions {object} Actions  {@link AjaxPlugins.Nomenclador.ActionManager}
+     * @param config.showTpls {string[]}  Arreglo de identificadores de tpl q se van a mostarar en esta vista. Por defecto se muestran todos.
+     * @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
+     *                                    agrupa configuraciones de UI.
+
      *
      */
     nom.showUI = function (instanceName, config, instanceModifier){
