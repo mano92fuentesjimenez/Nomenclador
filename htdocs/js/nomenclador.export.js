@@ -124,6 +124,9 @@
 		var instance = nom.enums.getInstance(instanceName, instanceModifier);
 		return new nom.nomencladorTree( ({canMoveEnums:false, enumInstance:instance})._apply_(config));
 	});
+	exp.getEnumTreeTriggerSync = function(){
+		return nom.EnumTreeTrigger
+	};
 
 	/**
 	 * Devuelve un arreglo de objetos de la forma {name: nomebreDelNomenclador, id: IdentificadorDelNomenclador}
