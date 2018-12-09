@@ -416,7 +416,7 @@
 	 * Le pone la configuracion de nomencladores a una instancia
      * @param instanceName {string} 	  Nombre de la instancia de nomencladores. Agrupa las entidades
      * @param instanceModifier {string}   Modificador de nombre de instancia. Agrupa configuraciones.
-     * @param config  {object}            @see ShowUI
+     * @param config  {object}            {@link AjaxPlugins.Nomenclador.showUi}
      */
 	exp.setInstanceConfig = function(instanceName, instanceModifier, config){};
 	addService('setInstanceConfig', function(instanceName, instanceModifier, config){
