@@ -87,7 +87,7 @@ class EnumStore extends Enum
         $addData = $this->getValueArrayToDb($data);
         $fieldsOrder = $this->getFieldsOrder(reset($data));
         if(!$conn->insertData($this->getId(), $fieldsOrder, $this->getDataSource()->getSchema(), $addData, true)){
-            throw new EnumException($conn->getLastError());
+            throw new EnumException($conn->getLastError(),500);
         }
         $enumQ = $this->getEnumQuerier();
         $addedData = $conn->fetchData(false);

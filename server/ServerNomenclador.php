@@ -99,7 +99,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     }catch(Exception $e){
                         $enumResult->error = array(
                             'code'=>500,
-                            'message'=>$e->getMessage()
+                            'msg'=>$e->getMessage()
                         );
                     }
                 } break;

@@ -45,7 +45,7 @@ class NomencladorRestAdapter implements PluginRestFulAdapter{
     static function handleResult($result, RestFulResponse $response, $arguments){
         if(isset($result->error)){
             $response::error(
-                $result->error['message'],
+                $result->error['msg'],
                 $result->error['code']
             );
         }else{
