@@ -670,7 +670,8 @@
                 _fieldDetails_: field,
                 _enumDetails_: _enum,
                 _enumInstance_:enumInstance,
-                sortable: true
+                sortable: true,
+                hidden: field.hidden
             })
         });
         return new Ext.grid.ColumnModel(cmFields);
