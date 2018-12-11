@@ -319,6 +319,7 @@
 						dataTypeSelector.setValue(t);
 						showFilter(t);
 						showMultiple(t);
+						showHideCheckbox();
 						self.showPropertiesButton(t, dataTypeSelector);
 						self.properties[fieldId] = undefined;
 					});
@@ -355,6 +356,12 @@
 						record = self.gridStore.getAt(self.rowEditing);
 
 					comboFilter.setDisabled(!t.canBeFiltered || record.isDefault);
+				},
+				showHideCheckbox = function () {
+					var record = self.getCurrentRecord();
+					hideChecbox.setValue(record.get('hidden'));
+
+					hideChecbox.setDisabled(!!record.isDefault);
 				};
 
 			this.typeStore = new Ext.data.ArrayStore({
@@ -362,7 +369,7 @@
 				data :dataArray
 			});
 			this.gridStore = new Ext.data.ArrayStore({
-				fields :["name", "type", "needed", "id", 'fieldToFilter', 'fieldOrder','integrationProperty','multiple'],
+				fields :["name", "type", "needed", "id", 'fieldToFilter', 'fieldOrder','integrationProperty','multiple','hidden'],
 				data :[]
 			});
 			this.multiple = new comps.fields.Checkbox({});
@@ -497,6 +504,7 @@
 				var t = record.get('type');
 				showMultiple(t);
 				showFilter(t);
+				showHideCheckbox();
 
 				if (record.get('type') == 'DB_Enum' && combo.canSelectEnum._isObject_()) {
 					var o = combo.canSelectEnum;
@@ -624,6 +632,7 @@
 			comboFilter.on('beforeselect', function (c){
 				c.filterValueObj = undefined;
 			});
+			var hideChecbox = new fields.Checkbox();
 			var cm = new Ext.grid.ColumnModel([
 				{
 					id :"name",
@@ -672,6 +681,12 @@
 					dataIndex:'multiple',
 					editor:this.multiple,
 					renderer:boolRender
+				},
+				{
+					header:'Oculto',
+					dataIndex:'hidden',
+					editor: hideChecbox,
+					renderer: boolRender
 				}
 			]);
 
@@ -774,6 +789,7 @@
 
 						showFilter(t);
 						showMultiple(t);
+						showHideCheckbox();
 
 						headerEditor.setDisabled(record.isDefault && !record.isDenom);
 						dataTypeSelector.setDisabled(record.isDefault && !record.isDenom);
@@ -1019,6 +1035,7 @@
 					integrationProp = record.get('integrationProperty'),
 					header = record.get("name"),
 					multi = record.get("multiple"),
+					hidden = record.get('hidden'),
 					t = nom.Type.Utils.getType(type);
 
 				if (properties)
@@ -1039,7 +1056,8 @@
 					'isDefault' :record.isDefault,
 					'isDenom' :record.isDenom,
 					'integrationProperty':integrationProp,
-					'order':order
+					'order':order,
+					'hidden': hidden
 				};
 				order++;
 				//anhadir todas las nuevas referencias.
@@ -1260,7 +1278,8 @@
 						"id" :field.id,
 						"fieldToFilter" :filter,
 						'integrationProperty':field.integrationProperty,
-						'multiple':field.properties !== undefined && field.properties['multiSelection']
+						'multiple':field.properties !== undefined && field.properties['multiSelection'],
+						'hidden':!!field.hidden
 					});
 					if (modifying && this.enumHasData)
 						r.modDisabled = true;
@@ -1270,7 +1289,7 @@
 						r.isDenom = true;
 					this.gridStore.add(r);
 					if (!modifying) {
-						this.removeButton.setDisabled(this.countAddedFields() ==0);
+						this.removeButton.setDisabled(this.countAddedFields() === 0);
 						this.gridEditor.fireEvent('dataadded');
 					}
 				}
