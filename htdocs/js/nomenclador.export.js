@@ -247,11 +247,11 @@
 	 *                                  [ { fieldId: data ,...} ].
 	 * @param scope                     Scope en el que se va a a llamar a la función callback.
 	 */
-	exp.queryEnum=function(instanceName,instanceModifier,_enum, config,callback, scope, onError, mask){};
-	addService('queryEnum', function(instanceName,instanceModifier,_enum, config,callback, scope, onError, mask){
+	exp.queryEnum=function(instanceName,instanceModifier,_enum, config,callback, scope, onError, mask,_404EmptyPatch){};
+	addService('queryEnum', function(instanceName,instanceModifier,_enum, config,callback, scope, onError, mask,_404EmptyPatch){
 		var configObj = config._isObject_() ? config : {};
 			_enum = _enum._isString_() ? _enum : _enum.id;
-		nom.getEnumData(instanceName,instanceModifier, _enum, callback, scope, configObj, onError, mask)
+		nom.getEnumData(instanceName,instanceModifier, _enum, callback, scope, configObj, onError, mask,_404EmptyPatch)
 	},true);
 
 	/**
