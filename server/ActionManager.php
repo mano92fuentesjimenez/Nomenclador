@@ -191,7 +191,7 @@ class ActionManager
                     }
                     if ($r->type == self::STOP || $r->type == self::CONVERT_TO_ADD) {
                         unset($data['mod']);
-                        break;
+                        $this->throwException($r,$p['server']);
                     }
                 }
             }
@@ -204,7 +204,7 @@ class ActionManager
                 $p = $this->getPlugin($action);
                 $r = $p['server']->{$p['action']}($enum, $data['add']);
                 if($r instanceof ActionManagerResult && $r->type == self::STOP) {
-                    break;
+                   $this->throwException($r,$p['server']);
                 }
             }
         }
