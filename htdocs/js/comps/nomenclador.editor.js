@@ -474,11 +474,17 @@
                 return !tpl.isReadOnly() && !tpl.isHidden() && instanceConfig.getDefaultTplName() !== tpl.getHeader();
             },this,true)._map_(function(tpl,k){
                 return {
-                    text:tpl.getHeader(),
+                    text:$$(tpl.getHeader()).capitalize(),
                     handler:this.proccessAction._delegate_(['add_enum',k],this, true)
                 };
             },this,false);
+            var defaultHandler = this.proccessAction._delegate_(['add_enum',instanceConfig.getDefaultTplName()],this, true);
             addEnumMenu = addEnumMenu._length_() ===0?undefined:addEnumMenu;
+            if(utils.isArray(addEnumMenu))
+                addEnumMenu.splice(0,0,{
+                    text:$$(this.entityType).capitalize(),
+                    handler:defaultHandler
+                });
 
             mn.registerItem(
                 [
@@ -486,7 +492,7 @@
                         text: 'Adicionar '+this.entityType,
                         iconCls : 'gis_adicionar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_(['add_enum',instanceConfig.getDefaultTplName()],this, true),
+                        handler:  utils.isArray(addEnumMenu) ? undefined : defaultHandler,
                         menu:addEnumMenu
                     }
                 ],
