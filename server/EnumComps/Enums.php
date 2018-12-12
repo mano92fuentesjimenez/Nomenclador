@@ -90,10 +90,11 @@ class Enums
     private function validateId($enum){
         $id = is_string($enum)? $enum:$enum['id'];
         if(!isset($this->enums[$id])){
-            throw new EnumException("El nomenclador no existe");
+            throw new EnumNotExist($id, $this->enumInstance);
         }
         return $id;
     }
+
     /**
      * @param $enum Enum|string
      * @return Enum  Enum

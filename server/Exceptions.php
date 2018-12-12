@@ -88,3 +88,10 @@ class InvalidModelRevision extends EnumException{
         parent::__construct($msg, 409, null);
     }
 }
+class EnumNotExist extends EnumException{
+    public function __construct($enumId, $enumInstance)
+    {
+        $msg = "El modelo $enumId no existe en la instancia $enumInstance.";
+        parent::__construct($msg, 404, null);
+    }
+}
