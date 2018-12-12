@@ -8,7 +8,7 @@
 require_once 'EnumComps/Enum.php';
 class EnumQuerier extends Enum
 {
-
+    private $where;
     /**
      * Dice cuantos records tiene este nomenclador
      * @param $where {string}   Es la cadena representando al where en la consulta.
@@ -75,7 +75,9 @@ class EnumQuerier extends Enum
         return $arr;
     }
 
-
+    public function setWhere($where){
+        $this->where = $where;
+    }
 
     /**
      * Funcion para recuperar los datos de un enum
@@ -167,9 +169,9 @@ class EnumQuerier extends Enum
         $fields = $fieldsToGet;
         $baseName = 'base';
         $subQeryName ='subq';
-        if(is_string($where)){
-            $where = $this->processWhere($where,$baseName);
-        }
+
+        $where = $this->processWhere($where,$baseName);
+
 
         $ds = $this->getDataSource();
         $conn = EnumsUtils::getDBConnection($this);
@@ -274,6 +276,20 @@ class EnumQuerier extends Enum
         return $data;
     }
     private function processWhere($where,$baseName){
+        $ret = null;
+        if(is_string($where)) {
+            $ret = $this->parseWhere($where, $baseName);
+        }
+        if(is_string($this->where) ){
+            $r = $this->parseWhere($this->where,$baseName);
+            if(is_null($ret))
+                $ret = $r;
+            else
+                $ret = "($ret) and ($r)";
+        }
+        return $ret;
+    }
+    private function parseWhere($where, $baseName){
         $glue = '(?:(?i)or|and)';
         $operators = '(?:not )?((?i)like|=|>|<|>=|<=|<>|in)';
         $id = '[-_[:alnum:]]+?';
