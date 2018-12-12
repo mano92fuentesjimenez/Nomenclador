@@ -399,8 +399,32 @@ class ServerNomenclador extends ClientResponderAdapter
      */
     public function addRecords($enumInstance, $enumId, $records){
         $enums = Enums::getInstance($enumInstance);
-        $enum = $enums->getEnum($enumId);
+        $enum = $enums->getEnumStore($enumId);
         $enum->addRecords($records);
+
+    }/**
+     * Modifica records en la instancia dada en el nomenclador dado
+     * @param $enumInstance  {string} Nombre de instancia de nomencladores
+     * @param $enumId        {string} Identificador del nomenclador
+     * @param $records       {array}  Records
+     * @throws EnumException
+     */
+    public function modRecords($enumInstance, $enumId, $records){
+        $enums = Enums::getInstance($enumInstance);
+        $enum = $enums->getEnumStore($enumId);
+        $enum->modRecords($records);
+
+    }/**
+     * Elimina records en la instancia dada en el nomenclador dado
+     * @param $enumInstance  {string} Nombre de instancia de nomencladores
+     * @param $enumId        {string} Identificador del nomenclador
+     * @param $records       {array}  Records
+     * @throws EnumException
+     */
+    public function delRecords($enumInstance, $enumId, $records){
+        $enums = Enums::getInstance($enumInstance);
+        $enum = $enums->getEnumStore($enumId);
+        $enum->delRecords($records);
 
     }
     public function getResumeViewTpl(){
