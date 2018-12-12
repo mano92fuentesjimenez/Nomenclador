@@ -268,11 +268,12 @@ class EnumQuerier extends Enum
                 RecordsManipulator::mixDataFromAnyWhere($data,$inData);
             }
         }
-
-        if (count($data) == 0) {
-            return $data;
-        }
-
+        if(is_string($where) && count($data) ===0 )
+            throw new DataNotExists('El filtro no contiene a ningun dato');
+        else if(!is_null($inData) && count($data) === 0)
+            throw new DataNotExists('No existe ningun dato con un identificador contenido en el arreglo de identificadores');
+        else if (!is_null($idRow) && count($data) === 0)
+            throw new DataNotExists("No existe un record con identificador: '$idRow''");
         return $data;
     }
     private function processWhere($where,$baseName){

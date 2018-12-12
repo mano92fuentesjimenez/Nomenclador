@@ -95,3 +95,10 @@ class EnumNotExist extends EnumException{
         parent::__construct($msg, 404, null);
     }
 }
+
+class DataNotExists extends EnumException{
+    public function __construct($msg)
+    {
+        parent::__construct($msg, 404, null);
+    }
+}
