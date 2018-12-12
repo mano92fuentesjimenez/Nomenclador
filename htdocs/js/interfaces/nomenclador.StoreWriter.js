@@ -44,6 +44,24 @@
             var self = this;
             this.addEvents({
                 /**
+                 * Event that is called before records are deleted, so they could be stopped from removing. To not remove a
+                 * record, remove it from records param
+                 * @param records
+                 */
+                'before_submit_del_records':true,
+                /**
+                 * Event that is called before records are modified, so they could be stopped from modifying. To not modify
+                 * a record, remove it from records param. You can also remodify a modified record.
+                 * @param records
+                 */
+                'before_submit_mod_records':true,
+                /**
+                 * Event that is called before record are added, so they could be stopped from modifying. To not add a record
+                 * remove it from records param, you can also add other properties.
+                 * @param records
+                 */
+                'before_submit_add_records':true,
+                /**
                  * Event that is fired after changes has been submited to the server.
                  */
                 'changessubmited':true,
@@ -243,28 +261,32 @@
             var changes = this.store.getRawChanges();
             var mask  = this.getMaskObj('Subiendo cambios.'),
                 self = this;
-            if(!this.offlineMode)
+            if(!this.offlineMode) {
+                this.fireEvent('before_submit_del_records',changes['del']);
+                this.fireEvent('before_submit_add_records',changes['add']);
+                this.fireEvent('before_submit_mod_records',changes['mod']);
                 nom.request('submitChanges', {
                     instanceName: this.enumInstance,
                     data: changes,
                     modelRevision: this._enum.modelRevision,
                     modelId: this._enum.id,
                     actions: this.getActions()
-                }, function (response, o) {
+                   }, function (response, o) {
                     changes['add'] = response.add;
-                    if (self.fireEvent('changessubmited',changes) === false)
+                    if (self.fireEvent('changessubmited', changes) === false)
                         return;
                     if (response.delMsg) {
                         errorMsg("Error eliminando datos", response.delMsg);
                         return;
                     }
                     //TODO: Adicionar interdaz para controlar versiones por records cuando se eliminan y modifican los mismos
-                    if(utils.isArray(response.underRevision) && response.underRevision.length >0 ){
+                    if (utils.isArray(response.underRevision) && response.underRevision.length > 0) {
                         info('Implementar mecanismo para aceptar los cambios viejos por los nuevos, No se aceptaron los cambios en los records desactualizados');
                     }
                     self.store.commitChanges();
                     self.reloadCurrentPage()
                 }, null, mask/*,true*/);
+            }
             else setTimeout(function(){
                 self.store.commitChanges();
             }, 0)
