@@ -62,10 +62,10 @@ class Enum
 
     public function getDefaulField()
     {
-        return new Field($this->enum_tree['fields'][$this->getDefaultFieldId()]);
+        return new Field($this->enum_tree['fields'][$this->getDenomFieldId()]);
     }
 
-    public function getDefaultFieldId()
+    public function getDenomFieldId()
     {
         return $this->enum_tree['denomField'];
     }

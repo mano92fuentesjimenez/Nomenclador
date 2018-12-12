@@ -758,7 +758,7 @@ class EnumRestMethods{
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnumQuerier($enumId);
 
-        $columnId = isset($columnId) ? $columnId : $enum->getDefaultFieldId();
+        $columnId = isset($columnId) ? $columnId : $enum->getDenomFieldId();
 
         $limit = is_array($config) ? (
             is_numeric($config['limit']) ? $config['limit'] : 999999)
