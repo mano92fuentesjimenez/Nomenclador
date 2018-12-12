@@ -64,6 +64,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     if(count($resp['underRevision']) !== 0){
                         throw new EnumRevisionConflict();
                     }
+                    $enumResult->resp = $resp['modified'];
                 }
                     break;
                 case 'modEnumData': {

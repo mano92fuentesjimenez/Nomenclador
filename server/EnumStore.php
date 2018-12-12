@@ -60,7 +60,7 @@ class EnumStore extends Enum
 
         $modOut = $this->modRecords($data['mod']);
         if (is_array($modOut))
-            $underRevision = array_merge($underRevision, $modOut);
+            $underRevision = array_merge($underRevision, $modOut['underRevision']);
 
         $val = $this->delRecords($data['del']);
         if (is_string($val))
@@ -71,7 +71,7 @@ class EnumStore extends Enum
         $this->incrementDataRevision();
         $enums->saveEnums();
 
-        return array('delMsg' => $msg, 'add' => $addedData, 'underRevision' => $underRevision);
+        return array('delMsg' => $msg, 'add' => $addedData, 'underRevision' => $underRevision,'modified'=>$modOut['modified']);
     }
     private function isData($data)
     {
@@ -146,9 +146,10 @@ class EnumStore extends Enum
             throw new EnumException($conn->getLastError());
         }
         $data = $conn->fetchData(false);
+        $data = $enumQ->getValueArrayFromDb($data);
 
-        $actionsM->callPostModActions($this,$enumQ->getValueArrayFromDb($data),$originalData);
-        return $details['underRevision'];
+        $actionsM->callPostModActions($this,$data,$originalData);
+        return array('underRevision'=> $details['underRevision'], 'modified'=>$data);
     }
     public function delRecords($data){
         if(!$this->isData($data))
