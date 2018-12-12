@@ -21,6 +21,9 @@ class EnumStore extends Enum
         foreach ($data as $values) {
             $record = array();
 
+            if(!is_array($values))
+                throw new Exception('Invalid records format',400);
+
             foreach ($values as $fieldId => $value) {
                 $field = $this->getField($fieldId);
                 if(!isset($field)) continue;
@@ -38,6 +41,7 @@ class EnumStore extends Enum
         }
         return $arr;
     }
+
     public function submitChanges($enumInstance, $modelRevision, $data)
     {
         if (!$data) {
