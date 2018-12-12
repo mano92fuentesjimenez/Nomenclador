@@ -50,6 +50,15 @@ class RecordsManipulator
         }
         return $arr;
     }
+    public static function convertArrayToSQLList($arr){
+        $str = '( ';
+        foreach ($arr as $v){
+            $str.="'$v',";
+        }
+        $str = substr($str,0,-1);
+        return "$str )";
+    }
+
 
     public static function getRecordsIds($records){
         $arr =array();
