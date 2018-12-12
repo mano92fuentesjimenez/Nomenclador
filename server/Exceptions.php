@@ -81,3 +81,10 @@ class EnumInvalidModifyingData extends EnumException{
         parent::__construct($msg, 400, null);
     }
 }
+class InvalidModelRevision extends EnumException{
+    public function __construct()
+    {
+        $msg = "Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.";
+        parent::__construct($msg, 409, null);
+    }
+}

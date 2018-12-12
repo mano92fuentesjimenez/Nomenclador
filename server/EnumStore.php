@@ -51,7 +51,7 @@ class EnumStore extends Enum
         $actionsM = ActionManager::getInstance($enumInstance);
 
         if (!$this->sameRevision($modelRevision)) {
-            throw new EnumException("Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.");
+            throw new InvalidModelRevision();
         }
 
         $underRevision = array();
