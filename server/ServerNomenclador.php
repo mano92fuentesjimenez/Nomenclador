@@ -174,7 +174,11 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'getRecord':{
+                    $action = $requ->action;
+                    $requ->action = 'getEnumData';
                     $res = $this->handlePreDrawing($requ);
+                    $requ->action = $action;
+
                     $enumResult->resp = reset($res->resp);
                 }
                 break;
