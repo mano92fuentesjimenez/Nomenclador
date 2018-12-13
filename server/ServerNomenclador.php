@@ -173,6 +173,11 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumResult->resp= EnumsRequests::submitChanges($enumInstance, $modelId, $modelRevision, $data);
                 }
                     break;
+                case 'getRecord':{
+                    $res = $this->handlePreDrawing($requ);
+                    $enumResult->resp = reset($res->resp);
+                }
+                break;
                 case 'getEnumData': {
                     $params = $requ->value;
                     $enumId = $params['enum'];

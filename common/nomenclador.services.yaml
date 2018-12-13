@@ -108,7 +108,7 @@ services:
           get:
             description: "Carga el record del modelo especificado"
             out: "application/json"
-            action: "getEnumData"
+            action: "getRecord"
             arguments:
               instance:
                 description: "Instancia o dominio de trabajo"
