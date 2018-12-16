@@ -127,7 +127,7 @@
         },
         showEditor: function (data, callb) {
             var self = this,
-                editor = new addW({
+                editor = this.editorWindow = new addW({
                     height: 400,
                     modal: true,
                     width: '30%',
