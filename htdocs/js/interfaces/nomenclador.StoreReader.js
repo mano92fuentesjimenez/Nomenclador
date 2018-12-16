@@ -179,6 +179,9 @@
                 return Genesig.Utils.mask(maskObj, msg);
 
         },
+        setMaskObjObjective:function(panel){
+            this.maskObj = panel;
+        },
         initializeEnumEvents:function(){
 
             if(this.offlineMode)
