@@ -357,8 +357,8 @@
 				type = sn.attributes._type_;
 			//el valor que se muestra en el arbol no es el id del nodo
 			if (type == 'field')
-				_enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.parentNode.text);
-			else _enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.text);
+				_enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.parentNode.attributes._text_);
+			else _enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.attributes._text_);
 			//el valor que se muestra en el arbol no es el id del nodo
 			Object.keys(_enum.fields).map(function (key){
 				var value = _enum.fields[key];
