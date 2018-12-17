@@ -332,9 +332,18 @@
 				},
 				showMultiple = function(type){
 					var t = nom.Type.Utils.getType(type),
-						record = self.gridStore.getAt(self.rowEditing);
+						record = self.gridStore.getAt(self.rowEditing),
+						disabled = !t.canBeMultiple || self.enumHasData || record.isDefault;
 
-					self.multiple.setDisabled(!t.canBeMultiple || self.enumHasData || record.isDefault);
+					if(type === 'DB_Enum'){
+						var multipleCounter = 0;
+						self.getFields()._each_(function (v) {
+							if(v.type =='DB_Enum' && v.multiple)
+								multipleCounter ++;
+						});
+						disabled |= multipleCounter > 0;
+					}
+					self.multiple.setDisabled(disabled);
 				},
 				showFilter = function(type){
 					var t = nom.Type.Utils.getType(type),
@@ -1139,7 +1148,8 @@
 					'id' :id,
 					'type' :type,
 					'header' :header,
-					properties :self.properties[id] ? self.properties[id].getValue() : undefined
+					properties :self.properties[id] ? self.properties[id].getValue() : undefined,
+					multiple: record.get('multiple')
 				};
 			});
 			return fields;
