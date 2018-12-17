@@ -564,6 +564,7 @@
 				triggerAction :'all',
 				trigger1Class :"gis_clear",
 				trigger2Class :"x-form-arrow-trigger",
+				readOnly: true,
 				forceSelection :false,
 				onTrigger2Click :function (){
 					var cRecord = self.gridStore.getAt(self.rowEditing);
