@@ -333,8 +333,14 @@
 				showMultiple = function(type){
 					var t = nom.Type.Utils.getType(type),
 						record = self.gridStore.getAt(self.rowEditing),
-						disabled = !t.canBeMultiple || self.enumHasData || record.isDefault;
-
+						disabled = !t.canBeMultiple  || record.isDefault;
+					if(utils.isObject(self._enum)){
+						var currentRecord = self.getCurrentRecord(),
+							currentId = currentRecord.get('id');
+						disabled |= $$(self._enum.fields).some(function (v) {
+							return v.id === currentId
+						})
+					}
 					if(type === 'DB_Enum'){
 						var multipleCounter = 0;
 						self.getFields()._each_(function (v) {
@@ -985,6 +991,9 @@
 				if (pVal && pVal.rendered)
 					pVal.destroy();
 			})
+		},
+		getCurrentRecord:function(){
+			return this.gridStore.getAt(this.rowEditing);
 		},
 		getNomenclador :function (){
 			var nomenclador = {};
