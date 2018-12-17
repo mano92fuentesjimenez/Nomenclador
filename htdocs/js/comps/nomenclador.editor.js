@@ -641,7 +641,8 @@
                             enumHasData: response['hasData'],
                             entityType:self.entityType,
                             tpl:tpl,
-                            tplConfig: tplConfig
+                            tplConfig: tplConfig,
+                            defaultDataSource: instanceConfig.getDefaultDataSource(tpl)
                         }).show();
                     });
                 };
