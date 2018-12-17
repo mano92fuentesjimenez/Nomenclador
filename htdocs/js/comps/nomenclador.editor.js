@@ -254,7 +254,7 @@
 			if (this.visorTabPanel.hasChangesToSave())
 				Ext.Msg.show({
 					title: 'Guardar los cambios',
-					msg: 'Estas cerrando una pestaña con datos sin salvar. Deseas salvarlos?',
+					msg: 'Estas cerrando una pesta&ntilde;a con datos sin salvar. Deseas salvarlos?',
 					buttons: Ext.Msg.YESNOCANCEL,
 					fn: this.dialogHandler,
 					icon: Ext.MessageBox.QUESTION,
