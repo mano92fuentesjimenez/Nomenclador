@@ -61,6 +61,8 @@
                 });
             }
             else{
+            	if(text == null)
+            		return '';
 				var s = '';
 				text._each_(function(v,k){
 					s+= typeObj.enumTypeRenderer(v.displayField)+', ';

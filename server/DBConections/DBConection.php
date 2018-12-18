@@ -174,17 +174,17 @@ class DBConnProxy extends  DBConn
                 if(!isset($ret[$key]))
                     $ret[$key] = $record;
 
-               if($multiEnumField) {
-                    if( !is_array($ret[$key][$id]) ){
-                        $ret[$key][$id] = array();
-                        //el caso en que el campo al que apunta sea uno virtual.
-                        if(isset($record[$id.BaseType::REF_TYPE_VALUE_HEADER]))
-                            $ret[$key][$id.BaseType::REF_TYPE_VALUE_HEADER] = array();
-                    }
-                    $ret[$key][$id][] = $record[$id];
-                    if(isset($record[$id.BaseType::REF_TYPE_VALUE_HEADER]))
-                        $ret[$key][$id.BaseType::REF_TYPE_VALUE_HEADER][] = $record[$id.BaseType::REF_TYPE_VALUE_HEADER];
-                }
+               if($multiEnumField && !is_null($record[$id])) {
+                   if (!is_array($ret[$key][$id])) {
+                       $ret[$key][$id] = array();
+                       //el caso en que el campo al que apunta sea uno virtual.
+                       if (isset($record[$id . BaseType::REF_TYPE_VALUE_HEADER]) && !is_null($record[$id . BaseType::REF_TYPE_VALUE_HEADER]))
+                           $ret[$key][$id . BaseType::REF_TYPE_VALUE_HEADER] = array();
+                   }
+                   $ret[$key][$id][] = $record[$id];
+                   if (isset($record[$id . BaseType::REF_TYPE_VALUE_HEADER]) && !is_null($record[$id . BaseType::REF_TYPE_VALUE_HEADER]))
+                       $ret[$key][$id . BaseType::REF_TYPE_VALUE_HEADER][] = $record[$id . BaseType::REF_TYPE_VALUE_HEADER];
+               }
             }
         }
         return $ret;

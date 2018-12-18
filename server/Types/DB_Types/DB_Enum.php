@@ -29,8 +29,7 @@ class DB_Enum extends BaseType
 
         return "integer references $tableName on delete cascade";
     }
-
-    public static function getValueFromDB($enumInstance, $record, $value, $field, $connType){
+    public static function getValueFromDB($enumInstance, &$record, $value, $field, $connType){
         if(is_null($value))
             return null;
 
