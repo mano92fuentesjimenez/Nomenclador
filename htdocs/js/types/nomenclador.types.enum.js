@@ -26,7 +26,7 @@
         canBeFiltered:true,
         canBeMultiple:true,
 		gridRender :function (text, pD, pRec){
-			if(text == -1)
+			if(text == null || text == -1)
 				return "Dato no referenciado";
 			var field = this._fieldDetails_,
 				enumD = this._enumDetails_,

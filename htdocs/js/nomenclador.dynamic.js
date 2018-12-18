@@ -850,6 +850,7 @@
          * Especifica si se pueden elegir multiples nomencladores o uno solo.
          */
         multiSelection:true,
+        allowBlank: false,
 
         currentValue:null,
         //privates
@@ -964,13 +965,15 @@
             else this.clean();
         },
         getValue:function(){
+            if(this.currentValue == null)
+                return;
             return this.currentValue;
         },
         getXType:function(){
-            return 'enum_input'
+            return 'enum_input';
         },
         isValid:function(){
-            return this.currentValue && this.currentValue['displayField'] && this.currentValue['valueField']
+            return this.allowBlank || (this.currentValue && this.currentValue['displayField'] && this.currentValue['valueField']);
         },
         getFormVEvtNames:function(){
             return 'datachanged';
