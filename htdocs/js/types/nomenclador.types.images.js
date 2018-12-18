@@ -40,7 +40,8 @@
             if(!field.properties.multiSelection)
                 input = new fields.triggerField({
                     fieldLabel:field.header,
-                    allowBlank:field.needed,
+                    allowBlank:!field.needed,
+                    readOnly: true,
                     onTrigger2Click:function(){
                         invokeManageImages(function ff(objs){
                             var v = objs[0] ? objs[0].id : undefined;
@@ -56,12 +57,18 @@
                     },
                     isDirty:function(){
                         return true;
+                    },
+                    getValue:function(){
+                        var v = fields.triggerField.prototype.getValue.call(this);
+                        if(v == null || v == '')
+                            return;
+                        return v;
                     }
                 });
             else {
                 var dv = new imageViewer([]);
                 input = new Ext.Panel({
-                    allowBlank: field.needed,
+                    allowBlank: !field.needed,
                     items: [dv],
                     isGrid:true,
                     tbar:[
@@ -90,6 +97,8 @@
                         dv.store.each(function(r){
                             v.push(r.get('code'))
                         });
+                        if( v.length === 0)
+                            return;
                         return v;
                     },
                     setValue:function(values){
@@ -102,7 +111,7 @@
                                 }))
                             });
                         if(dv.rendered)
-                        dv.refresh();
+                            dv.refresh();
                     },
                     getFormVEvtNames:function(){
                         return 'datachanged';
