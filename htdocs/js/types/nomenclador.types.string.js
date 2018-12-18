@@ -19,7 +19,7 @@
 					var v = AjaxPlugins.Ext3_components.fields.simpleField.prototype.getValue.call(this);
 					if(v == '')
 						return;
-					return;
+					return v;
 				}
 			})
 		}
