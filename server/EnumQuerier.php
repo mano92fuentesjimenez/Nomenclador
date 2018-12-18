@@ -9,6 +9,7 @@ require_once 'EnumComps/Enum.php';
 class EnumQuerier extends Enum
 {
     private $where;
+    private $_404EmptyPatch = false;
     /**
      * Dice cuantos records tiene este nomenclador
      * @param $where {string}   Es la cadena representando al where en la consulta.
@@ -77,6 +78,9 @@ class EnumQuerier extends Enum
 
     public function setWhere($where){
         $this->where = $where;
+    }
+    public function set404Patch($_404EmptyPatch){
+        $this->_404EmptyPatch = $_404EmptyPatch;
     }
 
     /**
@@ -268,12 +272,14 @@ class EnumQuerier extends Enum
                 RecordsManipulator::mixDataFromAnyWhere($data,$inData);
             }
         }
-        if(is_string($where) && count($data) ===0 )
-            throw new DataNotExists('El filtro no contiene a ningun dato');
-        else if(!is_null($inData) && count($data) === 0)
-            throw new DataNotExists('No existe ningun dato con un identificador contenido en el arreglo de identificadores');
-        else if (!is_null($idRow) && count($data) === 0)
-            throw new DataNotExists("No existe un record con identificador: '$idRow''");
+        if(!$this->_404EmptyPatch) {
+            if (is_string($where) && count($data) === 0)
+                throw new DataNotExists('El filtro no contiene a ningun dato');
+            else if (!is_null($inData) && count($data) === 0)
+                throw new DataNotExists('No existe ningun dato con un identificador contenido en el arreglo de identificadores');
+            else if (!is_null($idRow) && count($data) === 0)
+                throw new DataNotExists("No existe un record con identificador: '$idRow''");
+        }
         return $data;
     }
     private function processWhere($where,$baseName){

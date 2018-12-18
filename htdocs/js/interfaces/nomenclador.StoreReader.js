@@ -27,6 +27,7 @@
         enumInstance:null,
 
         //config
+        '404EmptyPatch': true,
         fieldFilter: null,
         fieldFilterValue: null,
         pageSize: 10,
@@ -251,7 +252,8 @@
                 pageSize: this.pageSize,
                 offset: (pagePosition * this.pageSize),
                 columns: this.columns,
-                actions: this.getActions(this)
+                actions: this.getActions(this),
+                '404EmptyPatch': this['404EmptyPatch']
             };
         },
         getPagingBar:function(){

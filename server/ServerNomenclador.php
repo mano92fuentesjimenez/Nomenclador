@@ -185,7 +185,7 @@ class ServerNomenclador extends ClientResponderAdapter
                 case 'getEnumData': {
                     $params = $requ->value;
                     $enumId = $params['enum'];
-
+                    $_404EmptyPatch =$params['404EmptyPatch'];
                     $loadAll = $params['enumLoadEnums'] ? true : false;
                     $enumResult->resp = $this->queryEnum(
                         $enumInstance,
@@ -214,8 +214,10 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'getTotalRecordsFromEnum':{
                     $enum_id = $requ->value['_enum'];
+                    $patch = $requ->value['404EmptyPatch'];
                     $enums = Enums::getInstance($enumInstance);
                     $enum = $enums->getEnumQuerier($enum_id);
+                    $enum->set404Patch($patch);
 
                     $enumResult->resp = $enum->getTotalRecords($requ->value['where']);
                 }
@@ -520,9 +522,10 @@ class ServerNomenclador extends ClientResponderAdapter
         return PrimaryKey::ID;
     }
 
-    public function queryEnum($enumInstance, $enumId, $pageOffset, $pageSize, $loadAll, $idRow, $fieldLazyToEval, $fields, $where,$inData){
+    public function queryEnum($enumInstance, $enumId, $pageOffset, $pageSize, $loadAll, $idRow, $fieldLazyToEval, $fields, $where,$inData, $_404EmptyPatch = false){
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnumQuerier($enumId);
+        $enum->set404Patch($_404EmptyPatch);
 
         return $enum->queryEnum($pageOffset,$pageSize,$loadAll, $idRow,$fieldLazyToEval,$fields,$where,$inData );
     }
