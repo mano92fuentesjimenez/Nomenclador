@@ -197,7 +197,8 @@ class ServerNomenclador extends ClientResponderAdapter
                         null,
                         array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadColumns'] : null,
                         array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null,
-                        null
+                        null,
+                        $_404EmptyPatch
                         );
                 }
                     break;

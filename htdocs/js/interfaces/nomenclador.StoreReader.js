@@ -303,7 +303,8 @@
                         nom.execute(cb,[],this);
                         this.refreshView();
                     },
-                    this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj()
+                    this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj(),
+                    self['404EmptyPatch']
                 );
             else setTimeout(function(){
                 self.store.loadData(self.store.data || []);

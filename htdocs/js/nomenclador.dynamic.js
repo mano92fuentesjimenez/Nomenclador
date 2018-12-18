@@ -574,7 +574,7 @@
      * @param [onError]        {function}      Funcion que se ejecuta cuando el pedido genera errors
      * @param [mask]           {function}      Funcion que cuando se ejecuta quita la mascara
      */
-    nom.getEnumData = function (instanceName, enumId, callback, scope, enumDataLoadConfig, onError, mask){
+    nom.getEnumData = function (instanceName, enumId, callback, scope, enumDataLoadConfig, onError, mask, _404EmptyPatch){
         function proccessRequest (response, params){
             callback.call(scope,response, params);
         }
@@ -597,7 +597,8 @@
             enumLoadColumns:cl,
             enumLoadWhere:this._default_(enumDataLoadConfig.where,'',null,null),
             enumLoadIdRow:this._default_(enumDataLoadConfig.idRow,'',null,null),
-            enumLoadActions:this._default_(enumDataLoadConfig.actions,{})
+            enumLoadActions:this._default_(enumDataLoadConfig.actions,{}),
+            '404EmptyPatch': _404EmptyPatch
         },proccessRequest,onError,mask);
     };
     nom.getStoreConfigFromEnum = function (_enum, columns){
