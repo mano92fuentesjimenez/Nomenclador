@@ -57,8 +57,9 @@ abstract class BaseType
      * @return string
      */
     public static function getValueToDB($record, $value, $field, $connType){
-     
-        return "'".$value."'";            
+        if(is_null($value))
+            return null;
+        return "'$value'";
     }
 
     /**Debe ser capaz de saber cuando el valor ya se modificó y no modificarlo de nuevo
@@ -77,7 +78,7 @@ abstract class BaseType
         return BaseType::VALUE;
     }
     public static function getDefaultValue($connType,$typeProperties ){
-        return "";
+        return 'null';
     }
     
     public static function compareProperties($val1, $val2){

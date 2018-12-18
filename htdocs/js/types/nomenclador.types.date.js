@@ -19,19 +19,28 @@
         {
             nameToShow :'Fecha',
             getValueEditExtComp :function (enumInstance, field) {
-                return new fields.DateField({
+                return Window.enumDate = new fields.DateField({
                     fieldLabel:field.header,
-                    allowBlank: !!field.needed,
+                    allowBlank: !field.needed,
                     getFormVEvtNames: function () {
                         return 'valuesetted';
                     },
                     setValue: function (v) {
                         fields.DateField.prototype.setValue.call(this, v);
                         this.fireEvent('valuesetted');
+                    },
+                    getValue: function(){
+                        var v = fields.DateField.prototype.getValue.call(this);
+                        if(v ==='')
+                            return;
+                        return v
                     }
                 });
+
             },
             gridRender :function (text){
+                if(text == null)
+                    return '';
                 var date = new Date(text);
                
                 return date.toLocaleDateString();

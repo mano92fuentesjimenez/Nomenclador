@@ -67,7 +67,7 @@ class Postgree_9_1 extends DBConn
                 $haveDefault = isset($value['default']);
                 $createStr .= "\"{$value['id']}\" {$value['type']}";
                 if($haveDefault){
-                    $createStr .= " DEFAULT '{$value['default']}'";
+                    $createStr .= " DEFAULT {$value['default']}";
                 }
                 $createStr.=',';
             }
