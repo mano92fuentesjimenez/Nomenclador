@@ -380,10 +380,12 @@
 			this.store.each(function (r) {
 				values.push(r.data);
 			});
+			if (values._length_() ===0)
+			    return;
 			return Ext.encode(values);
 		},
 		setValue: function (v) {
-			var value = v == "" ? [] : Ext.decode(v);
+			var value = v == null ? [] : Ext.decode(v);
 			this.loadData(value);
 		}
 

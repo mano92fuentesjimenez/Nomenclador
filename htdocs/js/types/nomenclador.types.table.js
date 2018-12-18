@@ -72,6 +72,8 @@
                 });
 			},
 			gridRender: function (value) {
+				if(value == null)
+					return '';
 
 				var html = '<div' +
 					" props_value= '"+value+"' "+
