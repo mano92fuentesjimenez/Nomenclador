@@ -973,6 +973,8 @@
                 this.fireEvent('datachanged',this.currentValue);
             }
             var f = function(){
+                if(utils.isFunction(self.showCleanButton))
+                    self.showCleanButton(v);
                 self.setRawValue(v);
             };
             if(this.rendered)
