@@ -337,9 +337,9 @@
 					if(utils.isObject(self._enum)){
 						var currentRecord = self.getCurrentRecord(),
 							currentId = currentRecord.get('id');
-						disabled |= $$(self._enum.fields).some(function (v) {
+						disabled |= ($$(self._enum.fields).some(function (v) {
 							return v.id === currentId
-						})
+						}) && self.enumHasData)
 					}
 					if(type === 'DB_Enum'){
 						var multipleCounter = 0;
