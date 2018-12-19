@@ -276,7 +276,7 @@ class Postgree_9_1 extends DBConn
 
     public function setDefaultValueForColumn($tableName, $schema, $fieldName, $value)
     {
-        $query = "ALTER TABLE \"$schema\".\"$tableName\" ALTER COLUMN \"$fieldName\" SET DEFAULT '$value';";
+        $query = "ALTER TABLE \"$schema\".\"$tableName\" ALTER COLUMN \"$fieldName\" SET DEFAULT $value;";
         $query .= "UPDATE \"$schema\".\"$tableName\" SET \"$fieldName\" = DEFAULT WHERE \"$fieldName\" IS NULL ";
         return $this->query($query);
     }
