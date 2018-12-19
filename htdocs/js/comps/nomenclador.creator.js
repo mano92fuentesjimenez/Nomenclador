@@ -868,7 +868,7 @@
 					return ['dataadded','orderchanged'];
 				},
 				isValid:function(){
-					return this.store.getCount() > 0;
+					return this.store.getCount() > 0 && !edittingGrid;
 				},
 				getValue:function(){
 					return '';
