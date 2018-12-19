@@ -183,7 +183,7 @@ class Enum
                 $fields[] = $f;
             }
         }
-        return $field;
+        return $fields;
     }
 
     public function getField($fieldId)
