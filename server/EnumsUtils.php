@@ -25,11 +25,13 @@ class EnumsRequests
         $enums = Enums::getInstance($enumInstance);
         $simpleTree = SimpleTree::getInstance($enumInstance);
         $defaultFields = DefaultFields::getInstance($enumInstance);
+        $refs = Refs::getInstance($enumInstance);
 
         $obj = Array();
         $obj['enums'] = $enums->enums;
         $obj['simpleTree'] = $simpleTree->simpleTree;
         $obj['defaultFields'] = $defaultFields->defaultFields;
+        $obj['refs'] = $refs->refs;
 
         return $obj;
     }

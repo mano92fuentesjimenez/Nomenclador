@@ -217,6 +217,7 @@ class Enums
                 $type::validateDependencies($enumInstance,$enum, $field);
             }
         }
+        $this->verifyCircularDependencies($enum);
         //
         $enums = Enums::getInstance($enumInstance);
         foreach ($enums->getEnums() as $key){
@@ -225,6 +226,21 @@ class Enums
                 throw new EnumException('Este nomenclador ya fue creado por otra persona, por favor recargue el &aacute;rbol de nomencladores.');
         }
         return true;
+    }
+    public function verifyCircularDependencies(Enum $enum){
+        $refs = Refs::getInstance($enum->enumInstance);
+        $refsArr = $refs->getReferencesToEnum($enum);
+
+        foreach ($refsArr as $enumField => $references){
+            foreach ($references as $hash => $fieldId){
+                $enumId = $refs->getEnum($hash);
+                if(count($enum->getFieldsByType('DB_Enum','_enum',$enumId)) > 0){
+                    throw new InvalidModel("El nomenclador {$enum->getId()} tiene referencia circular con {$enumId}, por tanto no pudo ser creado");
+                }
+
+            }
+        }
+
     }
 
     public function verifyIsLooped($enumInstance, $enum, $field)

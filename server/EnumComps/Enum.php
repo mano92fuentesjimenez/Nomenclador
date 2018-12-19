@@ -170,6 +170,21 @@ class Enum
     {
         return $this->enum_tree['fields'];
     }
+    public function getFieldsByType($type,$propertyKey, $propertyValue){
+        $fields = array();
+        foreach ($this->getFields() as $field){
+            $f = new Field($field);
+            if($f->getType()==$type) {
+                if(isset($propertyKey)){
+                    $prop = $f->getProperties();
+                    if($prop[$propertyKey] !==$propertyValue)
+                        continue;
+                }
+                $fields[] = $f;
+            }
+        }
+        return $field;
+    }
 
     public function getField($fieldId)
     {
