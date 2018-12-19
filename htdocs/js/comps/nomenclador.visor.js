@@ -18,7 +18,7 @@
             if (this.hasChanges()) {
                 Ext.Msg.show({
                     title :'Guardar los cambios',
-                    msg :'Estas cerrando una pestaña con datos sin salvar. Deseas salvarlos?',
+                    msg :'Estas cerrando una pesta&ntilde;a con datos sin salvar. Deseas salvarlos?',
                     buttons :Ext.Msg.YESNOCANCEL,
                     fn :this.dialogHandler,
                     animEl :this.body.id,
@@ -168,8 +168,8 @@
 			if (this.hasChangesToSave(_enum))
 				Ext.Msg.show({
 					title :'Guardar cambios',
-					msg :'Para modificar un nomenlador es necesario cerrar la pestaña de edicion de datos. Desea' +
-					'guardar?',
+					msg :'Para modificar un nomenlador es necesario cerrar la pesta&ntilde;a de edicion de datos. Desea' +
+					' guardar?',
 					buttons :Ext.Msg.YESNOCANCEL,
 					fn :f,
 					animEl :this.body.id,

@@ -13,10 +13,17 @@ class DB_EnumChooser extends BaseType{
         return 'text';
     }
 
-    public static function getValueToDB($record, $value, $field, $connType){
-       if($value) {
-           return "'" . $value['valueField'] . "'";
-       }
+    public static function getValueToDB($record, $value, Field $field, $connType, $enumInstance)
+    {
+        if ($value) {
+            $enums = Enums::getInstance($enumInstance);
+            $v = $value['valueField'];
+            $enum = $enums->getEnum($v);
+
+            if(!is_array($value) || !($enum instanceof Enum))
+                throw new EnumInvalidModifyingData($enumInstance, $field->getEnumId(), $field->getId(), $value);
+            return "'" .$v. "'";
+        }
     }
 
     public static function getValueFromDB($enumInstance, $record, $value, $field, $connType){

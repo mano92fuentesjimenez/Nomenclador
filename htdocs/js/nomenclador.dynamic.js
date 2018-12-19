@@ -7,11 +7,17 @@
         fields = comps.fields,
         buttons = comps.buttons,
         utils = Genesig.Utils,
+        /**
+         * @lends AjaxPlugins.Nomenclador
+         */
         nom = AjaxPlugins.Nomenclador,
         errorMsg = comps.Messages.slideMessage.error,
         infoMsg = comps.Messages.slideMessage.info,
         wd = AjaxPlugins.Ext3_components.Windows.AddModWindow;
 
+    /**
+     * @class enums
+     */
     nom.enums = function (){
         this.enums = {};
         this.defaultFields = {};
@@ -32,13 +38,25 @@
         this.instances = new nom.InstanceManager();
     };
 
-    nom.enums = Ext.extend(nom.enums, {
+    nom.enums = Ext.extend(nom.enums,
+        /**
+         * @lends enums
+         */
+    {
+
+
         loaded: null,
         simpleTree:null,
         dataSources:null,
         defaultFields:null,
         instances:null,
 
+        /**
+         * Coge el actionManager de la instancia dada.
+         * @param instanceName  {string}   Nombre de la instancia de nomencladores
+         * @param instanceNameModifier {string}  Nombre modificador de instancia de nomencladores
+         * @returns {ActionManager}
+         */
         getActionManager:function(instanceName,instanceNameModifier){
             return this.getInstance(instanceName,instanceNameModifier).getActionManager();
         },
@@ -177,6 +195,10 @@
         }
 
     });
+    /**
+     * @class ActionManager
+     * @param actions
+     */
     nom.ActionManager = function(actions){
         /**
          * actions =
@@ -311,6 +333,9 @@
             return new nom.Tpl(v);
         })
     };
+    /**
+     * @class InstanceConfigClass
+     */
     nom.InstanceConfigClass = Ext.extend(nom.InstanceConfigClass, {
         getEnumDataEditor: function(tplName){
             var dataEditor = this.getValueFromTpl('enumDataEditor', tplName);
@@ -349,14 +374,18 @@
         getTpl:function(tplName){
             var tplConfig = new nom.Tpl();
             if(this.tpl)
-                tplConfig = new nom.Tpl(this.tpl[tplName]);
+                tplConfig = new nom.Tpl(this.tpl[tplName],tplName);
             return tplConfig;
+        },
+        getTplsToShow: function () {
+            return this.showTpls
         }
     });
-    nom.Tpl = function(config) {
+    nom.Tpl = function(config,tplName) {
         this._apply_(config);
         if(!utils.isObject(this.extraProps))
             this.extraProps = {};
+        this.tplName = tplName;
     };
     nom.tplDefaultId ='default';
 
@@ -422,6 +451,9 @@
         },
         getDefaultDataSource :function(){
             return this.defaultDataSource;
+        },
+        getTplName: function () {
+            return this.tplName;
         }
     });
 
@@ -542,7 +574,7 @@
      * @param [onError]        {function}      Funcion que se ejecuta cuando el pedido genera errors
      * @param [mask]           {function}      Funcion que cuando se ejecuta quita la mascara
      */
-    nom.getEnumData = function (instanceName, enumId, callback, scope, enumDataLoadConfig, onError, mask){
+    nom.getEnumData = function (instanceName, enumId, callback, scope, enumDataLoadConfig, onError, mask, _404EmptyPatch){
         function proccessRequest (response, params){
             callback.call(scope,response, params);
         }
@@ -565,7 +597,8 @@
             enumLoadColumns:cl,
             enumLoadWhere:this._default_(enumDataLoadConfig.where,'',null,null),
             enumLoadIdRow:this._default_(enumDataLoadConfig.idRow,'',null,null),
-            enumLoadActions:this._default_(enumDataLoadConfig.actions,{})
+            enumLoadActions:this._default_(enumDataLoadConfig.actions,{}),
+            '404EmptyPatch': _404EmptyPatch
         },proccessRequest,onError,mask);
     };
     nom.getStoreConfigFromEnum = function (_enum, columns){
@@ -598,8 +631,8 @@
             return a.order>b.order;
         });
         fields._each_(function (field){
-            if (field.id === nom.Type.PrimaryKey.UNIQUE_ID) {
-                cmFields.push({header: "Llave primaria", dataIndex: field.id, hidden: true, sortable: true});
+            if (field.id === nom.Type.PrimaryKey.UNIQUE_ID || field.id === nom.Type.Revision.UNIQUE_ID  ) {
+                cmFields.push({header: field.header, dataIndex: field.id, hidden: true, sortable: true});
                 return;
             }
             var type = nom.Type.Utils.getType(field.type);
@@ -746,6 +779,51 @@
         treeWD.show();
     };
 
+    nom.EnumTreeTrigger =Ext.extend(fields.triggerField,{
+        allowBlank:null,
+        fieldLabel:null,
+        readOnly:true,
+        instanceName:null,
+        instanceNameModifier: null,
+        constructor:function(cfg){
+            nom.EnumTreeTrigger.superclass.constructor.call(this,cfg)
+
+        },
+        onTrigger2Click:function(){
+            var self = this;
+            nom.showEnumTree(this.instanceName, true, function(obj) {
+                var _enum = nom.enums.getEnumById(self.instanceName, obj.id);
+                self.setValue({
+                    valueField: obj.id,
+                    displayField: _enum.name
+                })
+            },undefined,this.instanceNameModifier);
+        },
+        setValue:function(v){
+            if(Genesig.Utils.isObject(v)) {
+                this.currentValue = v;
+                v = v.displayField;
+            }
+            else if(v ==='')
+                this.currentValue = undefined;
+            fields.triggerField.prototype.setValue.call(this, v);
+            this.fireEvent('datachanged');
+        },
+        getValue:function(){
+            return this.currentValue;
+        },
+        getXType:function(){
+            return '_enumselector';
+        },
+        getFormVEvtNames:function(){
+            return 'datachanged';
+        },
+        isDirty:function () {
+            return !this.originalValue ? true:
+                ( this.originalValue.valueField !== this.currentValue.valueField)
+        }
+    });
+
 
     var _refConfig = {
         _enum:null,
@@ -772,6 +850,7 @@
          * Especifica si se pueden elegir multiples nomencladores o uno solo.
          */
         multiSelection:true,
+        allowBlank: false,
 
         currentValue:null,
         //privates
@@ -781,7 +860,6 @@
         manageEnum:true,
         enumDirty:false,
         originalValue:null,
-        addModValueSetted:false,
         constructor:function (config) {
             nom.enumInput.superclass.constructor.apply(this,arguments);
 
@@ -854,7 +932,6 @@
             obj['valueField'] = record.get(nom.Type.PrimaryKey.UNIQUE_ID);
             obj['displayField'] = record.get(this._fieldId);
 
-            this.addModValueSetted = true;
             return obj;
         },
         setValue:function(value,toClean){
@@ -888,13 +965,15 @@
             else this.clean();
         },
         getValue:function(){
+            if(this.currentValue == null)
+                return;
             return this.currentValue;
         },
         getXType:function(){
-            return 'enum_input'
+            return 'enum_input';
         },
         isValid:function(){
-            return this.currentValue && this.currentValue['displayField'] && this.currentValue['valueField']
+            return this.allowBlank || (this.currentValue && this.currentValue['displayField'] && this.currentValue['valueField']);
         },
         getFormVEvtNames:function(){
             return 'datachanged';
@@ -902,7 +981,6 @@
         isDirty:function(){
             if(utils.isObject(this.originalValue)){
                 return !(utils.isObject(this.currentValue)
-                    && this.currentValue.displayField === this.originalValue.displayField
                     && this.currentValue.valueField === this.originalValue.valueField);
             }
             return utils.isObject(this.currentValue);
@@ -918,10 +996,7 @@
             var t = nom.Type.Utils.getType(config._enum.fields[config._fieldId].type),
                 self =this,
                 fireDChanged = function(){
-                    this.addModValueSetted = true;
-                    this.setDirtyValue();
                     self.fireEvent('datachanged')
-
                 };
             this.store = new Ext.data.JsonStore({
                 fields:['displayField', 'valueField'],
@@ -946,12 +1021,6 @@
                     })
                 ]
             }));
-            this.setValue.createInterceptor(
-                function(value){
-                    if(Ext.isObject(value))
-                        this.setDirtyValue(value);
-                    return true;
-                });
         },
         getExclusion:function(){
             var exclusion = [];
@@ -971,17 +1040,14 @@
             v.all.value._each_(function(v, k){
                 self.store.add(new self.store.recordType(self.getValueFromRecord(v)))
             });
-            this.setDirtyValue();
-        },
-        setDirtyValue:function(){
-            this.enumDirty =  this.addModValueSetted;
         },
         setValue:function(value){
             if(utils.isArray(value)){
                 var self =this;
                 this.store.removeAll();
                 value._each_(function(v,k){
-                    self.store.add(new self.store.recordType(v));
+                    if(v.valueField !== null)
+                        self.store.add(new self.store.recordType(v));
                 })
             }
         },
@@ -995,6 +1061,23 @@
         isValid:function(){
             var value = this.getValue();
             return this.allowBlank ? true : value._length_() >0;
+        },
+        isDirty: function(){
+            var value = this.getValue();
+            if(utils.isObject(this.originalValue)){
+                if(utils.isObject((value))){
+                    var values = value._map_(function(v){
+                        return v.valueField;
+                    },false);
+                    var everyEqual = true;
+                    this.originalValue._each_(function(v){
+                        everyEqual &=  values.indexOf(v.valueField) !== -1;
+                    });
+                    return !everyEqual;
+                }
+            }
+            return true;
+
         }
     }));
 
@@ -1072,14 +1155,14 @@
     /**
      * Funcion que modifica el arbol de nomencladores segun la configuracion.
      * @param pAtrs
-     * @param config {object | string}  Es un objeto de configuracion o el string diciendo la instancia de nomencladores.
-     *     excludeEnum  {object | string}  Contiene los nomencladores q se van a excluir, si es un objeto es de la forma {idEnum:true}
-     *     includeEnum  {obectj} Es un nomenclador y si esta presente, solo se va a mostrar este mas todas las categorias
-     *     enumInstance {EnumInstance} Es el nombre de la instancia de nomencladores. Es obligatorio
-     *     showFields   {bool}  Si es true, se van a mostrar los campos de los nomencladores.
-     *     showEnums    {bool}  Dice si se muestran los nomencladores o no.
-     *     checked      {array[string]}  Si este arreglo existe, muestra checkboxes en los nodos de los nomencladores
-     *                        Y esta checked si el identificador del nomenclador esta en el arreglo
+     * @param config {object}  Es un objeto de configuracion o el string diciendo la instancia de nomencladores.
+     * @param config.excludeEnum  {object | string}  Contiene los nomencladores q se van a excluir, si es un objeto es de la forma {idEnum:true}
+     * @oaram config.includeEnum  {obectj} Es un nomenclador y si esta presente, solo se va a mostrar este mas todas las categorias
+     * @oaram config.enumInstance {AjaxPlugins.Nomenclador.InstanceConfigClass} Es la instancia de nomencladores. Es obligatorio
+     * @param config.showFields   {bool}  Si es true, se van a mostrar los campos de los nomencladores.
+     * @param config.showEnums    {bool}  Dice si se muestran los nomencladores o no.
+     * @param config.checked      {array[string]}  Si este arreglo existe, muestra checkboxes en los nodos de los nomencladores
+     *                            Y esta checked si el identificador del nomenclador esta en el arreglo
      *     nodesEvaluator {function}  Funcion q dice si un nodo va a formar parte del arbol o no
      *     allowReferencing  {bool}   Dice si este renderizador fue llamado por el tipo enum para hacer refenrencias entre
      *                         nomencladores.
@@ -1087,8 +1170,7 @@
      */
     nom.treeNodesProxy = function (pAtrs, config){
         //Si config no es un objeto o string, entonces q de error.
-        var config = utils.isString(config) ? {enumInstance:config}: config,
-            enumInstance = config.enumInstance,
+        var enumInstance = config.enumInstance,
             instanceConfig = enumInstance.getInstanceConfig(),
             toExclude = config.excludeEnum,
             toInclude = config.includeEnum,
@@ -1100,18 +1182,22 @@
             text = typ == 'field' || typ == 'category' ? pAtrs.text : enums.getEnumById(enumInstance.getName(), pAtrs.idNode).name,
             enumFields = config.showFields && isEnum ? (
                 enums.getEnumById(enumInstance.getName(), pAtrs.idNode).fields._queryBy_(function (pV){
-                    return pV.id !== nom.Type.PrimaryKey.UNIQUE_ID && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
+                    return pV.id !== nom.Type.PrimaryKey.UNIQUE_ID
+                        && pV.id !== nom.Type.Revision.UNIQUE_ID
+                        && (nom.Type.Utils.getType(pV.type).valueType !== nom.Type.REF_Type);
                 }, this, true)
             ) : [];
         if(isCat) {
             children = this._default_(pAtrs.childs, [])._queryBy_(function (pV, pK) {
                 var _enum = nom.enums.getEnumById(enumInstance.getName(), pV.idNode),
                     tplName = _enum.tpl,
-                    tplConfig = instanceConfig.getTpl(tplName);
+                    tplConfig = instanceConfig.getTpl(tplName),
+                    showTpls = instanceConfig.getTplsToShow();
 
                 return 'childs' in pV || (
                     (!toExclude || (utils.isObject(toExclude) ? !(pV.idNode in toExclude) : pV.idNode !== toExclude))
                     && (!tplConfig.isHidden() || (tplConfig.allowReferencing && config.allowReferencing))
+                    && (!utils.isArray(showTpls) ||  showTpls.indexOf(tplConfig.getTplName()) !== -1)
                     && (!toInclude || toInclude.id === pV.idNode)
                     && (config.showEnums && !('childs' in pV))
                 );
@@ -1216,22 +1302,24 @@
      * Muestra la ventana principal de nomencladores de la instancia enumInstance usando la configuracion config.
      * @param instanceName  {string}    Nombre de la instancia de nomencladores. Nuevo nombre crea una instancia nueva.
      * @param config    {object}        Configuracion con la cual se va a ejecutar esta instancia de nomencladores.
-     *                       formDataEditor: Debe contener el prototipo de la clase que se va a usar como formulario
-     *                                      a la hora de insertar datos. Debe heredar de FormDataEditor.
-     *                       enumDataEditor: Debe contener el prototipo de la clase que se va a usar como interfaz para
+     * @param config.formDataEditor {object}  - Debe contener el prototipo de la clase que se va a usar como formulario
+     *                                        a la hora de insertar datos. Debe heredar de FormDataEditor.
+     * @param config.enumDataEditor {object} Debe contener el prototipo de la clase que se va a usar como interfaz para
      *                                      visualizar los datos. Debe heredar de EnumStoreWriter si esta interfaz va a
      *                                      poder escribir datos o de EnumStoreReader si solo va a leer datos.
-    *                        defaultTpl:  Identificador del tpl que va a mostrar por defecto.
-    *                        defaultDataSource:  id   Si es especificado este dataSource, este es el q se usa para crear todos los
-    *                                    nomencladores de esta instancia.
-    *            tpl: "id":
-    *                        tplConfio: Ver Tpl
-    *                    Si el nombre del tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
-    *                   instancia de nomencladores.
-    *            actions: Actions  @see ActionManager
-    *
-    *  @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
-    *                                    agrupa configuraciones de UI.
+     * @param config.defaultTpl {string} - Identificador del tpl que va a mostrar por defecto.
+     * @param config.defaultDataSource {string} - Si es especificado este dataSource, este es el q se usa para crear todos los
+     *                                            nomencladores de esta instancia.
+     * @param config.tpl {object}  - Objeto con configuracion por tpl.Si el nombre de un tpl es default, entonces ese es el tpl q se le aplica a todos los nomencladores en esta
+     *                               instancia de nomencladores.
+     *
+     * @param config.tpl.tplConfio {object} - Configuracion de Tpl {@link AjaxPlugins.Nomenclador.Tpl}
+     *
+     * @param config.actions {object} Actions  {@link AjaxPlugins.Nomenclador.ActionManager}
+     * @param config.showTpls {string[]}  Arreglo de identificadores de tpl q se van a mostarar en esta vista. Por defecto se muestran todos.
+     * @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
+     *                                    agrupa configuraciones de UI.
+
      *
      */
     nom.showUI = function (instanceName, config, instanceModifier){

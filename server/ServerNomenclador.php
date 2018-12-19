@@ -1,11 +1,14 @@
 <?php
 include_once 'Types/BaseType.php';
 include_once 'DBConections/DBConection.php';
-require_once 'Enums.php';
+require_once 'EnumsUtils.php';
 require_once CARTOWEB_HOME.'include/Zend/Crypt/Rsa.php';
 require_once 'Exceptions.php';
 require_once 'ActionManager.php';
 
+/**
+ * Class ServerNomenclador
+ */
 class ServerNomenclador extends ClientResponderAdapter
 {
 
@@ -24,7 +27,8 @@ class ServerNomenclador extends ClientResponderAdapter
         $enumInstance = $requ->value['instanceName'];
         $actionM = ActionManager::getInstance($enumInstance);
         $actionM->setActions($requ->value['actions']);
-        
+        //[{"denominacion":"mena", "id_enum_rev_1100": "2",
+        //        "id_enum_1100": "1"  ]
         try{
             switch ($requ->action) {
                 case 'Nomenclador.checkDatasource':
@@ -39,7 +43,28 @@ class ServerNomenclador extends ClientResponderAdapter
                 }
                     break;
                 case 'addRecords':{
+                    $enumId = $requ->value['enum'];
+                    $modelRevision = $requ->value['modelRevision'];
+                    $records = json_decode($requ->value['records'],true);
+                    $data = array('add'=>$records);
+                    $resp = EnumsRequests::submitChanges($enumInstance,$enumId,$modelRevision,$data );
+                    $enumResult->resp = $resp['add'];
+                }
+                    break;
+                case 'modRecord':{
+                    $recordId = $requ->value['enumLoadIdRow'];
+                    $modelRevision = $requ->value['modelRevision'];
+                    $model = $requ->value['enum'];
+                    $recordRevision = $requ->value['recordRevision'];
+                    $record = json_decode($requ->value['record'],true);
+                    $record[PrimaryKey::ID] = $recordId;
+                    $record[Revision::ID] = $recordRevision;
+                    $resp = EnumsRequests::submitChanges($enumInstance,$model,$modelRevision,array('mod'=>array($record)));
 
+                    if(count($resp['underRevision']) !== 0){
+                        throw new EnumRevisionConflict();
+                    }
+                    $enumResult->resp = reset($resp['modified']);
                 }
                     break;
                 case 'modEnumData': {
@@ -75,7 +100,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     }catch(Exception $e){
                         $enumResult->error = array(
                             'code'=>500,
-                            'message'=>$e->getMessage()
+                            'msg'=>$e->getMessage()
                         );
                     }
                 } break;
@@ -143,15 +168,24 @@ class ServerNomenclador extends ClientResponderAdapter
                 case 'submitChanges': {
 
                     $data = $requ->value['data'];
-                    $enum = $requ->value['_enum'];
-
-                    $enumResult->resp= EnumsRequests::submitChanges($enumInstance,$enum, $data);
+                    $modelRevision = $requ->value['modelRevision'];
+                    $modelId = $requ->value['modelId'];
+                    $enumResult->resp= EnumsRequests::submitChanges($enumInstance, $modelId, $modelRevision, $data);
                 }
                     break;
+                case 'getRecord':{
+                    $action = $requ->action;
+                    $requ->action = 'getEnumData';
+                    $res = $this->handlePreDrawing($requ);
+                    $requ->action = $action;
+
+                    $enumResult->resp = reset($res->resp);
+                }
+                break;
                 case 'getEnumData': {
                     $params = $requ->value;
                     $enumId = $params['enum'];
-
+                    $_404EmptyPatch =$params['404EmptyPatch'];
                     $loadAll = $params['enumLoadEnums'] ? true : false;
                     $enumResult->resp = $this->queryEnum(
                         $enumInstance,
@@ -163,7 +197,8 @@ class ServerNomenclador extends ClientResponderAdapter
                         null,
                         array_key_exists('enumLoadIdRow',$params) ? $params['enumLoadColumns'] : null,
                         array_key_exists('enumLoadWhere',$params) ? $params['enumLoadWhere'] : null,
-                        null
+                        null,
+                        $_404EmptyPatch
                         );
                 }
                     break;
@@ -180,8 +215,10 @@ class ServerNomenclador extends ClientResponderAdapter
                     break;
                 case 'getTotalRecordsFromEnum':{
                     $enum_id = $requ->value['_enum'];
+                    $patch = $requ->value['404EmptyPatch'];
                     $enums = Enums::getInstance($enumInstance);
-                    $enum = $enums->getEnum($enum_id);
+                    $enum = $enums->getEnumQuerier($enum_id);
+                    $enum->set404Patch($patch);
 
                     $enumResult->resp = $enum->getTotalRecords($requ->value['where']);
                 }
@@ -252,12 +289,13 @@ class ServerNomenclador extends ClientResponderAdapter
                 case 'enumHasData':{
                     $enums = Enums::getInstance($enumInstance);
                     $enum = $enums->getEnum($requ->value['enumId']);
+                    $enum = $enum->getEnumStore();
                     $enumResult->resp =$enum->hasData();
                 }
                     break;
                 case 'delOnCascade':{
                     $enums = Enums::getInstance($enumInstance);
-                    $enum = $enums->getEnum($requ->value['_enumId']);
+                    $enum = $enums->getEnumStore($requ->value['_enumId']);
                     $enum->delOnCascade($enumInstance);
                     $enumResult->resp = array();
                 }
@@ -315,10 +353,10 @@ class ServerNomenclador extends ClientResponderAdapter
             }
         }
         catch (EnumException $e){
-            $enumResult->error = array('msg'=>$e->getMessage(),'type'=>$e->getExceptionObj());
+            $enumResult->error = array('msg'=>$e->getMessage(),'type'=>$e->getExceptionObj(), 'code'=>$e->getCode());
         }
         catch (Exception $e){
-            $enumResult->error = array('msg'=>"Error desconocido: {$e->getMessage()}");
+            $enumResult->error = array('msg'=>"Error desconocido: {$e->getMessage()}",'code'=>$e->getCode());
         }
 
 
@@ -352,6 +390,13 @@ class ServerNomenclador extends ClientResponderAdapter
 ////        if($enum->getName() == 'pais')
 ////            return 1;
 //    }
+    /**
+     * Adiciona records en la instancia dada en el nomenclador dado
+     * @param $enumInstance  {string} Nombre de instancia de nomencladores
+     * @param $enumId        {string} Identificador del nomenclador
+     * @param $records       {array}  Records
+     * @throws EnumException
+     */
     public function addRecords($enumInstance, $enumId, $records){
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnum($enumId);
@@ -419,7 +464,7 @@ class ServerNomenclador extends ClientResponderAdapter
         $enumInstance = isset($extraParams) && is_array($extraParams) && array_key_exists('instance',$extraParams) ? $extraParams['instance'] : 'system';
 
         $enums = Enums::getInstance($enumInstance);
-        $enum = $enums->getEnum($categoria);
+        $enum = $enums->getEnumQuerier($categoria);
 
         $result = $enum->queryEnum(null, null, false,$elemento );
 
@@ -478,9 +523,10 @@ class ServerNomenclador extends ClientResponderAdapter
         return PrimaryKey::ID;
     }
 
-    public function queryEnum($enumInstance, $enumId, $pageOffset, $pageSize, $loadAll, $idRow, $fieldLazyToEval, $fields, $where,$inData){
+    public function queryEnum($enumInstance, $enumId, $pageOffset, $pageSize, $loadAll, $idRow, $fieldLazyToEval, $fields, $where,$inData, $_404EmptyPatch = false){
         $enums = Enums::getInstance($enumInstance);
-        $enum = $enums->getEnum($enumId);
+        $enum = $enums->getEnumQuerier($enumId);
+        $enum->set404Patch($_404EmptyPatch);
 
         return $enum->queryEnum($pageOffset,$pageSize,$loadAll, $idRow,$fieldLazyToEval,$fields,$where,$inData );
     }
@@ -724,9 +770,9 @@ class EnumRestMethods{
 
     public static function getEnumColumnData($enumInstance, $enumId, $config, $columnId, $fieldFilter, $fieldValue){
         $enums = Enums::getInstance($enumInstance);
-        $enum = $enums->getEnum($enumId);
+        $enum = $enums->getEnumQuerier($enumId);
 
-        $columnId = isset($columnId) ? $columnId : $enum->getDefaultFieldId();
+        $columnId = isset($columnId) ? $columnId : $enum->getDenomFieldId();
 
         $limit = is_array($config) ? (
             is_numeric($config['limit']) ? $config['limit'] : 999999)

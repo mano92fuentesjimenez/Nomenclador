@@ -124,12 +124,12 @@ class DB_GeoFormula extends Formula{
         $fieldId = $params['fieldId'];
 
         $enums = Enums::getInstance($params['enumInstance']);
-        $enum = $enums->getEnum($enumId);
+        $enum = $enums->getEnumQuerier($enumId);
         $field = $enum->getField($fieldId);
 
         if($field->getType() == 'DB_Enum'){
             $props = $field->getProperties();
-            $enum = $enums->getEnum($props['_enum']);
+            $enum = $enums->getEnumQuerier($props['_enum']);
             $fieldId = $props['field'];
         }
 

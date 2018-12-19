@@ -67,3 +67,38 @@ class EnumCantBeRemovedIsRefException extends EnumException
 }
 
 class EnumActionRejected extends EnumException{}
+
+class EnumRevisionConflict extends EnumException{
+    public function __construct(){
+        parent::__construct('Hubo conflicto con las revisiones de los records',409,null);
+    }
+}
+
+class EnumInvalidModifyingData extends EnumException{
+    public function __construct($enumInstance,$enum,$field, $data)
+    {
+        $msg = "El dato '$data' del campo '$field' del nomenclador '$enum' de la instancia '$enumInstance', no esta formado correctamente";
+        parent::__construct($msg, 400, null);
+    }
+}
+class InvalidModelRevision extends EnumException{
+    public function __construct()
+    {
+        $msg = "Recargue los nomencladores, el nomenclador que estas modificando ha cambiado.";
+        parent::__construct($msg, 409, null);
+    }
+}
+class EnumNotExist extends EnumException{
+    public function __construct($enumId, $enumInstance)
+    {
+        $msg = "El modelo $enumId no existe en la instancia $enumInstance.";
+        parent::__construct($msg, 404, null);
+    }
+}
+
+class DataNotExists extends EnumException{
+    public function __construct($msg)
+    {
+        parent::__construct($msg, 404, null);
+    }
+}

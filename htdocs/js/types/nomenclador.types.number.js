@@ -5,6 +5,10 @@
 	var nom = AjaxPlugins.Nomenclador,
 		addType =nom.Type.Utils.addType;
 
+    /**
+	 * Tipo numero. Su valor es un numero
+	 * @class AjaxPlugins.Nomenclador.Type.Types.DB_Number
+     */
 	addType('DB_Number',Ext.extend(nom.Type.ValueType, {
 		nameToShow :'N\u00FAmero',
 		propertyNeeded :false,
@@ -59,7 +63,7 @@
                 legacyCheckBox : true,
 				scope :this,
 				value :true,
-				checked :true
+				checked :false
 			}));
 			this.checks.push(new myCheckbox({
 				boxLabel :"Entero Grande",
@@ -69,12 +73,14 @@
 			this.checks.push(new myCheckbox({
 				boxLabel :"Reales de alta precision",
                 legacyCheckBox : true,
-				scope :this
+				scope :this,
+				checked: true
 			}));
 			this.checks.push(new myCheckbox({
 				boxLabel :"Reales de baja precision",
                 legacyCheckBox : true,
-				scope :this
+				scope :this,
+				checked: false
 			}));
 			for (var j = 0; j < this.checks.length; j++){
 				this.checks[j].on('check', this.handler, this)
@@ -93,14 +99,14 @@
 								minValue :0,
 								maxValue :1000,
 								fieldLabel :"Precision",
-								value :100
+								value :16
 							}),
 							new Ext.form.NumberField({
 								allowDecimals :false,
 								minValue :0,
 								maxValue :1000,
 								fieldLabel :"Escala",
-								value :100
+								value :8
 							})
 						]
 					})

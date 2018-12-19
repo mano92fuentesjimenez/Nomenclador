@@ -13,5 +13,15 @@ class DB_Table extends BaseType{
         return "text";
     }
 
+    public static function getValueToDB($record, $value,Field $field, $connType, $enumInstance)
+    {
+        if(is_null($value))
+            return $value;
+        $props = $field->getProperties();
+        $enum = new EnumStore(null,$props['_enum'],null);
+        $data = json_decode($value,true);
+        $enum->getValueArrayToDb($data);
+        return "'".$value."'";
+    }
 
 }

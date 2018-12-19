@@ -12,12 +12,20 @@ class DB_Images extends BaseType{
     {
         return 'text';
     }
-    public static function getValueToDB($record, $value, $field, $connType)
+    public static function getValueToDB($record, $value,Field $field, $connType, $enumInstance)
     {
+        if(is_null($value))
+            return $value;
+        $server = ServerPlugin::requirePlugin('manageImages');
+        if(!$server->imageExist($value))
+            throw new EnumInvalidModifyingData($enumInstance, $field->getEnumId(), $field->getId(),$value);
+
         return '\''.json_encode($value).'\'';
     }
     public static function getValueFromDB($enumInstance, $record, $value, $field, $connType)
     {
+        if(is_null($value))
+            return $value;
         return json_decode($value);
     }
 }

@@ -231,7 +231,7 @@
                 items[0].height = 150;
                 northHeigth += 100;
 
-                if (!this.creating) {
+                if (!this.creating && utils.isObject(this._enum.extraProps)) {
                     this._enum.extraProps._each_(function (v,k) {
                         propsInputs[k].setValue(v);
                     })
@@ -332,9 +332,24 @@
 				},
 				showMultiple = function(type){
 					var t = nom.Type.Utils.getType(type),
-						record = self.gridStore.getAt(self.rowEditing);
-
-					self.multiple.setDisabled(!t.canBeMultiple || self.enumHasData || record.isDefault);
+						record = self.gridStore.getAt(self.rowEditing),
+						disabled = !t.canBeMultiple  || record.isDefault;
+					if(utils.isObject(self._enum)){
+						var currentRecord = self.getCurrentRecord(),
+							currentId = currentRecord.get('id');
+						disabled |= $$(self._enum.fields).some(function (v) {
+							return v.id === currentId
+						})
+					}
+					if(type === 'DB_Enum'){
+						var multipleCounter = 0;
+						self.getFields()._each_(function (v) {
+							if(v.type =='DB_Enum' && v.multiple)
+								multipleCounter ++;
+						});
+						disabled |= multipleCounter > 0;
+					}
+					self.multiple.setDisabled(disabled);
 				},
 				showFilter = function(type){
 					var t = nom.Type.Utils.getType(type),
@@ -564,6 +579,7 @@
 				triggerAction :'all',
 				trigger1Class :"gis_clear",
 				trigger2Class :"x-form-arrow-trigger",
+				readOnly: true,
 				forceSelection :false,
 				onTrigger2Click :function (){
 					var cRecord = self.gridStore.getAt(self.rowEditing);
@@ -976,6 +992,9 @@
 					pVal.destroy();
 			})
 		},
+		getCurrentRecord:function(){
+			return this.gridStore.getAt(this.rowEditing);
+		},
 		getNomenclador :function (){
 			var nomenclador = {};
 			var changes = {add :{}, mod :{}, del :{}, delRefs :[]};
@@ -1033,6 +1052,11 @@
 			//adicionando las propiedades extras de la entidad.
 			nomenclador.tpl= this.tpl;
 			nomenclador.denomField =denomField;
+			nomenclador.modelRevision = 0;
+			nomenclador.dataRevision = 0;
+			nomenclador.revisionField = nom.Type.Revision.UNIQUE_ID;
+			nomenclador.primaryKey = nom.Type.PrimaryKey.UNIQUE_ID;
+
 			if(this.extraProps) {
 				nomenclador.extraProps = {};
 				this.extraProps._each_(function (v) {
@@ -1042,7 +1066,13 @@
 
 			fields[nom.Type.PrimaryKey.UNIQUE_ID] = {
 				"type" :nom.Type.PrimaryKey.type,
-				"id" :nom.Type.PrimaryKey.UNIQUE_ID
+				"id" :nom.Type.PrimaryKey.UNIQUE_ID,
+				"header": nom.Type.PrimaryKey.header
+			};
+			fields[nom.Type.Revision.UNIQUE_ID] = {
+				"type" :nom.Type.Revision.type,
+				"id" :nom.Type.Revision.UNIQUE_ID,
+				"header" :nom.Type.Revision.header
 			};
 
 			if (this.creating)
@@ -1053,7 +1083,7 @@
 			var _enum = this._enum;
 			var getType = nom.Type.Utils.getType;
 			for (var key in nomenclador.fields){
-				if (key == nom.Type.PrimaryKey.UNIQUE_ID)
+				if (key === nom.Type.PrimaryKey.UNIQUE_ID || key === nom.Type.Revision.UNIQUE_ID)
 					continue;
 				//add
 				if (!(key in this._enum.fields))
@@ -1098,6 +1128,10 @@
 					}
 				}
 			changes.addRefs = self.refs.getAddedReferences(this.enumInstance.getName());
+			if(_enum.modelRevision)
+				nomenclador.modelRevision = _enum.modelRevision;
+			if(_enum.dataRevision)
+				nomenclador.dataRevision = _enum.dataRevision;
 			changes['_enum'] = nomenclador;
 			return changes
 		},
@@ -1123,7 +1157,8 @@
 					'id' :id,
 					'type' :type,
 					'header' :header,
-					properties :self.properties[id] ? self.properties[id].getValue() : undefined
+					properties :self.properties[id] ? self.properties[id].getValue() : undefined,
+					multiple: record.get('multiple')
 				};
 			});
 			return fields;
@@ -1217,7 +1252,8 @@
 						this.properties[key].enum_filled = true;
 					}
 				}
-				if (field.id != nom.Type.PrimaryKey.UNIQUE_ID) {
+				if ( field.id != nom.Type.PrimaryKey.UNIQUE_ID
+					&& field.id != nom.Type.Revision.UNIQUE_ID) {
 					var r = new rT({
 						"name" :field.header,
 						"type" :field.type,

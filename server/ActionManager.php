@@ -6,6 +6,77 @@
  * Time: 10:30
  */
 
+interface EnumsActions {
+
+    /***
+     * ACCIONES SOBRE LOS NOMENCLADORES
+     */
+    /**
+     * Cualquier accion (adicionar, modificar o eliminar) sobre un nomenclador
+     * @param $instance         {string}            Instancia del nomenclador
+     * @param Enum $enum        {Enum}              Clase con el nomenclador
+     * @return {ActionManagerResult|*}
+     */
+    function enumActions($instance,Enum $enum);
+
+    /**
+     * ACCIONES SOBRE LOS RECORDS
+     */
+
+    /**
+     * Accion de precarga de los registros de un nomenclador
+     * @param Enum $enum
+     * @param $offset
+     * @param $limit
+     * @param $idRow
+     * @param $fieldsToGet
+     * @param $inData
+     * @param $loadAllData
+     * @param $where
+     * @return {ActionManagerResult|*}
+     */
+    function enumPreLoad(Enum $enum, $offset, $limit , $idRow, $fieldsToGet, $inData, $loadAllData, $where);
+    /**
+     * Accion de postcarga de un nomenclador
+     * @param Enum $enum
+     * @param $data
+     * @return {ActionManagerResult|*}
+     */
+    function enumPostLoad(Enum $enum, $data);
+
+    /**
+     * Accion de conteo de los registros de un nomenclador
+     * @param Enum $enum
+     * @param $where
+     * @return mixed
+     */
+    function enumCountAction(Enum $enum, $where);
+
+    /**
+     * Accion previa de guardado (adicionar, modificar, eliminar) de los records de nomenclador
+     * @param Enum $enum
+     * @param $data
+     * @return {ActionManagerResult|*}
+     */
+    function enumRowPreSubmitAction(Enum $enum, $data);
+
+    /**
+     * Accion posterior a la adicion de un nomenclador
+     * @param Enum $enum
+     * @param $data
+     * @return {ActionManagerResult|*}
+     */
+    function enumRowPostAddAction(Enum $enum, $data, $originalData);
+    /**
+     * Accion posterior a la modificacion de un nomenclador
+     * @param Enum $enum
+     * @param $data
+     * @return {ActionManagerResult|*}
+     */
+    function enumRowPostModAction(Enum $enum, $data, $originalData);
+
+}
+
 class ActionManager
 {
     private $actions;
@@ -91,44 +162,50 @@ class ActionManager
     public function callPreSubmitActionsForEnum($enum,&$data){
 
         //del
-        $actions = $this->getActions('del','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($enum, $data['del']);
-            if($r instanceof ActionManagerResult && $r->type == self::STOP){
-                unset($data['del']);
-                break;
-            }
-        }
-
-        //mod
-        $actions = $this->getActions('mod','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-
-            $r = $p['server']->{$p['action']}($enum, $data['mod']);
-
-            if($r instanceof ActionManagerResult) {
-                if ($r->type == self::CONVERT_TO_ADD) {
-                    foreach ($data['mod'] as $record) {
-                        unset($record[PrimaryKey::ID]);
-                        $data['add'][] = $record;
-                    }
-                }
-                if ($r->type == self::STOP || $r->type == self::CONVERT_TO_ADD) {
-                    unset($data['mod']);
+        if(array_key_exists('del',$data) && is_array($data['del']) && count($data['del'])){
+            $actions = $this->getActions('del','pre');
+            foreach ($actions as $action){
+                $p = $this->getPlugin($action);
+                $r = $p['server']->{$p['action']}($enum, $data['del']);
+                if($r instanceof ActionManagerResult && $r->type == self::STOP){
+                    unset($data['del']);
                     break;
                 }
             }
         }
 
-        //add
-        $actions = $this->getActions('add','pre');
-        foreach ($actions as $action){
-            $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($enum, $data['mod']);
-            if($r instanceof ActionManagerResult && $r->type == self::STOP) {
-                break;
+        if(array_key_exists('mod',$data) && is_array($data['mod']) && count($data['mod'])){
+            //mod
+            $actions = $this->getActions('mod','pre');
+            foreach ($actions as $action){
+                $p = $this->getPlugin($action);
+
+                $r = $p['server']->{$p['action']}($enum, $data['mod']);
+
+                if($r instanceof ActionManagerResult) {
+                    if ($r->type == self::CONVERT_TO_ADD) {
+                        foreach ($data['mod'] as $record) {
+                            unset($record[PrimaryKey::ID]);
+                            $data['add'][] = $record;
+                        }
+                    }
+                    if ($r->type == self::STOP || $r->type == self::CONVERT_TO_ADD) {
+                        unset($data['mod']);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(array_key_exists('add',$data) && is_array($data['add']) && count($data['add'])){
+            //add
+            $actions = $this->getActions('add','pre');
+            foreach ($actions as $action){
+                $p = $this->getPlugin($action);
+                $r = $p['server']->{$p['action']}($enum, $data['add']);
+                if($r instanceof ActionManagerResult && $r->type == self::STOP) {
+                    break;
+                }
             }
         }
 
@@ -143,21 +220,21 @@ class ActionManager
         }
         return $r;
     }
-    public function callPostAddActions($enum, &$data){
+    public function callPostAddActions($enum, &$data, $originalData){
         $actions = $this->getActions('add','post');
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($enum,$data);
+            $p['server']->{$p['action']}($enum,$data,$originalData);
         }
     }
 
-    public function callPostModActions($enum, $data){
+    public function callPostModActions($enum, $data, $orgData){
         $actions = $this->getActions('mod','post');
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($enum,$data);
+            $p['server']->{$p['action']}($enum,$data,$orgData);
         }
     }
 
@@ -256,7 +333,7 @@ class ActionManagerResult
     public $type;
     public $message;
 
-    public function __constructor($type, $message)
+    public function __construct($type, $message)
     {
         $this->type = $type;
         $this->message = $message;

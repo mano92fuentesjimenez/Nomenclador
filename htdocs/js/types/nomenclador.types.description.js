@@ -9,6 +9,10 @@
 		plugins = comps.plugins,
         addType =nom.Type.Utils.addType;
 
+    /**
+	 * Tipo descripcion. Es un texto
+	 * @class AjaxPlugins.Nomenclador.Type.Types.DB_Description
+     */
     addType('DB_Description',Ext.extend(nom.Type.ValueType, {
         nameToShow :"Descripci\u00F3n",
         getValueEditExtComp :function (enumInstance, field){
@@ -19,7 +23,13 @@
                 maxLength: 10000,
 				plugins:[
 					new grow()
-				]
+				],
+				getValue:function(){
+                	var v = fields.fieldDescripcion.prototype.getValue.call(this);
+                	if(v === "")
+                		return;
+                	return v;
+				}
             });
 
 

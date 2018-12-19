@@ -13,18 +13,12 @@ class DB_Date extends BaseType{
         return 'timestamptz';
     }
 
-    public static function getValueToDB($record, $value, $field, $connType){
-//        return "to_timestamp($value/1000)";
-        return "'$value'";
-    }
-
     public static function getValueFromDB($enumInstance, $record, $value, $field, $connType){
-
+        if(is_null($value))
+            return $value;
+        $value = str_replace(' ','T',$value);
+        $value = substr($value,0,-3);
+        $value .='Z';
         return $value;
     }
-    public static function getDefaultValue($connType, $typeProperties)
-    {
-        return 'now';
-    }
-
 }

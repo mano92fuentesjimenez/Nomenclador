@@ -7,48 +7,25 @@
         fields = AjaxPlugins.Ext3_components.fields,
         addType =nom.Type.Utils.addType;
 
+    /**
+     * Es el tipo modelo. Su valor es:
+     * ```json
+     * {
+     *     "valueField":"Id del modelo al que se hace referencia"
+     *     "displayField":"Nombre que se muestra del nomenclador al que se hace referencia"
+     * }
+     * ```
+     * @class AjaxPlugins.Nomenclador.Type.Types.DB_EnumChooser
+     */
     addType('DB_EnumChooser',Ext.extend(nom.Type.ValueType, {
             nameToShow :'Selector de Entidad',
             getValueEditExtComp :function (enumInstance, field){
-                var t = new fields.triggerField({
+                return new nom.EnumTreeTrigger({
                     allowBlank:!field.needed,
                     fieldLabel:field.header,
-                    readOnly:true,
-                    onTrigger2Click:function(){
-                        nom.showEnumTree(enumInstance.getName(), true, function(obj) {
-                            var _enum = nom.enums.getEnumById(enumInstance.getName(), obj.id);
-                            t.dirtyValue = false;
-                            t.setValue({
-                                valueField: obj.id,
-                                displayField: _enum.name
-                            })
-                        },undefined,enumInstance.getInstanceNameModifier());
-                    },
-                    setValue:function(v){
-                        if(Genesig.Utils.isObject(v)) {
-                            this.currentValue = v;
-                            v = v.displayField;
-                        }
-                        else if(v ==='')
-                            this.currentValue = undefined;
-                        fields.triggerField.prototype.setValue.call(this, v);
-                        this.fireEvent('datachanged');
-                    },
-                    getValue:function(){
-                        return this.currentValue;
-                    },
-                    getXType:function(){
-                        return '_enumselector';
-                    },
-                    getFormVEvtNames:function(){
-                        return 'datachanged';
-                    },
-                    isDirty:function () {
-                        return !this.originalValue ? true:
-                            ( this.originalValue.valueField !== this.currentValue.valueField)
-                    }
-                });
-                return t;
+                    instanceName: enumInstance.getName(),
+                    instanceNameModifier: enumInstance.getInstanceNameModifier()
+                })
             },
             gridRender :function (value){
                 if(value)

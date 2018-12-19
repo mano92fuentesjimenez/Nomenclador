@@ -1,11 +1,20 @@
 /**
  * Created by Mano on 08/05/2017.
  */
+
 (function(){
 
+    /**
+	 * @lends AjaxPlugins.Nomenclador
+     */
 	var nom = AjaxPlugins.Nomenclador;
-
+    /**
+	 * @namespace AjaxPlugins.Nomenclador.export
+     */
 	nom.export = {};
+    /**
+	 * @lends AjaxPlugins.Nomenclador.export
+     */
 	var exp = nom.export,
 		utils = Genesig.Utils,
 		connError = function()    {
@@ -115,6 +124,9 @@
 		var instance = nom.enums.getInstance(instanceName, instanceModifier);
 		return new nom.nomencladorTree( ({canMoveEnums:false, enumInstance:instance})._apply_(config));
 	});
+	exp.getEnumTreeTriggerSync = function(){
+		return nom.EnumTreeTrigger
+	};
 
 	/**
 	 * Devuelve un arreglo de objetos de la forma {name: nomebreDelNomenclador, id: IdentificadorDelNomenclador}
@@ -407,7 +419,7 @@
 	 * Le pone la configuracion de nomencladores a una instancia
      * @param instanceName {string} 	  Nombre de la instancia de nomencladores. Agrupa las entidades
      * @param instanceModifier {string}   Modificador de nombre de instancia. Agrupa configuraciones.
-     * @param config  {object}            @see ShowUI
+     * @param config  {object}            {@link AjaxPlugins.Nomenclador.showUi}
      */
 	exp.setInstanceConfig = function(instanceName, instanceModifier, config){};
 	addService('setInstanceConfig', function(instanceName, instanceModifier, config){
@@ -434,6 +446,11 @@
 		}
 
 		return cache[hash];
-    }
+    };
+
+    exp.getDefaultFormDataEditor = function(){};
+    addService('getDefaultFormDataEditor',function () {
+		return AjaxPlugins.Nomenclador.FormDataEditor_Default;
+    });
 
 })();

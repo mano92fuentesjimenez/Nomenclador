@@ -38,16 +38,16 @@ abstract class DBConn{
      * @param $data {[]}     Arreglo de arreglo
      * @return bool Retorna true si se pudo insertar, false en caso contrario.
      */
-    public abstract function insertData($tableName, $fieldsOrder, $schema, $data, $returning);
+    public abstract function insertData($tableName, $fieldsOrder, $schema, $data, $returning, $isMultiEnum);
     public abstract function updateData($tableName, $schema, $data);
-    public abstract function deleteData($tableName, $schema, $data, $primaryField);
+    public abstract function deleteData($tableName, $schema, $data, $primaryField, $recordPK, $fromKey);
 
     public abstract function removeTable($tableName, $schema);
 
     public abstract function beginTransaction();
     public abstract function commitTransaction();
     
-    public abstract function getEnumData($schema, $baseName, $select, $from, $whereSubq, $offset, $limit, $idRow );
+    public abstract function getEnumData($schema, $baseName, $subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset, $limit, $idRow );
 
     public abstract function countRows($tableName, $schema, $where);
     public abstract function getFieldSingleValue($tableName, $schema, $fieldName, $rowIndex, $getAll = false, $fields = null);
@@ -79,7 +79,7 @@ abstract class DBConn{
     public abstract function continueWhere($where1, $where2);
     public abstract function inWhere($field, $inData, $query, $baseName);
     public abstract function endWhere($query);
-    
+
 }
 
 class DBConnProxy extends  DBConn
@@ -134,9 +134,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->createTable($tableName, $schema, $fields);
     }
 
-    public function insertData($tableName, $fieldsOrder, $schema, $data, $returning = false)
+    public function insertData($tableName, $fieldsOrder, $schema, $data, $returning = false, $isMultiEnum = false)
     {
-        return $this->dbConn->insertData($tableName, $fieldsOrder, $schema, $data, $returning);
+        return $this->dbConn->insertData($tableName, $fieldsOrder, $schema, $data, $returning, $isMultiEnum);
     }
 
 
@@ -174,17 +174,17 @@ class DBConnProxy extends  DBConn
                 if(!isset($ret[$key]))
                     $ret[$key] = $record;
 
-               if($multiEnumField) {
-                    if( !is_array($ret[$key][$id]) ){
-                        $ret[$key][$id] = array();
-                        //el caso en que el campo al que apunta sea uno virtual.
-                        if(isset($record[$id.BaseType::REF_TYPE_VALUE_HEADER]))
-                            $ret[$key][$id.BaseType::REF_TYPE_VALUE_HEADER] = array();
-                    }
-                    $ret[$key][$id][] = $record[$id];
-                    if(isset($record[$id.BaseType::REF_TYPE_VALUE_HEADER]))
-                        $ret[$key][$id.BaseType::REF_TYPE_VALUE_HEADER][] = $record[$id.BaseType::REF_TYPE_VALUE_HEADER];
-                }
+               if($multiEnumField && !is_null($record[$id])) {
+                   if (!is_array($ret[$key][$id])) {
+                       $ret[$key][$id] = array();
+                       //el caso en que el campo al que apunta sea uno virtual.
+                       if (isset($record[$id . BaseType::REF_TYPE_VALUE_HEADER]) && !is_null($record[$id . BaseType::REF_TYPE_VALUE_HEADER]))
+                           $ret[$key][$id . BaseType::REF_TYPE_VALUE_HEADER] = array();
+                   }
+                   $ret[$key][$id][] = $record[$id];
+                   if (isset($record[$id . BaseType::REF_TYPE_VALUE_HEADER]) && !is_null($record[$id . BaseType::REF_TYPE_VALUE_HEADER]))
+                       $ret[$key][$id . BaseType::REF_TYPE_VALUE_HEADER][] = $record[$id . BaseType::REF_TYPE_VALUE_HEADER];
+               }
             }
         }
         return $ret;
@@ -195,9 +195,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->updateData($tableName, $schema, $data);
     }
 
-    public function deleteData($tableName, $schema, $data, $primaryField = null )
+    public function deleteData($tableName, $schema, $data, $primaryField = null, $recordPK=null, $fromKey=false)
     {
-        return $this->dbConn->deleteData($tableName, $schema, $data, $primaryField);
+        return $this->dbConn->deleteData($tableName, $schema, $data, $primaryField, $recordPK, $fromKey);
     }
 
     public function removeTable($tableName, $schema)
@@ -317,9 +317,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->endFrom($query);
     }
 
-    public function getEnumData($schema, $baseName, $select, $from, $where, $offset=null, $limit=null,  $idRow=null)
+    public function getEnumData($schema, $baseName,$subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset =null, $limit = null, $idRow =null)
     {
-        return $this->dbConn->getEnumData($schema, $baseName, $select, $from, $where, $offset, $limit, $idRow);
+        return $this->dbConn->getEnumData($schema, $baseName,$subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset, $limit, $idRow );
     }
 
     public function startWhere($where)

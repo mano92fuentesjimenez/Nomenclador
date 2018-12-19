@@ -9,6 +9,16 @@
 		types = nom.Type.Types,
 		addType =nom.Type.Utils.addType;
 
+    /**
+	 * Tipo referencia. Su valor es de la forma
+	 * ```json
+	 * {
+	 *    "valueField": "Es un numero, es la referencia a la llave primaria de otro modelo",
+	 *    "displayField": "Es el valor del campo al cual este campo hace referencia"
+	 * }
+	 * ```
+	 * @class AjaxPlugins.Nomenclador.Type.Types.DB_Enum
+     */
 	addType('DB_Enum',Ext.extend(nom.Type.ValueType, {
 		nameToShow :'Nomenclador',
 		valueType :nom.Type.REF_Type,
@@ -16,7 +26,7 @@
         canBeFiltered:true,
         canBeMultiple:true,
 		gridRender :function (text, pD, pRec){
-			if(text == -1)
+			if(text == null || text == -1)
 				return "Dato no referenciado";
 			var field = this._fieldDetails_,
 				enumD = this._enumDetails_,
@@ -51,6 +61,8 @@
                 });
             }
             else{
+            	if(text == null)
+            		return '';
 				var s = '';
 				text._each_(function(v,k){
 					s+= typeObj.enumTypeRenderer(v.displayField)+', ';
@@ -347,21 +359,11 @@
 				type = sn.attributes._type_;
 			//el valor que se muestra en el arbol no es el id del nodo
 			if (type == 'field')
-				_enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.parentNode.text);
-			else _enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.text);
-			//el valor que se muestra en el arbol no es el id del nodo
-			Object.keys(_enum.fields).map(function (key){
-				var value = _enum.fields[key];
-				if (type == 'enum' && value.isDenom) {
-					field = value;
-					return false;
-				}
-				else if (value.header == sn.text) {
-					field = _enum.fields[key];
-					return false;
-				}
-			});
-			return {field :field.id, _enum :_enum.id};
+				_enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.parentNode.attributes._text_);
+			else _enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.attributes._text_);
+			field = nom.enums.getDenomField(this.enumInstance.getName(),_enum);
+
+			return {field :field, _enum :_enum.id};
 		},
 		setValue :function (enumInstance, obj, fieldId, _enumId){
 			var self = this,

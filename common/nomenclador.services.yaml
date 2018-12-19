@@ -83,23 +83,54 @@ services:
               records:
                 description: "Records q se van a anhadir"
                 required: true
+              modelRevision:
+                description: "Numero de revision del modelo, para comprobar de que el cliente trabaje con el mismo modelo que el servidor"
+                required: true
+
+#          put:
+#            description: "Permite modificar el record del modelo. Devuelve el record si no pudo ser cambiado porque la revision no era correcta"
+#            out: "application/json"
+#            action: "modRecords"
+#            arguments:
+#              instance:
+#                description: "Instancia o dominio de trabajo"
+#                default: "system"
+#              modelRevision:
+#                description: "Numero de revision del modelo, para comprobar de que el cliente trabaje con el mismo modelo que el servidor"
+#                required: true
+
 
       /{enum}/{enumLoadIdRow}:
         description:
           enum: "Identificador del modelo"
-          enumLoadIdRow: "Identificador del record"
+          enumLoadIdRow: "Identificador del record en el modelo"
         methods:
           get:
-            description: "Load model records"
+            description: "Carga el record del modelo especificado"
             out: "application/json"
-            action: "getEnumData"
+            action: "getRecord"
             arguments:
               instance:
                 description: "Instancia o dominio de trabajo"
                 default: "system"
-              enumLoadEnums:
-                default: true
               enumLoadPageOffset:
               enumLoadPageSize:
               enumLoadColumns:
               enumLoadWhere:
+          post:
+            description: "Permite modificar el record del modelo. Devuelve false si no se pudo modificar. Una posible razon es que la revision del record no sea la misma q tiene el servidor"
+            out: "application/json"
+            action: "modRecord"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
+              modelRevision:
+                description: "Numero de revision del modelo, para comprobar de que el cliente trabaje con el mismo modelo que el servidor"
+                required: true
+              recordRevision:
+                description: "Numero de revision del record, para comprobar de que el cliente trabaje con el mismo record que el servidor"
+                required: true
+              record:
+                description: "Modifica el record en el servidor y le pone los valores de este record"
+                required: true

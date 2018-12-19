@@ -27,6 +27,7 @@
         enumInstance:null,
 
         //config
+        '404EmptyPatch': true,
         fieldFilter: null,
         fieldFilterValue: null,
         pageSize: 10,
@@ -179,6 +180,9 @@
                 return Genesig.Utils.mask(maskObj, msg);
 
         },
+        setMaskObjObjective:function(panel){
+            this.maskObj = panel;
+        },
         initializeEnumEvents:function(){
 
             if(this.offlineMode)
@@ -248,7 +252,8 @@
                 pageSize: this.pageSize,
                 offset: (pagePosition * this.pageSize),
                 columns: this.columns,
-                actions: this.getActions(this)
+                actions: this.getActions(this),
+                '404EmptyPatch': this['404EmptyPatch']
             };
         },
         getPagingBar:function(){
@@ -294,24 +299,28 @@
                     function (response, params) {
                         this.store.loadData(response);
                         this.hasLoadedBoolean = true;
-                        this.refreshView();
                         this.fireEvent("finishedloadingenum", this, this._enum, params);
                         nom.execute(cb,[],this);
+                        this.refreshView();
                     },
-                    this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj()
+                    this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj(),
+                    self['404EmptyPatch']
                 );
             else setTimeout(function(){
                 self.store.loadData(self.store.data || []);
-                self.hasLoadedBoolean = true
-                self.refreshView();
+                self.hasLoadedBoolean = true;
                 self.fireEvent("finishedloadingenum", self, self._enum);
                 nom.execute(cb, [],self);
+                self.refreshView();
             },0)
 
 
         },
+        beyondLastPage(page){
+            return (page) * this.pageSize > this.totalCount;
+        },
         isLastPage:function(){
-            return (this.pagePosition + 1) * this.pageSize > this.totalCount;
+            return this.beyondLastPage(this.pagePosition+1);
         },
         isFirstPage:function() {
             return (this.pagePosition === 0);
@@ -348,6 +357,16 @@
             this.loadEnumData(0, function(){
                 self.pagePosition = 0;
             });
+        },
+        goToPage: function(page){
+            if(!(page < 0 || this.beyondLastPage(page)))
+            {
+                var self = this;
+                this.loadEnumData(page,function(){
+                    self.pagePosition = page;
+                })
+            }
+            Logger.error('La pagina esta fuera del rango de pagina');
         },
         createStore: function () {
             return nom.getStoreConfigFromEnum(this._enum, this.columns);
