@@ -297,6 +297,7 @@
 				excludeEnum :excludeEnums,
 				enumInstance:args['enumInstance'],
 				allowReferencing:true,
+				excludeNotNeededFields:true,
 				listeners :{
 					scope :this,
 					loadedheaders :function (pTree){

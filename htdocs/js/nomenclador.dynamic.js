@@ -1170,6 +1170,7 @@
      * @param pAtrs
      * @param config {object}  Es un objeto de configuracion o el string diciendo la instancia de nomencladores.
      * @param config.excludeEnum  {object | string}  Contiene los nomencladores q se van a excluir, si es un objeto es de la forma {idEnum:true}
+     * @param config.excludeNotNeededFields {boolean}  Dice si se excluyen o no los campos q son obligatorios.
      * @oaram config.includeEnum  {obectj} Es un nomenclador y si esta presente, solo se va a mostrar este mas todas las categorias
      * @oaram config.enumInstance {AjaxPlugins.Nomenclador.InstanceConfigClass} Es la instancia de nomencladores. Es obligatorio
      * @param config.showFields   {bool}  Si es true, se van a mostrar los campos de los nomencladores.
@@ -1187,6 +1188,7 @@
             instanceConfig = enumInstance.getInstanceConfig(),
             toExclude = config.excludeEnum,
             toInclude = config.includeEnum,
+            excludeNotNeededFields = config.excludeNotNeededFields,
             typ = pAtrs._type_ || ('childs' in pAtrs ? 'category' : 'enum'),
             isEnum = typ == 'enum',
             isCat = typ == 'category',
@@ -1224,7 +1226,9 @@
             }, this, false);
         }
         else if(isEnum && config.showFields){
-            children = enumFields._map_(function (pV, pK){
+            children = enumFields._queryBy_(function (v) {
+                return !excludeNotNeededFields || v.needed;
+            })._map_(function (pV, pK){
                 // esta linea clona la configuracion de enum, ademas de ponerle algunos valores
                 return ({})._apply_(pV,{
                     text :pV.header,

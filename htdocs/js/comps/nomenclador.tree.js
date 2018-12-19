@@ -19,6 +19,7 @@
         plgIndexer:null,
 		enumInstance:null,
 		allowReferencing:false,
+		excludeNotNeededFields:false,
 		constructor :function (pCfg){
 			var indexer = this.indexedTreePlg = new comps.plugins.tree.indexedTree,
 				plgSearch = new comps.plugins.tree.indexTreeSearch({
@@ -160,7 +161,8 @@
 				nodesEvaluator:this.nodesEvaluator,
 				showFields:this.showFields,
 				showEnums:this.showEnums,
-				allowReferencing:this.allowReferencing
+				allowReferencing:this.allowReferencing,
+				excludeNotNeededFields:this.excludeNotNeededFields
 			};
 
 			return nom.treeNodesProxy(attr,config);
