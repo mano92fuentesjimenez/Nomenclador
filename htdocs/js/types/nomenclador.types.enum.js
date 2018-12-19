@@ -92,6 +92,9 @@
 				if(field.type ==='DB_Enum')
 					_enumsToExclude[field.properties._enum] = true;
             });
+			nom.refs.getEnumsIdReferencingEnum(enumInstance,_enumId)._each_(function(v){
+				_enumsToExclude[v] = true;
+			});
 			return new enumPropertyWind({fieldId :fieldId, _enumId :_enumId, enumInstance:enumInstance, enumsToExclude:_enumsToExclude});
 		},
 		compareProperties :function (obj1, obj2){

@@ -44,7 +44,7 @@
          */
     {
 
-
+        refs:null,
         loaded: null,
         simpleTree:null,
         dataSources:null,
@@ -155,6 +155,7 @@
 
                 self.defaultFields = response.defaultFields;
                 self.simpleTree[instanceName] = response.simpleTree;
+                nom.refs.load(instanceName,response.refs);
                 nom.execute(callback);
 
             },onError,mask);
@@ -464,7 +465,7 @@
     nom.refs = Ext.extend(nom.refs, {
 
         // {
-        //     //idEnum+Idfield : [{enumId:"",fieldId:""}]
+        //     //idEnum+Idfield : [{enumId:fieldId}]
         // },
 
         load: function (instanceName, data){
@@ -488,6 +489,17 @@
                 if (refs[key]._length_() > 0)
                     return refs[key];
             return false;
+        },
+        getEnumsIdReferencingEnum: function(instanceName, _enumId){
+            var refs = this.getRefs(instanceName),
+                _enums = [];
+            refs._each_(function(v,k){
+                if(k.indexOf(_enumId) !== -1)
+                    v._each_(function(v,k){
+                        _enums.push(k);
+                    })
+            });
+            return _enums;
         },
         exists: function (instanceName,fromEnum, fromField, toEnum, toField){
             var from = this.getKey(fromEnum, fromField),
@@ -540,6 +552,7 @@
             return reference.split(':')[1];
         }
     });
+    nom.refs = new nom.refs();
 
     /**
      * LLave pública usada para el encriptado de los passwords mediante el algorirmo RSA

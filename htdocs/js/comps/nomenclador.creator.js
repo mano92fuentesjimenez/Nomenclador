@@ -74,8 +74,7 @@
 				 */
 				"finishedCreation" :true
 			});
-			this.refs = new nom.refs();
-			this.refs.load(this.enumInstance.getName(), arguments[0].refs || {});
+			nom.refs.load(this.enumInstance.getName(), arguments[0].refs || {});
 			this.on('afterrender', function (){
 				this.createValidator();
 			});
@@ -438,27 +437,27 @@
 					}
 					var record = self.gridStore.getAt(self.rowEditing);
 					var fieldId = record.get('id');
-					var references = self.refs.getReferences(self.enumInstance,self.getEnumId(), fieldId);
+					var references = nom.refs.getReferences(self.enumInstance,self.getEnumId(), fieldId);
 					this.canSelectEnum = true;
 					if (references._length_() > 0 && !this.isExpanded()) {
 						this.canSelectEnum = {
-							_enum :self.refs.getEnum(references._keys_()[0]),
-							field :self.refs.getField(references._keys_()[0])
+							_enum :nom.refs.getEnum(references._keys_()[0]),
+							field :nom.refs.getField(references._keys_()[0])
 						};
 					}
 					var v = true;
 					var getType = nom.Type.Utils.getType;
 					references._each_(function (value, key){
-						var _enum = enums.getEnumById(self.enumInstance.getName(), self.refs.getEnum(key));
+						var _enum = enums.getEnumById(self.enumInstance.getName(), nom.refs.getEnum(key));
 						_enum.fields._each_(function (value){
 							var type = getType(value.type);
 							if (!type)
 								return true;
-							if (type.dependsOnOthersFields && type.dependsOn(self.refs.getField(key), value.properties)) {
+							if (type.dependsOnOthersFields && type.dependsOn(nom.refs.getField(key), value.properties)) {
 								var o = type.getCandidatesTypes();
 								o.meta = {};
 								o.meta.referencingEnum = _enum;
-								o.meta.referencingField = _enum.fields[self.refs.getField(key)];
+								o.meta.referencingField = _enum.fields[nom.refs.getField(key)];
 								o.meta.formulaField = value;
 								dataTypeSelector.candidatesTypes = o;
 							}
@@ -690,7 +689,7 @@
 						var error = false;
 						selected.map(function (record){
 							//no se puede borrar una columna que es referenciada por alguien
-							var references = self.refs.getReferences(self.enumInstance.getName(), self._enum.id, record.get("id"));
+							var references = nom.refs.getReferences(self.enumInstance.getName(), self._enum.id, record.get("id"));
 							if (references) {
 								self.alertRefsError(record.get('name'), references);
 								error = true;
@@ -998,7 +997,7 @@
 		getNomenclador :function (){
 			var nomenclador = {};
 			var changes = {add :{}, mod :{}, del :{}, delRefs :[]};
-			this.refs.clearToAdd(this.enumInstance.getName());
+			nom.refs.clearToAdd(this.enumInstance.getName());
 			var fields = {};
 			var self = this;
 			nomenclador.name = this.nameTextField.getValue();
@@ -1045,8 +1044,8 @@
 				order++;
 				//anhadir todas las nuevas referencias.
 				if (nom.Type.Utils.getType(type).valueType == nom.Type.REF_Type) {
-					if (!self.refs.exists(self.enumInstance.getName(),nomenclador.id, id, properties._enum, properties.field))
-						self.refs.add(self.enumInstance.getName(), nomenclador.id, id, properties._enum, properties.field);
+					if (!nom.refs.exists(self.enumInstance.getName(),nomenclador.id, id, properties._enum, properties.field))
+						nom.refs.add(self.enumInstance.getName(), nomenclador.id, id, properties._enum, properties.field);
 				}
 			});
 			//adicionando las propiedades extras de la entidad.
@@ -1076,7 +1075,7 @@
 			};
 
 			if (this.creating)
-				return {_enum :nomenclador, refs :self.refs.getAddedReferences(this.enumInstance.getName())};
+				return {_enum :nomenclador, refs :nom.refs.getAddedReferences(this.enumInstance.getName())};
 
 
 			//Ver los cambios y ponerlos en un objeto
@@ -1127,7 +1126,7 @@
 						})
 					}
 				}
-			changes.addRefs = self.refs.getAddedReferences(this.enumInstance.getName());
+			changes.addRefs = nom.refs.getAddedReferences(this.enumInstance.getName());
 			if(_enum.modelRevision)
 				nomenclador.modelRevision = _enum.modelRevision;
 			if(_enum.dataRevision)
