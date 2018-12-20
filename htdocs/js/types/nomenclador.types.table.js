@@ -31,14 +31,24 @@
 								return c.store.getCount() > 0;
 							return true;
 						},
-						getFormVEvtNames: function () {
-							return 'datachanged';
-						},
 						getValue:c.getValue.createDelegate(c),
-						setValue:c.setValue.createDelegate(c)
-
+						setValue:c.setValue.createDelegate(c),
+						getFormVEvtNames:function(){
+							return ['recordAdded','recordModified','recordDeleted'];
+						},
+						getXType:function(){
+							return 'enumtable';
+						}
 					});
-
+				c.on('recordAdded',function(){
+					ui.fireEvent('recordAdded');
+				});
+				c.on('recordModified',function(){
+					ui.fireEvent('recordModified');
+				});
+				c.on('recordDeleted',function(){
+					ui.fireEvent('recordDeleted');
+				});
 				return ui;
 			},
 			getPropertiesExtComp: function (enumInstance, _enumId, fieldId, fields) {
