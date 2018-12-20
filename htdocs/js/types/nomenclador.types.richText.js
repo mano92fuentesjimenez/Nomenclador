@@ -17,33 +17,12 @@
     addType('DB_RichText',Ext.extend(nom.Type.ValueType, {
         nameToShow :"Texto enriquecido",
         getValueEditExtComp :function (enumInstance, field){
-            var fld = new Ext.Panel({
-                allowBlank :!field.needed,
-                fieldLabel :field.header,
-                height:100,
-                maxLength: 10000,
-				autoScroll: true,
-				plugins:[
-					new grow()
-				],
-				getValue:function(){
-                	var v = Ext.form.DisplayField.prototype.getValue.call(this);
-                	if(v === "")
-                		return;
-                	return v;
-				},
-				setValue:function(v){
-                	if(!utils.isString(v))
-                		v = '';
-
-                	var blob = new Blob([v],{type:'text/html'}),
-						url = Url.createObjectURL(blob),
-						html = '<iframe src="'+url+'" style="width: 100%; height: 100%;"></iframe>';
-
-                	var el = this.dom
-
-                	this.currentValue = v;
-				}
+            var fld = new richTextView({
+				allowBlank :!field.needed,
+				fieldLabel :field.header,
+                plugins:[
+                	new grow()
+				]
             });
 			fld.on('afterrender',function(){
 				fld.el.applyStyles({
@@ -99,6 +78,43 @@
 				wrap.addClassOnOver('gis_grow_hover');
 
 			});
+			fld.getXType = function () {
+				return 'tinyMCE_RichTextField';
+			};
+			fld.getFormVEvtNames = function () {
+				return 'valuesetted';
+			};
+			fld.isValid = function(){
+				var v = this.getValue();
+				return this.allowBlank || (utils.isString(v) && v !=='');
+			}
+		}
+	});
+	var richTextView = Ext.extend(Ext.Panel,{
+		allowBlank :null,
+		fieldLabel :null,
+		height:100,
+		maxLength: 10000,
+		autoScroll: true,
+		currentValue: null,
+		getValue:function(){
+			if(this.currentValue === '')
+				return null;
+			return this.currentValue;
+		},
+		setValue:function(v){
+			if(!utils.isString(v))
+				v = '';
+
+			var blob = new Blob([v],{type:'text/html'}),
+				url = Url.createObjectURL(blob),
+				html = '<iframe src="'+url+'" style="width: 100%; height: 100%;"></iframe>';
+
+			var el = this.dom
+
+			this.currentValue = v;
+
+			this.fireEvent('valuesetted',v);
 		}
 	})
 
