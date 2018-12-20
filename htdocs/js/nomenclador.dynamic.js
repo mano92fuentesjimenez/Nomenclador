@@ -1283,6 +1283,7 @@
             _fieldId: columnId,
             _enum:_enum,
             _field:_enum.fields[columnId],
+            fieldLabel: _enum.name,
             selectorTitle: selectorTitle,
             show2ndTitle:show2ndTitle,
             selector_columns:columns,
