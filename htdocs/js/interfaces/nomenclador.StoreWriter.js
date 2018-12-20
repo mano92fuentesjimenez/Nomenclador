@@ -121,7 +121,7 @@
                         iconCls: "gis_limpiar",
                         text: '',
                         handler: function () {
-                            self.store.rejectChanges();
+                            self.cancelChanges();
                             self.refreshView();
                         }
                     },
@@ -229,15 +229,28 @@
                 return r;
             };
             self.store.oldRejectChanges = self.store.rejectChanges;
-            self.store.rejectChanges = function () {
-                for (var key in changes.add)
+            self.store.rejectChanges = function (recordsIds) {
+                if(recordsIds._length_() === 0)
+                    recordsIds = null;
+                for (var key in changes.add) {
+                    if(recordsIds && recordsIds.indexOf(key) === -1)
+                        continue;
                     self.store.oldRemove(changes.add[key]);
+                    delete changes.add[key];
+                }
                 self.store.oldRejectChanges();
-                for (var key in changes.mod)
+                for (var key in changes.mod) {
+                    if(recordsIds && recordsIds.indexOf(key) === -1)
+                        continue;
                     changes.mod[key].state = undefined;
-                for (var key in changes.del)
+                    delete changes.mod[key];
+                }
+                for (var key in changes.del) {
+                    if(recordsIds && recordsIds.indexOf(key) === -1)
+                        continue;
                     changes.del[key].state = undefined;
-                changes = {del: {}, add: {}, mod: {}};
+                    delete changes.del[key];
+                }
                 self.refreshView();
             };
 
@@ -255,7 +268,9 @@
             });
         },
         cancelChanges: function () {
-            this.store.rejectChanges();
+            this.store.rejectChanges(this.getSelection()._map_(function (v) {
+                return v.id;
+            }));
         },
         submitChanges: function () {
             var changes = this.store.getRawChanges();

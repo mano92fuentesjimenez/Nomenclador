@@ -288,8 +288,7 @@
             })
         },
         refreshView:function(){
-            //Se recarga el grid solo porque eta subscrito a todos los eventos del store
-            //this.gridEditor.getView().refresh();
+            this.gridEditor.getView().refresh();
         },
         setNewStore:function(store){
             var grid = this.gridEditor;
