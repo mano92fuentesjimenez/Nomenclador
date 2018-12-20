@@ -1538,7 +1538,7 @@
         },
         destroy: function () {
             this.editor.destroy();
-            Ext.util.Observable.destroy.apply(this,arguments);
+            nom.TiniMce.superclass.destroy.apply(this,arguments);
         },
         onContainerResize: function () {
             var f = 4;
