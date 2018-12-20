@@ -306,13 +306,25 @@
         canMoveEnums:true,
         askToChangeEnum:null,
         maskObj:null,
+        enumInstance:null,
         constructor: function (cfg) {
 
             var self = this;
             this._apply_(cfg);
 
             this.initializeMenu();
-            this.tbar=([
+            this.initializeUI();
+
+            this.addEvents({
+                //Evento q se lanza cuando se refresca el arbol de nomencladores.
+                refreshEnumTree:true
+            });
+            nom.treeEditorPanel.superclass.constructor.call(this,cfg);
+            this.initializeEvents();
+
+        },
+        initializeUI:function(){
+            var tBarbuttons = [
                 '->',
                 {
                     iconCls:'gis_adicionar',
@@ -321,8 +333,19 @@
                     handler : function(pBtn,pEv){
                         self.showMenuOptions(self.getSelectionModel().getSelectedNode(),pEv);
                     }
-                },
-                {
+                }
+                /*,{
+                    iconCls:'gisTtfIcon_flaticon-exchange-arrows gisFontTheme',
+                    handler:function(){
+                        (new nom.importExport()).show();
+                    },
+                    tooltip:'Importar o exportar nomencladores',
+                    hidden:true
+
+                }*/
+                ];
+            if(this.enumInstance.getInstanceConfig().getDefaultDataSource() == null)
+                tBarbuttons.push({
                     iconCls:'layerposgis',
                     text: '',
                     toolGroup:'nomenclador_ds_manager',
@@ -336,24 +359,16 @@
                             }) : undefined
                         });
                     }
-                },
-                {
-                    iconCls:'gisTtfIcon_flaticon-exchange-arrows gisFontTheme',
-                    handler:function(){
-                        (new nom.importExport()).show();
-                    },
-                    tooltip:'Importar o exportar nomencladores',
-                    hidden:true
+                });
+            tBarbuttons.push(new buttons.btnActualizar({
+                text: '',
+                handler : function(pBtn,pEv){
+                    self.initValues();
+                    self.fireEvent('refreshEnumTree');
+                }
+            }));
 
-                },
-                new buttons.btnActualizar({
-                    text: '',
-                    handler : function(pBtn,pEv){
-                        self.initValues();
-                        self.fireEvent('refreshEnumTree');
-                    }
-                })
-            ])._map_(function(v){
+            this.tbar=(tBarbuttons)._map_(function(v){
                 if(!(utils.isString(v) || v.toolGroup === undefined))
                     v.listeners = {
                         afterrender : function (){
@@ -362,13 +377,6 @@
                     };
                 return v;
             },this, false);
-            this.addEvents({
-                //Evento q se lanza cuando se refresca el arbol de nomencladores.
-                refreshEnumTree:true
-            });
-            nom.treeEditorPanel.superclass.constructor.call(this,cfg);
-            this.initializeEvents();
-
         },
         isARankNode: function (node) {
             return !!(node.isRoot || node.attributes._type_ == 'category');
