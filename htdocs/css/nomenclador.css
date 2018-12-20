@@ -303,3 +303,10 @@
     cursor:pointer;
     z-index: 9999;
 }
+.enum_richTextView{
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    border-width: 0;
+    background: white;
+}

@@ -96,6 +96,10 @@
 		height: 100,
 		autoScroll: true,
 		currentValue: null,
+		bodyCfg:{
+			tag:'div',
+			cls:'enum_richTextView'
+		},
 		getValue:function(){
 			if(this.currentValue === '')
 				return null;
@@ -107,7 +111,7 @@
 
 			var blob = new Blob([v],{type:'text/html'}),
 				url = URL.createObjectURL(blob),
-				html = ' <div><iframe src="'+url+'" style="width: 100%; height: 100%;"></iframe> </div>';
+				html = ' <div><iframe src="'+url+'" style="height: '+this.height+'" class="enum_richTextView" </iframe> </div>';
 
 			var el = this.el;
 			el.update(html);
