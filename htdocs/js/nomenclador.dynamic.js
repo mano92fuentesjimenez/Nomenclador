@@ -954,7 +954,7 @@
                 v ='';
 
             toClean = !!toClean;
-            if(utils.isNumber(value)){
+            if(utils.isNumber(parseInt(value))){
                 this.setValueField(value);
                 return;
             }
@@ -974,7 +974,11 @@
         setValueField:function(valueField){
             var mask = utils.mask(this, 'cargando');
             nom.getEnumData(this.enumInstance,this._enum.id,function(data){
-                var f = data;
+                var record = data._first_();
+                this.setValue({
+                    displayField: record[this._fieldId],
+                    valueField: valueField
+                });
             },this,{
                 columns:[this._fieldId],
                 idRow:valueField
