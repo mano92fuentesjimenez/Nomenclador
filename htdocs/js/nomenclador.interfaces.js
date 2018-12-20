@@ -127,12 +127,13 @@
         },
         showEditor: function (data, callb) {
             var self = this,
+                title = (data ? "Modificar " : "Adicionar ") + (this._enum.name ? ("datos en el Nomenclador: " + this._enum.name):''),
                 editor = this.editorWindow = new addW({
                     height: 400,
                     modal: true,
                     width: '30%',
                     layout: "fit",
-                    title: (data ? "Modificar " : "Adicionar ") + "datos en el Nomenclador: " + this._enum.name,
+                    title: title,
                     items: [
                         this.getFormBody()
                     ],
