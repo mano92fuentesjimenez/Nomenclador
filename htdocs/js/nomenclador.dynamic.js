@@ -1416,6 +1416,135 @@
     };
     nom.UIDict = {};
 
+    nom.TiniMce = Ext.extend(Ext.Panel,{
+        editor: null,
+        allowBlank: false,
+        originalValue: null,
+        layout:'border',
+        inline: false,
+        constructor: function(obj) {
+            var self = this,
+                id = ('tinyMCE_wind')._id_(),
+                id_bar = ('tinyMCE_bar')._id_(),
+                conf = {
+                    branding: false,
+                    selector: '#' + id,
+                    height:'calc(100% - 100px)',
+                    resize: false,
+                    plugins: [
+                        " advlist autolink colorpicker contextmenu fullscreen help imagetools",
+                        " lists link  noneditable preview",
+                        " searchreplace table textcolor visualblocks wordcount"
+                    ],
+                    toolbar:
+                        "insertfile a11ycheck undo redo | bold italic | forecolor backcolor | template codesample | alignleft aligncenter alignright alignjustify | bullist numlist | link ",
+
+                };
+
+            this.editableContainer = new Ext.Panel({
+                id: id,
+                region: 'center'
+            });
+            var items = [this.editableContainer];
+
+            if (obj.inline) {
+
+                conf['setup'] = function (editor) {
+                    editor.on('blur', function () {
+                        return false;
+                    });
+                };
+                conf['init_instance_callback'] = function (editor) {
+                    editor.focus();
+                };
+                conf['autofocus'] = true;
+                conf['fixed_toolbar_container'] = '#'+id_bar;
+
+                this.editorContainer = new Ext.Panel({
+                    id: id_bar,
+                    region: 'north'
+                });
+                items.splice(0,0,this.editorContainer);
+            }
+            conf['inline'] = this.inline;
+
+            nom.TiniMce.superclass.constructor.call(this,{
+                items:items
+            });
+            this.editableContainer.on('resize',this.onContainerResize,this);
+            this.editableContainer.on('afterrender',function(){
+                window.tinyMCE.init(conf).then(function (editor) {
+                    editor = editor[0];
+                    if(editor == null)
+                        throw new Error('No se selecciono ningun elemento a la hora de inicializar el editor TiniMCE ');
+                    self.editor = editor;
+                    self.fireEvent('afterinit');
+                    editor.on('keyup',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('paste',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('SetContent',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('Redo',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('Undo',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('PastePostProcess',function () {
+                        self.fireEvent('change');
+                    });
+
+                });
+            });
+
+        },
+        isValid: function () {
+            if(this.editor == null)
+                return false;
+            var value = this.getValue();
+            return this.allowBlank || value !== '';
+        },
+        isDirty: function () {
+            if (this.originalValue != null)
+                return this.originalValue !== this.getValue();
+            return true;
+        },
+        getValue: function () {
+            if(this.editor == null)
+                return;
+            return this.editor.getContent();
+        },
+        setValue: function (value) {
+            if(this.editor==null){
+                var self = this;
+                this.on('afterinit',function(){
+                    self.setValue(value);
+                });
+                return true;
+            }
+            if(value == null)
+                value = '';
+            this.editor.setContent(value);
+        },
+        getXType: function () {
+            return 'tinyMCE'
+        },
+        getFormVEvtNames: function () {
+            return 'change';
+        },
+        destroy: function () {
+            this.editor.destroy();
+            Ext.util.Observable.destroy.apply(this,arguments);
+        },
+        onContainerResize: function () {
+            var f = 4;
+        }
+    });
+
     nom.execute = function(f,params, scope){
         if((function () {})._same_(f))
             return f.apply(scope || this,params);
