@@ -864,6 +864,7 @@
          */
         multiSelection:true,
         allowBlank: false,
+        returnValueAsReference: false,
 
         currentValue:null,
         //privates
@@ -953,7 +954,10 @@
                 v ='';
 
             toClean = !!toClean;
-
+            if(utils.isNumber(value)){
+                this.setValueField(value);
+                return;
+            }
             if(utils.isObject(value)) { //fixing 2nd call ext does.
                 v = renderer(value.displayField);
                 this.currentValue = value;
@@ -966,6 +970,15 @@
                 this.fireEvent('datachanged',this.currentValue);
             }
             nom.enumInput.superclass.setValue.call(this,v);
+        },
+        setValueField:function(valueField){
+            var mask = utils.mask(this, 'cargando');
+            nom.getEnumData(this.enumInstance,this._enum.id,function(data){
+                var f = data;
+            },this,{
+                columns:[this._fieldId],
+                idRow:valueField
+            },null,mask)
         },
         clean:function(){
              this.currentValue = null;
