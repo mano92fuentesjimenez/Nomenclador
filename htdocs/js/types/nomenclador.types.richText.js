@@ -93,8 +93,7 @@
 	var richTextView = Ext.extend(Ext.Panel,{
 		allowBlank :null,
 		fieldLabel :null,
-		height:100,
-		maxLength: 10000,
+		height: 100,
 		autoScroll: true,
 		currentValue: null,
 		getValue:function(){
@@ -107,11 +106,11 @@
 				v = '';
 
 			var blob = new Blob([v],{type:'text/html'}),
-				url = Url.createObjectURL(blob),
-				html = '<iframe src="'+url+'" style="width: 100%; height: 100%;"></iframe>';
+				url = URL.createObjectURL(blob),
+				html = ' <div><iframe src="'+url+'" style="width: 100%; height: 100%;"></iframe> </div>';
 
-			var el = this.dom
-
+			var el = this.el;
+			el.update(html);
 			this.currentValue = v;
 
 			this.fireEvent('valuesetted',v);
