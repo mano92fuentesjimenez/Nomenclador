@@ -78,8 +78,6 @@
          * @returns {*}
          */
         gridRender : function(text){
-            if(this._fieldDetails_ && this._fieldDetails_.type == 'DB_Enum')
-                return text.displayField;
             return text;
         },
         /**

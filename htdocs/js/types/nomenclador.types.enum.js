@@ -31,6 +31,7 @@
 			var field = this._fieldDetails_,
 				enumD = this._enumDetails_,
 				enumProps = AjaxPlugins.Nomenclador.enums.getEnumById(this._enumInstance_.getName(), field.properties._enum),
+				refField = enumProps.fields[field.properties.field],
                 fieldClass = enumProps.fields[field.properties.field].type,
                 typeObj = new nom.Type.Utils.getType(fieldClass);
 
@@ -40,25 +41,19 @@
                      los tipos que se evaluan lazy, si un nomenclador apunta a el, el no tiene forma de saber a que
                      fila pertenece ya que se renderiza en otro nomenclador apuntando a donde esta el originalmente.
                      */
-                    rend = typeObj.gridRender.call(this, text, pD, pRec),
+                    rend = typeObj.gridRender.call(this, text.displayField, pD, pRec,null,null,null,{_enum:enumProps,field:refField}),
                     html = '<div class="enums_Db_Enum">' +
                         '<div ' +
-                        "enumId='{enumId}' " +
-                        "enum_row='{enum_row}' " +
-                        "enum_field='{enum_field}' " +
-                        "instance_name='{instanceName}'" +
-                        "instance_modifier='{instanceModifier}'" +
+                        "enumId='"+enumD.id+"'" +
+                        "enum_row='"+pRec.get(nom.Type.PrimaryKey.UNIQUE_ID)+"' " +
+                        "enum_field='"+field.id+"' " +
+                        "instance_name='"+this._enumInstance_.getName()+"'" +
+                        "instance_modifier='"+this._enumInstance_.getInstanceNameModifier()+"'" +
                         'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_Enum.getEnumRowData(this);" ' +
                         'class="gisTtfIcon_flaticon-information-button">' +
                         '</div>' +
                         '<div>' + rend + '</div>';
-                return html._format_({
-                    enumId: enumD.id,
-                    enum_row: pRec.get(nom.Type.PrimaryKey.UNIQUE_ID),
-                    enum_field: field.id,
-                    instanceName: this._enumInstance_.getName(),
-					instanceModifier: this._enumInstance_.getInstanceNameModifier()
-                });
+                return html;
             }
             else{
             	if(text == null)
@@ -362,10 +357,14 @@
 				sn = this.tree.getSelectionModel().getSelectedNode(),
 				type = sn.attributes._type_;
 			//el valor que se muestra en el arbol no es el id del nodo
-			if (type == 'field')
+			if (type == 'field') {
 				_enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.parentNode.attributes._text_);
-			else _enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.attributes._text_);
-			field = nom.enums.getDenomField(this.enumInstance.getName(),_enum);
+				field = sn.attributes.idNode
+			}
+			else {
+				_enum = this.enums.getEnumByName(this.enumInstance.getName(), sn.attributes._text_);
+				field = nom.enums.getDenomField(this.enumInstance.getName(),_enum);
+			}
 
 			return {field :field, _enum :_enum.id};
 		},

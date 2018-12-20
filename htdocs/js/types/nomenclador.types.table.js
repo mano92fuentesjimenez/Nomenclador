@@ -3,6 +3,7 @@
  */
 (function() {
 	var nom = AjaxPlugins.Nomenclador,
+		utils = Genesig.Utils,
 		buttons = AjaxPlugins.Ext3_components.buttons,
 		addType = nom.Type.Utils.addType;
 
@@ -71,16 +72,19 @@
                     },
                 });
 			},
-			gridRender: function (value) {
+			gridRender: function (value,metadata,record,rowIndex,collIndex,store,obj) {
 				if(value == null)
 					return '';
+				var field = this._fieldDetails_;
+				if(utils.isObject(obj))
+					field = obj.field;
 
 				var html = '<div' +
 					" props_value= '"+value+"' "+
-					" _enum='"+Ext.encode(this._fieldDetails_.properties._enum)+"' "+
+					" _enum='"+Ext.encode(field.properties._enum)+"' "+
 					" enum_instance='"+this._enumInstance_.getName()+"' " +
 					" instance_modifier='"+this._enumInstance_.getInstanceNameModifier()+"' "+
-					"title= '"+this._fieldDetails_.header+"' " +
+					"title= '"+field.header+"' " +
 					"onclick='AjaxPlugins.Nomenclador.Type.Types.DB_Table.showValue(this)'>" +
 					"<span> Ver Tabla</span>" +
 					"</div>";
