@@ -32,6 +32,7 @@
         fieldFilterValue: null,
         pageSize: 10,
         pagePosition: 0,
+        extraParams: null,
         maskObj:null,
         /**
          * {bool | string}
@@ -231,7 +232,8 @@
                     instanceName: this.enumInstance,
                     _enum: this._enum.id,
                     where: this.getEnumLoadConfig(0).where,
-                    actions:this.getActions(this)
+                    actions:this.getActions(this),
+                    extraParams: this.extraParams
                 }, cb,null ,self.getMaskObj());
 			else setTimeout(cb,0);
 
@@ -248,7 +250,7 @@
                     where = '';
                 where += primary +' not in '+ Ext.encode(this.excludeEnums).replace('[','(').replace(']',')').replace(/"/g,'');
             }
-            return {
+            var params = {
                 where: where,
                 pageSize: this.pageSize,
                 offset: (pagePosition * this.pageSize),
@@ -256,6 +258,9 @@
                 actions: this.getActions(this),
                 '404EmptyPatch': this['404EmptyPatch']
             };
+            if(utils.isObject(this.extraParams))
+                params.extraParams = this.extraParams;
+            return params;
         },
         getPagingBar:function(){
             var self = this;
