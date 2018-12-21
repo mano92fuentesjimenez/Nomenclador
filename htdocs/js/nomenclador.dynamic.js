@@ -881,7 +881,6 @@
             this._enum = enums.getEnumById(this.enumInstance.getName(), this._enum);
             this.referencedField = this._enum.fields[this._fieldId];
             this.selector_columns = (this.selector_columns  || enums.getFieldsIdFromEnum(this._enum));
-
         },
         getFilterObj:function(){
             return this.filterObj;
@@ -902,7 +901,8 @@
                     columns:this.selector_columns,
                     multiSelection:this.multiSelection,
                     excludeEnums: this.getExclusion(),
-                    maskObj:panel
+                    maskObj:panel,
+                    selectEnum:true
                 }._apply_(this.getFilterObj()),
                 instanceConfig = this.enumInstance.getInstanceConfig(),
                 tab = instanceConfig.getEnumDataEditor(this._enum.tpl),
@@ -951,6 +951,7 @@
         setValue:function(value,toClean){
             var type = nom.Type.Utils.getType(this.referencedField.type),
                 renderer  = type.enumTypeRenderer,
+                self = this,
                 v ='';
 
             toClean = !!toClean;
@@ -969,7 +970,15 @@
                 this.currentValue = null;
                 this.fireEvent('datachanged',this.currentValue);
             }
-            nom.enumInput.superclass.setValue.call(this,v);
+            var f = function(){
+                self.setRawValue(v);
+            };
+            if(this.rendered)
+                f();
+            else
+                this.on('afterrender',f);
+
+            // nom.enumInput.superclass.setValue.call(this,v);
         },
         setValueField:function(valueField){
             var mask = utils.mask(this, 'cargando');
