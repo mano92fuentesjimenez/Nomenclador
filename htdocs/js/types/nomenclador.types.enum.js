@@ -44,9 +44,8 @@
                     rend = typeObj.gridRender.call(this, text.displayField, pD, pRec,null,null,null,{_enum:enumProps,field:refField}),
                     html = '<div class="enums_Db_Enum">' +
                         '<div ' +
-                        "enumId='"+enumD.id+"'" +
-                        "enum_row='"+pRec.get(nom.Type.PrimaryKey.UNIQUE_ID)+"' " +
-                        "enum_field='"+field.id+"' " +
+                        "enumId='"+enumProps.id+"'" +
+                        "enum_row='"+text.valueField+"' " +
                         "instance_name='"+this._enumInstance_.getName()+"'" +
                         "instance_modifier='"+this._enumInstance_.getInstanceNameModifier()+"'" +
                         'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_Enum.getEnumRowData(this);" ' +
@@ -175,27 +174,19 @@
 		getEnumRowData :function (pElement){
 			var enumId = pElement.getAttribute('enumId'),
 				enumRow = pElement.getAttribute('enum_row'),
-				enumField = pElement.getAttribute('enum_field'),
 				instanceName = pElement.getAttribute('instance_name'),
 				instanceModifier= pElement.getAttribute('instance_modifier'),
 				instance = nom.enums.getInstance(instanceName,instanceModifier),
 				el = this.getEnumRowDataContainer(pElement),
 				self = this;
-			nom.request('getRowFromEnumField',
-                {
-                    instanceName:instance,
-                    enumId :enumId,
-                    enumRow :enumRow,
-                    enumField :enumField,
-                    type:'DB_Enum'
-                },function (resp){
-					self.showLinkRecordData(instance,enumId, enumField, resp.values, el);
-                },null)
+
+			nom.getEnumData(instanceName,instanceModifier,enumId,function(resp) {
+					self.showLinkRecordData(instance, enumId, resp[0], el);
+				},null,{ idRow:enumRow }
+			);
 		},
-		showLinkRecordData :function (enumInstance, pEnumId, pEnumField, pData, pEl){
-			var enumDetails = nom.enums.getEnumById(enumInstance.getName(), pEnumId),
-				enumFields = enumDetails.fields,
-				referencedEnum = nom.enums.getEnumById(enumInstance.getName(), enumFields[pEnumField].properties._enum),
+		showLinkRecordData :function (enumInstance, pEnumId, pData, pEl){
+			var referencedEnum = nom.enums.getEnumById(enumInstance.getName(),pEnumId),
 				referencedEnumField = referencedEnum.fields,
 				data = {},
 				tb = pEl.last().first(),
@@ -220,7 +211,7 @@
 				bdRect = document.body.getBoundingClientRect(),
 				elRect;
 			referencedEnumField._each_(function (pFieldProp, pFieldId){
-				if (pFieldId !== nom.Type.PrimaryKey.UNIQUE_ID) {
+				if (pFieldId !== nom.Type.PrimaryKey.UNIQUE_ID && pFieldId !== nom.Type.Revision.UNIQUE_ID) {
 					var hd = pFieldProp.header,
 						value = (AjaxPlugins.Nomenclador.Type.Utils.getType(pFieldProp.type).gridRender.call(
 							{
