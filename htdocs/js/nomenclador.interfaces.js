@@ -165,6 +165,7 @@
             this.gridButtons[writterBtn.rmBtn] = buttons.btnDelete;
             this.gridButtons[writterBtn.submitBtn] = buttons.btnGuardar;
             this.gridButtons[writterBtn.cancelBtn] = buttons.btnCancelar;
+            this.gridButtons[writterBtn.modBtn] = buttons.btnModificar;
 
             if(this.showTitle)
                 this.title = this._enum.name;
@@ -197,6 +198,7 @@
 			if(this.manageEnum) {
 				tbar = [
 					this.getButtonInstance(writterBtn.addBtn),
+                    this.getButtonInstance(writterBtn.modBtn),
 					this.getButtonInstance(writterBtn.rmBtn),
 					{
 						xtype: 'tbseparator'

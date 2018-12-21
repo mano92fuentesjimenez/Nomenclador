@@ -36,6 +36,7 @@
 		hasLoadedBoolean: null,
 		totalCount: null,
 		manageEnum:true,
+        selectEnum:false,
 
 		dataEditor: null,
 
@@ -311,7 +312,7 @@
         },
 
         recorddblclick:function(record){
-            if(this.manageEnum)
+            if(this.manageEnum && !this.selectEnum)
                 this.modifyRecord(record);
             else
                 nom.interfaces.EnumStoreWriter.superclass.recorddblclick.call(this,record);
