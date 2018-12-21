@@ -997,6 +997,10 @@
         getValue:function(){
             if(this.currentValue == null)
                 return;
+
+            if(this.returnValueAsReference)
+                return this.currentValue.valueField;
+
             return this.currentValue;
         },
         getXType:function(){
