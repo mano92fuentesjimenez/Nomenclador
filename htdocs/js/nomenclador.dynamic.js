@@ -864,6 +864,7 @@
          */
         multiSelection:true,
         allowBlank: false,
+        returnValueAsReference: false,
 
         currentValue:null,
         //privates
@@ -953,7 +954,10 @@
                 v ='';
 
             toClean = !!toClean;
-
+            if(utils.isNumber(parseInt(value))){
+                this.setValueField(value);
+                return;
+            }
             if(utils.isObject(value)) { //fixing 2nd call ext does.
                 v = renderer(value.displayField);
                 this.currentValue = value;
@@ -966,6 +970,19 @@
                 this.fireEvent('datachanged',this.currentValue);
             }
             nom.enumInput.superclass.setValue.call(this,v);
+        },
+        setValueField:function(valueField){
+            var mask = utils.mask(this, 'cargando');
+            nom.getEnumData(this.enumInstance,this._enum.id,function(data){
+                var record = data._first_();
+                this.setValue({
+                    displayField: record[this._fieldId],
+                    valueField: valueField
+                });
+            },this,{
+                columns:[this._fieldId],
+                idRow:valueField
+            },null,mask)
         },
         clean:function(){
              this.currentValue = null;
@@ -980,6 +997,10 @@
         getValue:function(){
             if(this.currentValue == null)
                 return;
+
+            if(this.returnValueAsReference)
+                return this.currentValue.valueField;
+
             return this.currentValue;
         },
         getXType:function(){
@@ -1283,6 +1304,7 @@
             _fieldId: columnId,
             _enum:_enum,
             _field:_enum.fields[columnId],
+            fieldLabel: _enum.name,
             selectorTitle: selectorTitle,
             show2ndTitle:show2ndTitle,
             selector_columns:columns,
