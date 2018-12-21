@@ -330,6 +330,7 @@
                     iconCls:'gis_adicionar',
                     text: '',
                     toolGroup:'nomenclador_manager',
+                    tooltip: 'Adicionar '+this.entityType,
                     handler : function(pBtn,pEv){
                         self.showMenuOptions(self.getSelectionModel().getSelectedNode(),pEv);
                     }
