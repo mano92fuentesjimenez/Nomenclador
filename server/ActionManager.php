@@ -35,7 +35,7 @@ interface EnumsActions {
      * @param $where
      * @return {ActionManagerResult|*}
      */
-    function enumPreLoad(Enum $enum, $offset, $limit , $idRow, $fieldsToGet, $inData, $loadAllData, $where);
+    function enumPreLoad(EnumQuerier $enum, $offset, $limit , $idRow, $fieldsToGet, $inData, $loadAllData, $where);
     /**
      * Accion de postcarga de un nomenclador
      * @param Enum $enum
