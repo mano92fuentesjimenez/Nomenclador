@@ -295,6 +295,7 @@
             if(!this.offlineMode)
                 nom.getEnumData(
                     this.enumInstance.getName(),
+                    this.enumInstance.getInstanceNameModifier(),
                     this._enum.id,
                     function (response, params) {
                         this.store.loadData(response);

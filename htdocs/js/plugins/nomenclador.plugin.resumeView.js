@@ -27,6 +27,7 @@ AjaxPlugins.Nomenclador.plugins.resumeView = {
         this.resumeWindow.loadingMask = Genesig.Utils.mask(this.resumeWindow);
         AjaxPlugins.Nomenclador.getEnumData(
             pEnum.id,
+            '',
             function(){
                 this.resumeWindow.loadingMask();
                 this.currentData = arguments[0];
