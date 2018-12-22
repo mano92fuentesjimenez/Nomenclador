@@ -298,11 +298,7 @@
                     this.enumInstance.getInstanceNameModifier(),
                     this._enum.id,
                     function (response, params) {
-                        this.store.loadData(response);
-                        this.hasLoadedBoolean = true;
-                        this.fireEvent("finishedloadingenum", this, this._enum, params);
-                        nom.execute(cb,[],this);
-                        this.refreshView();
+                        self.handleLoadedData(response, params,cb);
                     },
                     this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj(),
                     self['404EmptyPatch']
@@ -316,6 +312,13 @@
             },0)
 
 
+        },
+        handleLoadedData : function(response, params,cb){
+            this.store.loadData(response);
+            this.hasLoadedBoolean = true;
+            this.fireEvent("finishedloadingenum", this, this._enum, params);
+            nom.execute(cb,[],this);
+            this.refreshView();
         },
         beyondLastPage(page){
             return (page) * this.pageSize > this.totalCount;
