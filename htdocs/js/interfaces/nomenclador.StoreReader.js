@@ -238,8 +238,9 @@
         },
         getEnumLoadConfig: function (pagePosition) {
             var where = null,
-                _enumStr = this._enum.id.toString();
+                _enumStr = this._enum.id.toString(),
                 primary = _enumStr +'.'+types.PrimaryKey.UNIQUE_ID+'';
+
             if (this.fieldFilter)
                 where = _enumStr+'.' + this.fieldFilter + ' = ' + this.fieldFilterValue + ' ';
             if(utils.isArray(this.excludeEnums) && this.excludeEnums._length_() > 0 ){
