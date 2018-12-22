@@ -230,11 +230,11 @@
 	 *                                  [ { fieldId: data ,...} ].
 	 * @param scope                     Scope en el que se va a a llamar a la función callback.
 	 */
-	exp.getEnumAllData=function(instanceName,_enum, config,callback, scope, onError, mask){};
-	addService('getEnumAllData', function(instanceName,_enum, config,callback, scope, onError, mask){
+	exp.getEnumAllData=function(instanceName,instanceModifier,_enum, config,callback, scope, onError, mask){};
+	addService('getEnumAllData', function(instanceName,instanceModifier,_enum, config,callback, scope, onError, mask){
 		var configObj = config._isObject_() ? config : {};
 			_enum = _enum._isString_() ? _enum : _enum.id;
-		nom.getEnumData(instanceName, _enum, callback, scope, configObj, onError, mask)
+		nom.getEnumData(instanceName,instanceModifier, _enum, callback, scope, configObj, onError, mask)
 	},true);
 
 	/**
