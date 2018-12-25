@@ -986,7 +986,7 @@
             nom.getEnumData(
                 this.enumInstance.getName(),
                 this.enumInstance.getInstanceNameModifier(),
-                '',this._enum.id,function(data){
+                this._enum.id,function(data){
                 var record = data._first_();
                 this.setValue({
                     displayField: record[this._fieldId],
