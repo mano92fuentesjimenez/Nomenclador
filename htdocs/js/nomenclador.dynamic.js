@@ -1174,7 +1174,9 @@
                 currentField.onTrigger1Click();
             }
             currentField.setDisabled(false);
-            currentField.setFilterObj( filter,dependsField.getValue()['valueField']);
+
+            var dependsValue=dependsField.getValue();
+            currentField.setFilterObj( filter,dependsField.returnValueAsReference ? dependsValue : dependsValue['valueField']);
             currentField.needReload = true;
         };
         f = f.createDelegate(this, [currentField, filter], true);
