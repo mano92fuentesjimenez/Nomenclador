@@ -400,7 +400,7 @@ class ServerNomenclador extends ClientResponderAdapter
     public function addRecords($enumInstance, $enumId, $records){
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnumStore($enumId);
-        $enum->addRecords($records);
+        return $enum->addRecords($records);
 
     }/**
      * Modifica records en la instancia dada en el nomenclador dado
@@ -412,7 +412,7 @@ class ServerNomenclador extends ClientResponderAdapter
     public function modRecords($enumInstance, $enumId, $records){
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnumStore($enumId);
-        $enum->modRecords($records);
+        return $enum->modRecords($records);
 
     }/**
      * Elimina records en la instancia dada en el nomenclador dado
@@ -424,7 +424,7 @@ class ServerNomenclador extends ClientResponderAdapter
     public function delRecords($enumInstance, $enumId, $records){
         $enums = Enums::getInstance($enumInstance);
         $enum = $enums->getEnumStore($enumId);
-        $enum->delRecords($records);
+        return $enum->delRecords($records);
 
     }
     public function getResumeViewTpl(){
