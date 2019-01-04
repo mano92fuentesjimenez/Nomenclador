@@ -382,7 +382,8 @@
     		LOAD: 'load',
 			ADD: 'add',
 			MODIFY: 'mod',
-			DELETE: 'del'
+			DELETE: 'del',
+			COUNT: 'count'
 		}
 	};
     exp.addAction.ACTIONS_MOMENTS = {
