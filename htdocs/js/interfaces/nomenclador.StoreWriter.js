@@ -150,10 +150,12 @@
 
             var instanceConfig = this.enumInstance.getInstanceConfig(),
                 formDataEditor = instanceConfig.getFormDataEditor(this._enum.tpl);
-            if (formDataEditor)
-                this.dataEditor = new formDataEditor(this.enumInstance,this._enum, this.columns);
-            else this.dataEditor = new nom.FormDataEditor_Default(this.enumInstance, this._enum, this.columns);
 
+            this.dataEditor= this.createEditor(formDataEditor ? formDataEditor : nom.FormDataEditor_Default);
+
+        },
+        createEditor : function(classObject){
+            return new classObject(this.enumInstance, this._enum, this.columns);
         },
         configureStore: function () {
             var self = this;
