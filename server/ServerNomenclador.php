@@ -27,6 +27,9 @@ class ServerNomenclador extends ClientResponderAdapter
         $enumInstance = $requ->value['instanceName'];
         $actionM = ActionManager::getInstance($enumInstance);
         $actionM->setActions($requ->value['actions']);
+        if(isset( $requ->value['extraParams'])){
+            $actionM->setExtraParams( $requ->value['extraParams']);
+        }
         //[{"denominacion":"mena", "id_enum_rev_1100": "2",
         //        "id_enum_1100": "1"  ]
         try{
@@ -220,7 +223,8 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enum = $enums->getEnumQuerier($enum_id);
                     $enum->set404Patch($patch);
 
-                    $enumResult->resp = $enum->getTotalRecords($requ->value['where']);
+
+                    $enumResult->resp = $enum->getTotalRecords($requ->value['where'], $extraParams);
                 }
                     break;
                 case 'getDataBasesNames': {

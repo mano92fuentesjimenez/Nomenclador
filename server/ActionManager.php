@@ -85,10 +85,14 @@ class ActionManager
     const CONVERT_TO_ADD = 2;
     const CONTINUE_P = 3;
     private $enumInstance;
+    private $extraParams;
 
     private static $instances;
     private function __construct($enumInstance){
         $this->enumInstance = $enumInstance;
+    }
+    public function setExtraParams($extraParams){
+        $this->extraParams = $extraParams;
     }
 
     /**
@@ -144,7 +148,7 @@ class ActionManager
 
         foreach ($actions as $action) {
             $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($enum, $offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where);
+            $r = $p['server']->{$p['action']}($enum, $offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where, $this->extraParams);
 
             if($r instanceof ActionManagerResult && $r->type == self::STOP)
                 break;
@@ -156,7 +160,7 @@ class ActionManager
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($enum, $data);
+            $p['server']->{$p['action']}($enum, $data,$this->extraParams);
         }
     }
     public function callPreSubmitActionsForEnum($enum,&$data){
@@ -166,7 +170,7 @@ class ActionManager
             $actions = $this->getActions('del','pre');
             foreach ($actions as $action){
                 $p = $this->getPlugin($action);
-                $r = $p['server']->{$p['action']}($enum, $data['del']);
+                $r = $p['server']->{$p['action']}($enum, $data['del'],$this->extraParams);
                 if($r instanceof ActionManagerResult && $r->type == self::STOP){
                     unset($data['del']);
                     break;
@@ -180,7 +184,7 @@ class ActionManager
             foreach ($actions as $action){
                 $p = $this->getPlugin($action);
 
-                $r = $p['server']->{$p['action']}($enum, $data['mod']);
+                $r = $p['server']->{$p['action']}($enum, $data['mod'],$this->extraParams);
 
                 if($r instanceof ActionManagerResult) {
                     if ($r->type == self::CONVERT_TO_ADD) {
@@ -202,7 +206,7 @@ class ActionManager
             $actions = $this->getActions('add','pre');
             foreach ($actions as $action){
                 $p = $this->getPlugin($action);
-                $r = $p['server']->{$p['action']}($enum, $data['add']);
+                $r = $p['server']->{$p['action']}($enum, $data['add'],$this->extraParams);
                 if($r instanceof ActionManagerResult && $r->type == self::STOP) {
                    $this->throwException($r,$p['server']);
                 }
@@ -216,7 +220,7 @@ class ActionManager
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $r = $p['server']->{$p['action']}($enum, $where);
+            $r = $p['server']->{$p['action']}($enum, $where,$this->extraParams);
         }
         return $r;
     }
@@ -225,7 +229,7 @@ class ActionManager
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($enum,$data,$originalData);
+            $p['server']->{$p['action']}($enum,$data,$originalData,$this->extraParams);
         }
     }
 
@@ -234,7 +238,7 @@ class ActionManager
 
         foreach ($actions as $action){
             $p = $this->getPlugin($action);
-            $p['server']->{$p['action']}($enum,$data,$orgData);
+            $p['server']->{$p['action']}($enum,$data,$orgData,$this->extraParams);
         }
     }
 
@@ -242,7 +246,7 @@ class ActionManager
         $actions = $this->getActions('addEnum','pre');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $r = $p['server']->{$p['action']}($this->enumInstance,$enum);
+            $r = $p['server']->{$p['action']}($this->enumInstance,$enum,$this->extraParams);
             if($r instanceof ActionManagerResult && $r->type == self::STOP)
                 $this->throwException($r,$p['plugin']);
         }
@@ -252,14 +256,14 @@ class ActionManager
         $actions = $this->getActions('addEnum','post');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($this->enumInstance,$enum);
+            $p['server']->{$p['action']}($this->enumInstance,$enum,$this->extraParams);
         }
     }
     public function callPreEnumModActions($enum){
         $actions = $this->getActions('modEnum','pre');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $r = $p['server']->{$p['action']}($this->enumInstance,$enum);
+            $r = $p['server']->{$p['action']}($this->enumInstance,$enum,$this->extraParams);
             if($r instanceof ActionManagerResult && $r->type == self::STOP)
                 $this->throwException($r,$p['plugin']);
         }
@@ -269,7 +273,7 @@ class ActionManager
         $actions = $this->getActions('modEnum','post');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($this->enumInstance,$enum);
+            $p['server']->{$p['action']}($this->enumInstance,$enum,$this->extraParams);
         }
     }
 
@@ -277,7 +281,7 @@ class ActionManager
         $actions = $this->getActions('remEnum','pre');
         foreach ($actions as $action) {
             $p = self::getPlugin($action);
-            $r = $p['server']->{$p['action']}($this->enumInstance, $enum);
+            $r = $p['server']->{$p['action']}($this->enumInstance, $enum,$this->extraParams);
             if($r instanceof ActionManagerResult && $r->type == self::STOP)
                $this->throwException($r,$p['plugin']);
 
@@ -287,7 +291,7 @@ class ActionManager
         $actions = $this->getActions('remEnum','post');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($this->enumInstance,$enum);
+            $p['server']->{$p['action']}($this->enumInstance,$enum,$this->extraParams);
         }
 
     }
@@ -298,7 +302,7 @@ class ActionManager
             throw new CartowebException($message);
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($this->enumInstance,$enum, $message);
+            $p['server']->{$p['action']}($this->enumInstance,$enum, $message,$this->extraParams);
         }
     }
 
@@ -310,14 +314,14 @@ class ActionManager
         $actions = $this->getActions('enumInstanceAdding','pre');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($this->enumInstance, $compInitializing);
+            $p['server']->{$p['action']}($this->enumInstance, $compInitializing,$this->extraParams);
         }
     }
     public function callUndefinedExistDataSourceActions( $idDataSource){
         $actions = $this->getActions('undefinedDataSource','pre');
         foreach ($actions as $action){
             $p = self::getPlugin($action);
-            $p['server']->{$p['action']}($this->enumInstance, $idDataSource);
+            $p['server']->{$p['action']}($this->enumInstance, $idDataSource,$this->extraParams);
         }
     }
     public function throwException($actionResult, $pluginServer){
