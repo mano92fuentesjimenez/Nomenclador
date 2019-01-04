@@ -612,6 +612,7 @@
             enumLoadIdRow:this._default_(enumDataLoadConfig.idRow,'',null,null),
             actions: nom.enums.getActionManager(instanceName,instanceModifier).getActions(),
             enumLoadActions:this._default_(enumDataLoadConfig.actions,{}),
+            extraParams: enumDataLoadConfig.extraParams,
             '404EmptyPatch': _404EmptyPatch
         },proccessRequest,onError,mask);
     };
