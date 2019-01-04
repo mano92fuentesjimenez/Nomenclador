@@ -50,7 +50,7 @@ interface EnumsActions {
      * @param $where
      * @return mixed
      */
-    function enumCountAction(Enum $enum, $where);
+    function enumCountAction(Enum $enum, $where, $extraParams);
 
     /**
      * Accion previa de guardado (adicionar, modificar, eliminar) de los records de nomenclador
