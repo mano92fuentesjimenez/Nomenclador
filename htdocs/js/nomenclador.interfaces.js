@@ -123,6 +123,7 @@
             };
         },
         handleSubmitData : function(data){
+            this.fireEvent('editorClosed',this,data);
             return data;
         },
         showEditor: function (data, callb) {
