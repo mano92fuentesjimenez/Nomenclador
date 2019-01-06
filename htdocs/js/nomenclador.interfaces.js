@@ -123,7 +123,7 @@
             };
         },
         handleSubmitData : function(data){
-            this.fireEvent('editorClosed',this,data);
+            this.fireEvent('editorClosedWithData',this,data);
             return data;
         },
         showEditor: function (data, callb) {
@@ -145,6 +145,10 @@
                         callb(self.handleSubmitData(data ? rowData.modified : rowData.all));
                     }
                 });
+
+            editor.on('beforeclose',function () {
+                this.fireEvent('editorClosed',this,null);
+            },this);
 
             this.fireEvent('editorCreated',this,editor,data);
             editor.show();
