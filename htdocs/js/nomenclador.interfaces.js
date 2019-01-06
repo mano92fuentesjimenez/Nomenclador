@@ -27,6 +27,7 @@
         _gridItems: null,
         _items: null,
         formColumns : 1,
+        editorContainerConfig: null,
         prepareFields : function(){
             var enum_fields = this.getEnumFields(),
                 gridItems = [],
@@ -129,12 +130,15 @@
         showEditor: function (data, callb) {
             var self = this,
                 title = (data ? "Modificar " : "Adicionar ") + (this._enum.name ? ("datos en el Nomenclador: " + this._enum.name):''),
-                editor = this.editorWindow = new addW({
+                editorConfig = $$.check(this.editorContainerConfig,{}),
+                defaultEditorConfig = {
                     height: 400,
                     modal: true,
                     width: '30%',
-                    layout: "fit",
                     title: title,
+                },
+                editor = this.editorWindow = new addW($$.assign(defaultEditorConfig,editorConfig,{
+                    layout: "fit",
                     items: [
                         this.getFormBody()
                     ],
@@ -144,7 +148,7 @@
                         self._fields._first_().focus();
                         callb(self.handleSubmitData(data ? rowData.modified : rowData.all));
                     }
-                });
+                }));
 
             editor.on('beforeclose',function () {
                 this.fireEvent('editorClosed',this,null);
