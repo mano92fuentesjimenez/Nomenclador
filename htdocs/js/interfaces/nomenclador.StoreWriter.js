@@ -40,6 +40,7 @@
 
 		dataEditor: null,
 
+        dataEditorConfig:null,
         selections:null,
         constructor: function (config) {
             var self = this;
@@ -155,7 +156,7 @@
 
         },
         createEditor : function(classObject){
-            return new classObject(this.enumInstance, this._enum, this.columns);
+            return new classObject(this.enumInstance, this._enum, this.columns, this.dataEditorConfig);
         },
         configureStore: function () {
             var self = this;
