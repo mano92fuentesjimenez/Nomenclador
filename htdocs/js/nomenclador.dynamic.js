@@ -1427,6 +1427,7 @@
                 id = ('tinyMCE_wind')._id_(),
                 id_bar = ('tinyMCE_bar')._id_(),
                 conf = {
+                    language:'es',
                     branding: false,
                     selector: '#' + id,
                     height:'calc(100% - 100px)',
