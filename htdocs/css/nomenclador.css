@@ -310,3 +310,7 @@
     border-width: 0;
     background: white;
 }
+.enum_view_link{
+    color:blue;
+    cursor:pointer;
+}

@@ -8,7 +8,8 @@
 		utils = Genesig.Utils,
         fields = comps.fields,
 		plugins = comps.plugins,
-        addType =nom.Type.Utils.addType;
+        addType =nom.Type.Utils.addType,
+	    richText = nom.Type.Types.DB_RichText;
 
     /**
 	 * Tipo descripcion. Es un texto
@@ -31,8 +32,40 @@
 			});
 
             return fld;
-        }
-    }));
+        },
+		gridRender:function(v){
+			var fieldName = this._fieldDetails_.header,
+				div = '<div class="enum_view_link"' +
+				'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_RichText.showText(\''+v+'\',this,\''+fieldName+'\')">' +
+				'Ver' +
+				'</div>';
+			return div;
+		}
+
+    })._apply_({
+		showText:function(v,el,fieldName){
+			var html = createIframe(v),
+				p = new Ext.Panel({html: html}),
+				wind = new Ext.Window({
+					title: 'Campo:'+fieldName,
+					layout:'fit',
+					items: [p],
+					modal: true,
+					width: 500,
+					height: 500
+				});
+			wind.show();
+		}
+	}));
+    var createIframe = function(v, height){
+    	if(!height)
+    		height = 500;
+		var blob = new Blob([v],{type:'text/html'}),
+			url = URL.createObjectURL(blob),
+			html = ' <div><iframe src="'+url+'" style="height: '+height+'" class="enum_richTextView" </iframe> </div>';
+		return html;
+
+	};
 
 	var grow = Ext.extend(function(){},{
 		init:function(fld){
@@ -106,15 +139,15 @@
 			return this.currentValue;
 		},
 		setValue:function(v){
+			var self = this;
 			if(!utils.isString(v))
 				v = '';
-
-			var blob = new Blob([v],{type:'text/html'}),
-				url = URL.createObjectURL(blob),
-				html = ' <div><iframe src="'+url+'" style="height: '+this.height+'" class="enum_richTextView" </iframe> </div>';
-
-			var el = this.el;
-			el.update(html);
+			var f = function(){
+				self.el.update( createIframe(v,self.height));
+			};
+			if(!this.rendered)
+				this.on('afterrender',f);
+			else f();
 			this.currentValue = v;
 
 			this.fireEvent('valuesetted',v);
