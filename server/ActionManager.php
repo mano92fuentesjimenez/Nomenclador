@@ -35,14 +35,14 @@ interface EnumsActions {
      * @param $where
      * @return {ActionManagerResult|*}
      */
-    function enumPreLoad(EnumQuerier $enum, $offset, $limit , $idRow, $fieldsToGet, $inData, $loadAllData, $where);
+    function enumPreLoad(EnumQuerier $enum, $offset, $limit , $idRow, $fieldsToGet, $inData, $loadAllData, $where, $extraParams);
     /**
      * Accion de postcarga de un nomenclador
      * @param Enum $enum
      * @param $data
      * @return {ActionManagerResult|*}
      */
-    function enumPostLoad(Enum $enum, $data);
+    function enumPostLoad(Enum $enum, $data, $extraParams);
 
     /**
      * Accion de conteo de los registros de un nomenclador
@@ -50,7 +50,7 @@ interface EnumsActions {
      * @param $where
      * @return mixed
      */
-    function enumCountAction(Enum $enum, $where);
+    function enumCountAction(Enum $enum, $where, $extraParams);
 
     /**
      * Accion previa de guardado (adicionar, modificar, eliminar) de los records de nomenclador
