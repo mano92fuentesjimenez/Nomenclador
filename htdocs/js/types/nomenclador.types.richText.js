@@ -36,7 +36,7 @@
 		gridRender:function(v){
 			var fieldName = this._fieldDetails_.header,
 				div = '<div class="enum_view_link"' +
-				'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_RichText.showText(\''+v+'\',this,\''+fieldName+'\')">' +
+				'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_RichText.showText(\''+encodeURIComponent(v)+'\',this,\''+fieldName+'\')">' +
 				'Ver' +
 				'</div>';
 			return div;
@@ -44,7 +44,7 @@
 
     })._apply_({
 		showText:function(v,el,fieldName){
-			var html = createIframe(v),
+			var html = createIframe(decodeURIComponent(v)),
 				p = new Ext.Panel({html: html}),
 				wind = new Ext.Window({
 					title: 'Campo:'+fieldName,
