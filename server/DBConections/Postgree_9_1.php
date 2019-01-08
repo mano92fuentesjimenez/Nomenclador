@@ -102,6 +102,10 @@ class Postgree_9_1 extends DBConn
             if(!$isMultiEnum) {
                 $createStr.="(";
                 foreach ($fieldsOrder as $field) {
+                    if(is_null($values[$field] )){
+                        $createStr .= "null,";
+                        continue;
+                    }
                     $createStr .= $values[$field] . ",";
 
                 }
@@ -110,6 +114,8 @@ class Postgree_9_1 extends DBConn
             }
             else{
                 foreach ($values as $v) {
+                    if(is_null($v))
+                        continue;
                     $createStr.="(";
                     $createStr = "$createStr $key, $v";
                     $createStr .="),";
