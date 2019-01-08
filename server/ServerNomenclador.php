@@ -224,7 +224,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enum->set404Patch($patch);
 
 
-                    $enumResult->resp = $enum->getTotalRecords($requ->value['where'], $extraParams);
+                    $enumResult->resp = $enum->getTotalRecords($requ->value['where']);
                 }
                     break;
                 case 'getDataBasesNames': {
