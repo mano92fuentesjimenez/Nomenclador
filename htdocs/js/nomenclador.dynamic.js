@@ -616,10 +616,11 @@
             '404EmptyPatch': _404EmptyPatch
         },proccessRequest,onError,mask);
     };
-    nom.getStoreConfigFromEnum = function (_enum, columns){
+    nom.getStoreConfigFromEnum = function (_enum, columns,extraColumns){
 
         columns = columns || enums.getFieldsIdFromEnum(_enum);
-        var fields = [],
+
+        var fields = $$.check(extraColumns,[]),
             cl = _enum.fields._queryBy_(function(v,k){
                 return  columns.indexOf(v.id) !== -1;
             },this, true);
