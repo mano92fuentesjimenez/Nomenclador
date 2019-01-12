@@ -91,7 +91,7 @@
                             self.dataEditor.showEditor(null, function (recordObj) {
                                 if(self.fieldFilter)
                                     recordObj[self.fieldFilter] = self.fieldFilterValue;
-                                var record = new self.store.recordType(recordObj);
+                                var record = self.createNewRecord(recordObj);
                                 self.store.add(record);
                                 self.fireEvent('recordAdded',record);
                             });
@@ -320,12 +320,18 @@
             else
                 nom.interfaces.EnumStoreWriter.superclass.recorddblclick.call(this,record);
         },
+        createNewRecord : function(data){
+            return new this.store.recordType(data);
+        },
+        updateRecordFieldValue : function(record,field,newValue){
+            record.set(field, newValue);
+        },
         modifyRecord: function (record) {
             var self = this;
             this.dataEditor.showEditor(record.data, function (recordObj) {
                 record.beginEdit();
                 recordObj._each_(function (v, k) {
-                    record.set(k, v);
+                    self.updateRecordFieldValue(record,k,v);
                 });
                 record.endEdit();
                 self.fireEvent('recordModified', record);
