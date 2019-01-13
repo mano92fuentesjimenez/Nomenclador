@@ -289,6 +289,7 @@
                     data: changes,
                     modelRevision: this._enum.modelRevision,
                     modelId: this._enum.id,
+                    extraParams : self.extraParams,
                     actions: this.getActions()
                    }, function (response, o) {
                     changes['add'] = response.add;
