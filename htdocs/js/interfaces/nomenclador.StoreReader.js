@@ -44,6 +44,7 @@
         lazyInit:false,
         offlineMode:false,
         initValues:null,
+        appendData: false,
 
         //privates
         excludeEnums:null,
@@ -311,7 +312,7 @@
         },
         handleLoadedData : function(response, params,cb){
             this.restoreButtonsDisableStatus();
-            this.store.loadData(response);
+            this.store.loadData(response, !!this.appendData);
             this.hasLoadedBoolean = true;
             this.fireEvent("finishedloadingenum", this, this._enum, params);
             nom.execute(cb,[],this);
