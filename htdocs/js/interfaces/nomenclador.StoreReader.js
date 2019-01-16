@@ -359,7 +359,7 @@
             var button = this.getButtonInstance(idButton);
             if(utils.isObject(button)) {
                 button._disabled_ = disabled;
-                $$.execute(button.setDisabled,[disabled],this);
+                $$.execute(button.setDisabled,[button,disabled],this);
             }
         },
         setDisableButtons:function(disabled,loading){
