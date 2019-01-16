@@ -326,8 +326,10 @@
         },
         nextPage: function () {
             var self = this;
-            if (this.isLastPage())
+            if (this.isLastPage()) {
                 Logger.error('Se esta llamando a avanzar pagina en la ultima pagina');
+                return;
+            }
             this.loadEnumData(this.pagePosition + 1, function(){
                 if(self.isLastPage())
                     self.setDisableButton(_enumButtons.goToNextPage, true);
@@ -343,8 +345,10 @@
         },
         previousPage: function () {
             var self = this;
-            if (this.isFirstPage())
+            if (this.isFirstPage()) {
                 Logger.error('Se esta llamando a retroceder la pagina en la primera pagina');
+                return;
+            }
             this.loadEnumData(this.pagePosition - 1,function(){
                 if (self.firstPage())
                     self.setDisableButton(_enumButtons.goToPreviousPage, true);
