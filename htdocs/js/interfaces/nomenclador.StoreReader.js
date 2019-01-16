@@ -333,8 +333,8 @@
                 return;
             }
             this.loadEnumData(this.pagePosition + 1, function(){
-                self.checkButtonsDisability();
                 self.pagePosition += 1;
+                self.checkButtonsDisability();
             });
         },
         checkButtonsDisability: function(){
@@ -351,8 +351,8 @@
                 return;
             }
             this.loadEnumData(this.pagePosition - 1,function(){
-                this.checkButtonsDisability();
                 self.pagePosition -=1;
+                this.checkButtonsDisability();
             });
         },
         setDisableButton:function(idButton, disabled){
@@ -387,8 +387,8 @@
             var page = this.totalCount % this.pageSize === 0 ? Math.floor(this.totalCount / this.pageSize) - 1 :
                 Math.floor(this.totalCount / this.pageSize);
             this.loadEnumData(page,function(){
-                self.checkButtonsDisability();
                 self.pagePosition = page;
+                self.checkButtonsDisability();
             });
         },
         reloadCurrentPage: function () {
@@ -397,8 +397,8 @@
         firstPage: function () {
             var self = this;
             this.loadEnumData(0, function(){
-                self.checkButtonsDisability();
                 self.pagePosition = 0;
+                self.checkButtonsDisability();
             });
         },
         goToPage: function(page){
