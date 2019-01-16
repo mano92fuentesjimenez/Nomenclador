@@ -122,22 +122,11 @@
                     goToPreviousPage: {
                         handler: function () {
                             self.previousPage();
-                            if (self.isFirstPage())
-                                this.setDisabled(true);
-                            var goToNextPage = self.getButtonInstance('goToNextPage');
-                            if (goToNextPage)
-                                goToNextPage.setDisabled(false);
                         }
                     },
                     goToNextPage: {
                         handler: function () {
                             self.nextPage();
-                            if (self.isLastPage())
-                                this.setDisabled(true);
-                            var goToPreviousPage = self.getButtonInstance('goToPreviousPage');
-                            if (goToPreviousPage)
-                                goToPreviousPage.setDisabled(false);
-
                         }
                     },
                     goToLastPage:{handler:function () {
