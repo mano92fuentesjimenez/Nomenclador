@@ -287,28 +287,29 @@
          */
         loadEnumData: function (pagePosition, cb) {
             var self = this;
-            if(!this.offlineMode)
+            if(!this.offlineMode) {
+                this.setDisableButtons(true,true);
                 nom.getEnumData(
                     this.enumInstance.getName(),
                     this.enumInstance.getInstanceNameModifier(),
                     this._enum.id,
                     function (response, params) {
-                        self.handleLoadedData(response, params,cb);
+                        self.handleLoadedData(response, params, cb);
                     },
-                    this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj(),
+                    this, this.getEnumLoadConfig(pagePosition), function () {
+                        self.onLoadError()
+                    }, this.getMaskObj(),
                     self['404EmptyPatch']
-                );
+                )
+            }
             else setTimeout(function(){
-                self.store.loadData(self.store.data || []);
-                self.hasLoadedBoolean = true;
-                self.fireEvent("finishedloadingenum", self, self._enum);
-                nom.execute(cb, [],self);
-                self.refreshView();
+                self.handleLoadedData(self.store.data || [],[],cb)
             },0)
 
 
         },
         handleLoadedData : function(response, params,cb){
+            this.restoreButtonsDisability();
             this.store.loadData(response);
             this.hasLoadedBoolean = true;
             this.fireEvent("finishedloadingenum", this, this._enum, params);
@@ -340,8 +341,29 @@
         },
         setDisableButton:function(idButton, disabled){
             var button = this.getButtonInstance(idButton);
-            if(utils.isObject(button))
-                button.setDisabled(disabled);
+            if(utils.isObject(button)) {
+                button._disabled_ = disabled;
+                $$.execute(button.setDisabled,[disabled],this);
+            }
+        },
+        setDisableButtons:function(disabled,loading){
+            var self = this;
+            _enumButtons._each_(function (v,k) {
+                var button = self.getButtonInstance(k);
+                if(loading)
+                    button._previousState_ = button._disabled_;
+                self.setDisableButton(k,disabled);
+            })
+        },
+        restoreButtonsDisability: function(){
+            var self = this;
+            _enumButtons._each_(function (v,k) {
+                var button = self.getButtonInstance(k);
+                if(button._previousState_ !== undefined){
+                    self.setButtonDisabled(k,button._previousState_);
+                    delete button._previousState_;
+                }
+            })
         },
         previousPage: function () {
             var self = this;
