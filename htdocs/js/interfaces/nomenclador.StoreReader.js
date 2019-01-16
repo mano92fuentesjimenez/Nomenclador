@@ -211,6 +211,7 @@
 					self.store = self.createStore();
 					self.setNewStore(self.store);
 					self.loadEnumData(self.pagePosition, function () {
+                        self.checkButtonsDisability();
 						self.pagePosition = 0;
 						self.storeInitialized = true;
 						self.fireEvent('storeinitialized', self);
@@ -309,7 +310,7 @@
 
         },
         handleLoadedData : function(response, params,cb){
-            this.restoreButtonsDisability();
+            this.restoreButtonsDisableStatus();
             this.store.loadData(response);
             this.hasLoadedBoolean = true;
             this.fireEvent("finishedloadingenum", this, this._enum, params);
@@ -332,11 +333,26 @@
                 return;
             }
             this.loadEnumData(this.pagePosition + 1, function(){
-                if(self.isLastPage())
-                    self.setDisableButton(_enumButtons.goToNextPage, true);
-                if(!self.firstPage())
-                    self.setDisableButton(_enumButtons.goToPreviousPage,false);
+                self.checkButtonsDisability();
                 self.pagePosition += 1;
+            });
+        },
+        checkButtonsDisability: function(){
+
+            self.setDisableButton(_enumButtons.goToNextPage, this.isLastPage());
+            self.setDisableButton(_enumButtons.goToLastPage,this.isLastPage());
+            self.setDisableButton(_enumButtons.goToPreviousPage, this.isFirstPage());
+            self.setDisableButton(_enumButtons.goToFirstPage, this.isFirstPage());
+        },
+        previousPage: function () {
+            var self = this;
+            if (this.isFirstPage()) {
+                Logger.error('Se esta llamando a retroceder la pagina en la primera pagina');
+                return;
+            }
+            this.loadEnumData(this.pagePosition - 1,function(){
+                this.checkButtonsDisability();
+                self.pagePosition -=1;
             });
         },
         setDisableButton:function(idButton, disabled){
@@ -355,7 +371,7 @@
                 self.setDisableButton(k,disabled);
             })
         },
-        restoreButtonsDisability: function(){
+        restoreButtonsDisableStatus: function(){
             var self = this;
             _enumButtons._each_(function (v,k) {
                 var button = self.getButtonInstance(k);
@@ -365,25 +381,13 @@
                 }
             })
         },
-        previousPage: function () {
-            var self = this;
-            if (this.isFirstPage()) {
-                Logger.error('Se esta llamando a retroceder la pagina en la primera pagina');
-                return;
-            }
-            this.loadEnumData(this.pagePosition - 1,function(){
-                if (self.firstPage())
-                    self.setDisableButton(_enumButtons.goToPreviousPage, true);
-                if(!self.isLastPage())
-                    self.setDisableButton(_enumButtons.goToNextPage, false);
-                self.pagePosition -=1;
-            });
-        },
+
         lastPage: function () {
             var self = this;
             var page = this.totalCount % this.pageSize === 0 ? Math.floor(this.totalCount / this.pageSize) - 1 :
                 Math.floor(this.totalCount / this.pageSize);
             this.loadEnumData(page,function(){
+                self.checkButtonsDisability();
                 self.pagePosition = page;
             });
         },
@@ -393,6 +397,7 @@
         firstPage: function () {
             var self = this;
             this.loadEnumData(0, function(){
+                self.checkButtonsDisability();
                 self.pagePosition = 0;
             });
         },
