@@ -340,14 +340,27 @@
             if (this.isLastPage())
                 Logger.error('Se esta llamando a avanzar pagina en la ultima pagina');
             this.loadEnumData(this.pagePosition + 1, function(){
+                if(self.isLastPage())
+                    self.setDisableButton(_enumButtons.goToNextPage, true);
+                if(!self.firstPage())
+                    self.setDisableButton(_enumButtons.goToPreviousPage,false);
                 self.pagePosition += 1;
             });
+        },
+        setDisableButton:function(idButton, disabled){
+            var button = this.getButtonInstance(idButton);
+            if(utils.isObject(button))
+                button.setDisabled(disabled);
         },
         previousPage: function () {
             var self = this;
             if (this.isFirstPage())
                 Logger.error('Se esta llamando a retroceder la pagina en la primera pagina');
             this.loadEnumData(this.pagePosition - 1,function(){
+                if (self.firstPage())
+                    self.setDisableButton(_enumButtons.goToPreviousPage, true);
+                if(!self.isLastPage())
+                    self.setDisableButton(_enumButtons.goToNextPage, false);
                 self.pagePosition -=1;
             });
         },
