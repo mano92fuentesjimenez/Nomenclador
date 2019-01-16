@@ -339,10 +339,10 @@
         },
         checkButtonsDisability: function(){
 
-            self.setDisableButton(_enumButtons.goToNextPage, this.isLastPage());
-            self.setDisableButton(_enumButtons.goToLastPage,this.isLastPage());
-            self.setDisableButton(_enumButtons.goToPreviousPage, this.isFirstPage());
-            self.setDisableButton(_enumButtons.goToFirstPage, this.isFirstPage());
+            this.setDisableButton(_enumButtons.goToNextPage, this.isLastPage());
+            this.setDisableButton(_enumButtons.goToLastPage,this.isLastPage());
+            this.setDisableButton(_enumButtons.goToPreviousPage, this.isFirstPage());
+            this.setDisableButton(_enumButtons.goToFirstPage, this.isFirstPage());
         },
         previousPage: function () {
             var self = this;
