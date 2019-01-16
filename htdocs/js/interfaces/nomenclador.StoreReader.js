@@ -533,9 +533,6 @@
         initializeButton: function(config, button_id){
             Logger.warn('Funcion initializeButton no fue sobrescrita');
         },
-        setButtonDisabled:function(buttonInstance, value){
-            Logger.warn('Funcion setButtonDisabled no fue implementada');
-        },
         setTitle:function(title){
             Logger.warn('Funcion setTitle no fue sobrescrita');
         },
