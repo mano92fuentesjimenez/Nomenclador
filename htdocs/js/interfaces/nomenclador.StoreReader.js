@@ -232,7 +232,9 @@
         getEnumLoadConfig: function (pagePosition) {
             var where = null,
                 _enumStr = this._enum.id.toString(),
-                primary = _enumStr +'.'+types.PrimaryKey.UNIQUE_ID+'';
+                primary = _enumStr +'.'+types.PrimaryKey.UNIQUE_ID+'',
+                pageSize = this.pageSize,
+                offset = (pagePosition * this.pageSize);
 
             if (this.fieldFilter)
                 where = _enumStr+'.' + this.fieldFilter + ' = ' + this.fieldFilterValue + ' ';
@@ -241,10 +243,19 @@
                     where = '';
                 where += primary +' not in '+ Ext.encode(this.excludeEnums).replace('[','(').replace(']',')').replace(/"/g,'');
             }
+
+            if(this.appendData){
+                var c = this.getCount(),
+                    currentPageElemCount = (this.pagePosition+1) * pageSize;
+
+                pageSize -= c - currentPageElemCount;
+                offset = c;
+            }
+
             var params = {
                 where: where,
-                pageSize: this.pageSize,
-                offset: (pagePosition * this.pageSize),
+                pageSize: pageSize,
+                offset: offset,
                 columns: this.columns,
                 actions: this.getActions(this),
                 '404EmptyPatch': this['404EmptyPatch']
@@ -252,6 +263,16 @@
             if(utils.isObject(this.extraParams))
                 params.extraParams = this.extraParams;
             return params;
+        },
+        setPageSize:function(pageSize){
+            var previousPageCount = this.getTotalPages();
+            this.pageSize = pageSize;
+            var currentPageCount = this.getTotalPages();
+
+            this.pagePosition = Math.floor((currentPageCount * this.pagePosition)/previousPageCount );
+        },
+        getTotalPages:function(){
+            return Math.ceil(this.totalCount / this.pageSize);
         },
         getPagingBar:function(){
             var self = this;
