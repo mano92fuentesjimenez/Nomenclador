@@ -236,7 +236,9 @@
                 _enumStr = this._enum.id.toString(),
                 primary = _enumStr +'.'+types.PrimaryKey.UNIQUE_ID+'',
                 pageSize = this.pageSize,
-                offset = (pagePosition * this.pageSize);
+                offset = (pagePosition * this.pageSize),
+                c = this.store.getCount(),
+                currentPageElemCount = (this.pagePosition + 1) * pageSize;
 
             if (this.fieldFilter)
                 where = _enumStr+'.' + this.fieldFilter + ' = ' + this.fieldFilterValue + ' ';
@@ -245,11 +247,9 @@
                     where = '';
                 where += primary +' not in '+ Ext.encode(this.excludeEnums).replace('[','(').replace(']',')').replace(/"/g,'');
             }
+            if(this.appendData && c!==0 && (currentPageElemCount - c) > 0){
 
-            if(this.appendData){
-                var c = this.store.getCount(),
-                    currentPageElemCount = (this.pagePosition + 1) * pageSize;
-
+                this.pagePosition-=1 ;
                 pageSize = currentPageElemCount - c;
                 offset = c;
             }
@@ -267,7 +267,7 @@
             return params;
         },
         setPageSize:function(pageSize){
-            if(!this.initialized){
+            if(!this.initialized || this.pageSize === pageSize){
                 this.pageSize = pageSize;
                 return;
             }
@@ -275,7 +275,7 @@
             this.pageSize = pageSize;
             var currentPageCount = this.getTotalPages();
 
-            this.pagePosition = Math.floor((previousPageCount* this.pagePosition)/ currentPageCount );
+            this.pagePosition = Math.floor((currentPageCount* (this.pagePosition+1))/previousPageCount  );
         },
         getTotalPages:function(){
             return Math.ceil(this.totalCount / this.pageSize);
