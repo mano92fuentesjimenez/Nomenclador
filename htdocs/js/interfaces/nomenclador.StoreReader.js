@@ -245,7 +245,7 @@
             }
 
             if(this.appendData){
-                var c = this.getCount(),
+                var c = this.store.getCount(),
                     currentPageElemCount = (this.pagePosition+1) * pageSize;
 
                 pageSize -= c - currentPageElemCount;
