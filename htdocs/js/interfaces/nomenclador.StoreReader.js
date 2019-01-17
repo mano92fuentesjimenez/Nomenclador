@@ -377,7 +377,7 @@
             _enumButtons._each_(function (v,k) {
                 var button = self.getButtonInstance(k);
                 if(utils.isObject(button) && button._previousState_ !== undefined){
-                    self.setButtonDisabled(k,button._previousState_);
+                    self.setDisableButton(k,button._previousState_);
                     delete button._previousState_;
                 }
             })
