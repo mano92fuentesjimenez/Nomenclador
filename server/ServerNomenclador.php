@@ -227,6 +227,15 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enumResult->resp = $enum->getTotalRecords($requ->value['where']);
                 }
                     break;
+                case 'getGeneralRevision':{
+                    $enums = Enums::getInstance($enumInstance);
+
+                    $enumResult->resp = array(
+                        'modelRevision'=> $enums->modelRevision,
+                        'dataRevision' => $enums->dataRevision
+                    );
+                }
+                    break;
                 case 'getDataBasesNames': {
 
                     $config = $requ->value;
