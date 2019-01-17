@@ -180,7 +180,7 @@ class EnumsRequests
         //eliminar referencias
         $refs->delRefs($changes['delRefs']);
 
-        $enums->modEnum($newEnum);
+        $enums->modEnum($newEnum, false);
 
         $refs->saveRefs();
         $enums->saveEnums();
@@ -207,7 +207,7 @@ class EnumsRequests
         $actionsM->callPreEnumAddActions($enum);
 
         //anhadir $enum al arreglo de enums guardado en enums.json
-        $enums->addEnum($enum);
+        $enums->addEnum($enum, false);
 
         //anhadir la posicion que le toca a $enum en simpleTree.json
         $simpleTree->addEnum($enumTreePath);
@@ -258,7 +258,7 @@ class EnumsRequests
 
         $simpleTree->removeTreeNode($path);
 
-        $_enum->remove();
+        $_enum->remove(false);
 
         EnumsUtils::saveHeaders($enumInstance);
 
@@ -440,7 +440,7 @@ class EnumsUtils
             $importedSimpleTree = json_decode($zip->getFromName('simpleTree.json'), true);
 
             $dataSources->importDataSources($importedDataSources);
-            $enums->addEnums($importedEnums);
+            $enums->addEnums($importedEnums, false);
 
             $refs = Refs::getInstance($enumInstance);
             $refs->addImportedRefs($importedRefs);

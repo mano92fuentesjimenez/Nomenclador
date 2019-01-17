@@ -11,6 +11,9 @@ class Enums
     public $enums;
     public $enumInstance;
 
+    public $modelRevision;
+    public $dataRevision;
+
     private $deletedEnum;
 
     private function __construct($enumInstance)
@@ -37,6 +40,10 @@ class Enums
             $enums = $this->getData($conn);
         }
         $enums = reset($enums);
+
+        $this->modelRevision = $enums['model_revision'];
+        $this->dataRevision = $enums['data_revision'];
+
         $enums = json_decode($enums['v'], true);
         $this->enums = $enums;
     }
@@ -78,8 +85,24 @@ class Enums
     }
     public static function AddEnumsToDb($enumInstance, $enums_){
         $enums = self::getInstance($enumInstance);
-        $enums->addEnums($enums_);
+        $enums->addEnums($enums_, false);
         $enums->saveEnums();
+    }
+
+    public static function UpdateModelRevision($enumInstance, $saveEnums = true){
+        $enums = self::getInstance($enumInstance);
+        $enums->modelRevision ++;
+
+        if($saveEnums)
+            $enums->saveEnums();
+
+    }
+    public static function UpdateDataRevsion($enumInstance, $saveEnums = true){
+        $enums = self::getInstance($enumInstance);
+        $enums->dataRevision ++;
+
+        if($saveEnums)
+            $enums->saveEnums();
     }
 
     public static function getEnumsPath()
@@ -123,9 +146,10 @@ class Enums
         return new EnumQuerier($this->enumInstance,$this->enums[$this->validateId($enum)], $this);
     }
 
-    public function addEnum($enum)
+    public function addEnum($enum, $saveEnumsDataRevision = true)
     {
         $this->enums[$enum->getId()] = $enum->enum_tree;
+        Enums::UpdateModelRevision( $this->enumInstance, $saveEnumsDataRevision);
     }
 
     public function count()
@@ -133,7 +157,7 @@ class Enums
         return count($this->enums);
     }
 
-    public function addEnums($enumsTree)
+    public function addEnums($enumsTree, $saveEnumsDataRevision = true)
     {
 
         foreach ($enumsTree as $enum) {
@@ -142,18 +166,20 @@ class Enums
             $e = $e->getEnumStore();
             $e->createEnumInDS();
         }
-
+        Enums::UpdateModelRevision($this->enumInstance, $saveEnumsDataRevision);
     }
 
-    public function modEnum(Enum $enum)
+    public function modEnum(Enum $enum, $saveEnumsDataRevision = true)
     {
         $this->enums[$enum->getId()] = &$enum->enum_tree;
         $enum->incrementModelRevision();
+        Enums::UpdateModelRevision( $this->enumInstance, $saveEnumsDataRevision);
     }
 
-    public function delEnum($enum)
+    public function delEnum($enum, $saveEnumsDataRevision = true)
     {
         $this->deletedEnum[] = $enum->getId();
+        Enums::UpdateModelRevision($this->enumInstance, $saveEnumsDataRevision);
     }
 
     public function getEnums()
@@ -187,7 +213,7 @@ class Enums
         $projName = EnumsUtils::getProjectName();
         $data = json_encode($this->enums);
 
-        $sql = "update mod_nomenclador.enums set v='$data' where proj= '$projName' and enum_instance = '{$this->enumInstance}'";
+        $sql = "update mod_nomenclador.enums set v='$data',model_revision ='{$this->modelRevision}', data_revision='{$this->dataRevision}' where proj= '$projName' and enum_instance = '{$this->enumInstance}'";
         $conn->simpleQuery($sql);
     }
 
@@ -279,7 +305,7 @@ class Enums
     {
         foreach ($this->enums as $key => $value) {
             $enum = $this->getEnumStore($key);
-            $enum->remove();
+            $enum->remove(false);
             unset($this->enums[$key]);
         }
         $this->saveEnums();
