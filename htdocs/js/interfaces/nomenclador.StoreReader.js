@@ -310,6 +310,7 @@
          */
         loadEnumData: function (pagePosition, cb) {
             var self = this;
+            this.fireEvent('beforedataload',this);
             if(!this.offlineMode) {
                 this.setDisableButtons(true,true);
                 nom.getEnumData(
