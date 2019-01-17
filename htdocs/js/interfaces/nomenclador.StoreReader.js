@@ -248,9 +248,9 @@
 
             if(this.appendData){
                 var c = this.store.getCount(),
-                    currentPageElemCount = (this.pagePosition+1) * pageSize;
+                    currentPageElemCount = (this.pagePosition + 1) * pageSize;
 
-                pageSize = currentPageElemCount-c;
+                pageSize = currentPageElemCount - c;
                 offset = c;
             }
 
@@ -275,7 +275,7 @@
             this.pageSize = pageSize;
             var currentPageCount = this.getTotalPages();
 
-            this.pagePosition = Math.floor((currentPageCount * this.pagePosition)/previousPageCount );
+            this.pagePosition = Math.floor((previousPageCount* this.pagePosition)/ currentPageCount );
         },
         getTotalPages:function(){
             return Math.ceil(this.totalCount / this.pageSize);
