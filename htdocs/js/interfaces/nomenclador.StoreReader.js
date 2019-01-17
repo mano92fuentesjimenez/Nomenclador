@@ -250,7 +250,7 @@
                 var c = this.store.getCount(),
                     currentPageElemCount = (this.pagePosition+1) * pageSize;
 
-                pageSize -= c - currentPageElemCount;
+                pageSize = currentPageElemCount-c;
                 offset = c;
             }
 
