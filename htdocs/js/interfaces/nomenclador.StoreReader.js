@@ -55,6 +55,7 @@
         hasLoadedBoolean: null,
         enumUI:null,
         storeInitialized:false,
+        initialized:false,
 
         /**
          * Objeto de la forma
@@ -217,6 +218,7 @@
 						self.storeInitialized = true;
 						self.fireEvent('storeinitialized', self);
 					})
+                    self.initialized = true;
 				};
 			if(!this.offlineMode)
                 nom.request('getTotalRecordsFromEnum', {
@@ -265,6 +267,10 @@
             return params;
         },
         setPageSize:function(pageSize){
+            if(!this.initialized){
+                this.pageSize = pageSize;
+                return;
+            }
             var previousPageCount = this.getTotalPages();
             this.pageSize = pageSize;
             var currentPageCount = this.getTotalPages();
