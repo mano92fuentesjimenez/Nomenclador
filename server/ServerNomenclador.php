@@ -27,6 +27,9 @@ class ServerNomenclador extends ClientResponderAdapter
         $enumInstance = $requ->value['instanceName'];
         $actionM = ActionManager::getInstance($enumInstance);
         $actionM->setActions($requ->value['actions']);
+        if(isset( $requ->value['extraParams'])){
+            $actionM->setExtraParams( $requ->value['extraParams']);
+        }
         //[{"denominacion":"mena", "id_enum_rev_1100": "2",
         //        "id_enum_1100": "1"  ]
         try{
@@ -220,6 +223,7 @@ class ServerNomenclador extends ClientResponderAdapter
                     $enum = $enums->getEnumQuerier($enum_id);
                     $enum->set404Patch($patch);
 
+
                     $enumResult->resp = $enum->getTotalRecords($requ->value['where']);
                 }
                     break;
@@ -399,8 +403,32 @@ class ServerNomenclador extends ClientResponderAdapter
      */
     public function addRecords($enumInstance, $enumId, $records){
         $enums = Enums::getInstance($enumInstance);
-        $enum = $enums->getEnum($enumId);
-        $enum->addRecords($records);
+        $enum = $enums->getEnumStore($enumId);
+        return $enum->addRecords($records);
+
+    }/**
+     * Modifica records en la instancia dada en el nomenclador dado
+     * @param $enumInstance  {string} Nombre de instancia de nomencladores
+     * @param $enumId        {string} Identificador del nomenclador
+     * @param $records       {array}  Records
+     * @throws EnumException
+     */
+    public function modRecords($enumInstance, $enumId, $records){
+        $enums = Enums::getInstance($enumInstance);
+        $enum = $enums->getEnumStore($enumId);
+        return $enum->modRecords($records);
+
+    }/**
+     * Elimina records en la instancia dada en el nomenclador dado
+     * @param $enumInstance  {string} Nombre de instancia de nomencladores
+     * @param $enumId        {string} Identificador del nomenclador
+     * @param $records       {array}  Records
+     * @throws EnumException
+     */
+    public function delRecords($enumInstance, $enumId, $records){
+        $enums = Enums::getInstance($enumInstance);
+        $enum = $enums->getEnumStore($enumId);
+        return $enum->delRecords($records);
 
     }
     public function getResumeViewTpl(){

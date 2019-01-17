@@ -32,6 +32,7 @@
         fieldFilterValue: null,
         pageSize: 10,
         pagePosition: 0,
+        extraParams: null,
         maskObj:null,
         /**
          * {bool | string}
@@ -43,6 +44,7 @@
         lazyInit:false,
         offlineMode:false,
         initValues:null,
+        appendData: false,
 
         //privates
         excludeEnums:null,
@@ -121,22 +123,11 @@
                     goToPreviousPage: {
                         handler: function () {
                             self.previousPage();
-                            if (self.isFirstPage())
-                                this.setDisabled(true);
-                            var goToNextPage = self.getButtonInstance('goToNextPage');
-                            if (goToNextPage)
-                                goToNextPage.setDisabled(false);
                         }
                     },
                     goToNextPage: {
                         handler: function () {
                             self.nextPage();
-                            if (self.isLastPage())
-                                this.setDisabled(true);
-                            var goToPreviousPage = self.getButtonInstance('goToPreviousPage');
-                            if (goToPreviousPage)
-                                goToPreviousPage.setDisabled(false);
-
                         }
                     },
                     goToLastPage:{handler:function () {
@@ -221,6 +212,7 @@
 					self.store = self.createStore();
 					self.setNewStore(self.store);
 					self.loadEnumData(self.pagePosition, function () {
+                        self.checkButtonsDisability();
 						self.pagePosition = 0;
 						self.storeInitialized = true;
 						self.fireEvent('storeinitialized', self);
@@ -231,15 +223,17 @@
                     instanceName: this.enumInstance,
                     _enum: this._enum.id,
                     where: this.getEnumLoadConfig(0).where,
-                    actions:this.getActions(this)
+                    actions:this.getActions(this),
+                    extraParams: this.extraParams
                 }, cb,null ,self.getMaskObj());
 			else setTimeout(cb,0);
 
         },
         getEnumLoadConfig: function (pagePosition) {
             var where = null,
-                _enumStr = this._enum.id.toString();
+                _enumStr = this._enum.id.toString(),
                 primary = _enumStr +'.'+types.PrimaryKey.UNIQUE_ID+'';
+
             if (this.fieldFilter)
                 where = _enumStr+'.' + this.fieldFilter + ' = ' + this.fieldFilterValue + ' ';
             if(utils.isArray(this.excludeEnums) && this.excludeEnums._length_() > 0 ){
@@ -247,7 +241,7 @@
                     where = '';
                 where += primary +' not in '+ Ext.encode(this.excludeEnums).replace('[','(').replace(']',')').replace(/"/g,'');
             }
-            return {
+            var params = {
                 where: where,
                 pageSize: this.pageSize,
                 offset: (pagePosition * this.pageSize),
@@ -255,6 +249,9 @@
                 actions: this.getActions(this),
                 '404EmptyPatch': this['404EmptyPatch']
             };
+            if(utils.isObject(this.extraParams))
+                params.extraParams = this.extraParams;
+            return params;
         },
         getPagingBar:function(){
             var self = this;
@@ -292,29 +289,34 @@
          */
         loadEnumData: function (pagePosition, cb) {
             var self = this;
-            if(!this.offlineMode)
+            if(!this.offlineMode) {
+                this.setDisableButtons(true,true);
                 nom.getEnumData(
                     this.enumInstance.getName(),
+                    this.enumInstance.getInstanceNameModifier(),
                     this._enum.id,
                     function (response, params) {
-                        this.store.loadData(response);
-                        this.hasLoadedBoolean = true;
-                        this.fireEvent("finishedloadingenum", this, this._enum, params);
-                        nom.execute(cb,[],this);
-                        this.refreshView();
+                        self.handleLoadedData(response, params, cb);
                     },
-                    this, this.getEnumLoadConfig(pagePosition), function(){self.onLoadError()}, this.getMaskObj(),
+                    this, this.getEnumLoadConfig(pagePosition), function () {
+                        self.onLoadError()
+                    }, this.getMaskObj(),
                     self['404EmptyPatch']
-                );
+                )
+            }
             else setTimeout(function(){
-                self.store.loadData(self.store.data || []);
-                self.hasLoadedBoolean = true;
-                self.fireEvent("finishedloadingenum", self, self._enum);
-                nom.execute(cb, [],self);
-                self.refreshView();
+                self.handleLoadedData(self.store.data || [],[],cb)
             },0)
 
 
+        },
+        handleLoadedData : function(response, params,cb){
+            this.restoreButtonsDisableStatus();
+            this.store.loadData(response, !!this.appendData);
+            this.hasLoadedBoolean = true;
+            this.fireEvent("finishedloadingenum", this, this._enum, params);
+            nom.execute(cb,[],this);
+            this.refreshView();
         },
         beyondLastPage(page){
             return (page) * this.pageSize > this.totalCount;
@@ -327,26 +329,67 @@
         },
         nextPage: function () {
             var self = this;
-            if (this.isLastPage())
+            if (this.isLastPage()) {
                 Logger.error('Se esta llamando a avanzar pagina en la ultima pagina');
+                return;
+            }
             this.loadEnumData(this.pagePosition + 1, function(){
                 self.pagePosition += 1;
+                self.checkButtonsDisability();
             });
+        },
+        checkButtonsDisability: function(){
+
+            this.setDisableButton(_enumButtons.goToNextPage, this.isLastPage());
+            this.setDisableButton(_enumButtons.goToLastPage,this.isLastPage());
+            this.setDisableButton(_enumButtons.goToPreviousPage, this.isFirstPage());
+            this.setDisableButton(_enumButtons.goToFirstPage, this.isFirstPage());
         },
         previousPage: function () {
             var self = this;
-            if (this.isFirstPage())
+            if (this.isFirstPage()) {
                 Logger.error('Se esta llamando a retroceder la pagina en la primera pagina');
+                return;
+            }
             this.loadEnumData(this.pagePosition - 1,function(){
                 self.pagePosition -=1;
+                this.checkButtonsDisability();
             });
         },
+        setDisableButton:function(idButton, disabled){
+            var button = this.getButtonInstance(idButton);
+            if(utils.isObject(button)) {
+                button._disabled_ = disabled;
+                $$.execute(button.setDisabled,[button,disabled],this);
+            }
+        },
+        setDisableButtons:function(disabled,loading){
+            var self = this;
+            _enumButtons._each_(function (v,k) {
+                var button = self.getButtonInstance(k);
+                if(loading && utils.isObject(button))
+                    button._previousState_ = button._disabled_;
+                self.setDisableButton(k,disabled);
+            })
+        },
+        restoreButtonsDisableStatus: function(){
+            var self = this;
+            _enumButtons._each_(function (v,k) {
+                var button = self.getButtonInstance(k);
+                if(utils.isObject(button) && button._previousState_ !== undefined){
+                    self.setButtonDisabled(k,button._previousState_);
+                    delete button._previousState_;
+                }
+            })
+        },
+
         lastPage: function () {
             var self = this;
             var page = this.totalCount % this.pageSize === 0 ? Math.floor(this.totalCount / this.pageSize) - 1 :
                 Math.floor(this.totalCount / this.pageSize);
             this.loadEnumData(page,function(){
                 self.pagePosition = page;
+                self.checkButtonsDisability();
             });
         },
         reloadCurrentPage: function () {
@@ -356,6 +399,7 @@
             var self = this;
             this.loadEnumData(0, function(){
                 self.pagePosition = 0;
+                self.checkButtonsDisability();
             });
         },
         goToPage: function(page){
@@ -489,9 +533,6 @@
         },
         initializeButton: function(config, button_id){
             Logger.warn('Funcion initializeButton no fue sobrescrita');
-        },
-        setButtonDisabled:function(buttonInstance, value){
-            Logger.warn('Funcion setButtonDisabled no fue implementada');
         },
         setTitle:function(title){
             Logger.warn('Funcion setTitle no fue sobrescrita');

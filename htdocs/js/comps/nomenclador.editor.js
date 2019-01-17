@@ -306,23 +306,47 @@
         canMoveEnums:true,
         askToChangeEnum:null,
         maskObj:null,
+        enumInstance:null,
         constructor: function (cfg) {
 
             var self = this;
             this._apply_(cfg);
 
             this.initializeMenu();
-            this.tbar=([
+            this.initializeUI();
+
+            this.addEvents({
+                //Evento q se lanza cuando se refresca el arbol de nomencladores.
+                refreshEnumTree:true
+            });
+            nom.treeEditorPanel.superclass.constructor.call(this,cfg);
+            this.initializeEvents();
+
+        },
+        initializeUI:function(){
+            var tBarbuttons = [
                 '->',
                 {
                     iconCls:'gis_adicionar',
                     text: '',
                     toolGroup:'nomenclador_manager',
+                    tooltip: 'Adicionar '+this.entityType,
                     handler : function(pBtn,pEv){
                         self.showMenuOptions(self.getSelectionModel().getSelectedNode(),pEv);
                     }
-                },
-                {
+                }
+                /*,{
+                    iconCls:'gisTtfIcon_flaticon-exchange-arrows gisFontTheme',
+                    handler:function(){
+                        (new nom.importExport()).show();
+                    },
+                    tooltip:'Importar o exportar nomencladores',
+                    hidden:true
+
+                }*/
+                ];
+            if(this.enumInstance.getInstanceConfig().getDefaultDataSource() == null)
+                tBarbuttons.push({
                     iconCls:'layerposgis',
                     text: '',
                     toolGroup:'nomenclador_ds_manager',
@@ -336,24 +360,16 @@
                             }) : undefined
                         });
                     }
-                },
-                {
-                    iconCls:'gisTtfIcon_flaticon-exchange-arrows gisFontTheme',
-                    handler:function(){
-                        (new nom.importExport()).show();
-                    },
-                    tooltip:'Importar o exportar nomencladores',
-                    hidden:true
+                });
+            tBarbuttons.push(new buttons.btnActualizar({
+                text: '',
+                handler : function(pBtn,pEv){
+                    self.initValues();
+                    self.fireEvent('refreshEnumTree');
+                }
+            }));
 
-                },
-                new buttons.btnActualizar({
-                    text: '',
-                    handler : function(pBtn,pEv){
-                        self.initValues();
-                        self.fireEvent('refreshEnumTree');
-                    }
-                })
-            ])._map_(function(v){
+            this.tbar=(tBarbuttons)._map_(function(v){
                 if(!(utils.isString(v) || v.toolGroup === undefined))
                     v.listeners = {
                         afterrender : function (){
@@ -362,13 +378,6 @@
                     };
                 return v;
             },this, false);
-            this.addEvents({
-                //Evento q se lanza cuando se refresca el arbol de nomencladores.
-                refreshEnumTree:true
-            });
-            nom.treeEditorPanel.superclass.constructor.call(this,cfg);
-            this.initializeEvents();
-
         },
         isARankNode: function (node) {
             return !!(node.isRoot || node.attributes._type_ == 'category');
@@ -465,11 +474,17 @@
                 return !tpl.isReadOnly() && !tpl.isHidden() && instanceConfig.getDefaultTplName() !== tpl.getHeader();
             },this,true)._map_(function(tpl,k){
                 return {
-                    text:tpl.getHeader(),
+                    text:$$(tpl.getHeader()).capitalize(),
                     handler:this.proccessAction._delegate_(['add_enum',k],this, true)
                 };
             },this,false);
+            var defaultHandler = this.proccessAction._delegate_(['add_enum',instanceConfig.getDefaultTplName()],this, true);
             addEnumMenu = addEnumMenu._length_() ===0?undefined:addEnumMenu;
+            if(utils.isArray(addEnumMenu))
+                addEnumMenu.splice(0,0,{
+                    text:$$(this.entityType).capitalize(),
+                    handler:defaultHandler
+                });
 
             mn.registerItem(
                 [
@@ -477,7 +492,7 @@
                         text: 'Adicionar '+this.entityType,
                         iconCls : 'gis_adicionar',
                         toolGroup:'nomenclador_manager',
-                        handler: this.proccessAction._delegate_(['add_enum',instanceConfig.getDefaultTplName()],this, true),
+                        handler:  utils.isArray(addEnumMenu) ? undefined : defaultHandler,
                         menu:addEnumMenu
                     }
                 ],

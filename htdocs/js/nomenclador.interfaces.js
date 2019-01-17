@@ -27,6 +27,7 @@
         _gridItems: null,
         _items: null,
         formColumns : 1,
+        editorContainerConfig: null,
         prepareFields : function(){
             var enum_fields = this.getEnumFields(),
                 gridItems = [],
@@ -123,16 +124,21 @@
             };
         },
         handleSubmitData : function(data){
+            this.fireEvent('editorClosedWithData',this,data);
             return data;
         },
         showEditor: function (data, callb) {
             var self = this,
-                editor = this.editorWindow = new addW({
+                title = (data ? "Modificar " : "Adicionar ") + (this._enum.name ? ("datos en el Nomenclador: " + this._enum.name):''),
+                editorConfig = $$.check(this.editorContainerConfig,{}),
+                defaultEditorConfig = {
                     height: 400,
                     modal: true,
                     width: '30%',
+                    title: title,
+                },
+                editor = this.editorWindow = new addW($$.assign(defaultEditorConfig,editorConfig,{
                     layout: "fit",
-                    title: (data ? "Modificar " : "Adicionar ") + "datos en el Nomenclador: " + this._enum.name,
                     items: [
                         this.getFormBody()
                     ],
@@ -142,7 +148,11 @@
                         self._fields._first_().focus();
                         callb(self.handleSubmitData(data ? rowData.modified : rowData.all));
                     }
-                });
+                }));
+
+            editor.on('beforeclose',function () {
+                this.fireEvent('editorClosed',this,null);
+            },this);
 
             this.fireEvent('editorCreated',this,editor,data);
             editor.show();
@@ -164,6 +174,7 @@
             this.gridButtons[writterBtn.rmBtn] = buttons.btnDelete;
             this.gridButtons[writterBtn.submitBtn] = buttons.btnGuardar;
             this.gridButtons[writterBtn.cancelBtn] = buttons.btnCancelar;
+            this.gridButtons[writterBtn.modBtn] = buttons.btnModificar;
 
             if(this.showTitle)
                 this.title = this._enum.name;
@@ -196,6 +207,7 @@
 			if(this.manageEnum) {
 				tbar = [
 					this.getButtonInstance(writterBtn.addBtn),
+                    this.getButtonInstance(writterBtn.modBtn),
 					this.getButtonInstance(writterBtn.rmBtn),
 					{
 						xtype: 'tbseparator'

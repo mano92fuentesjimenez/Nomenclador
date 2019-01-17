@@ -60,13 +60,13 @@ class EnumStore extends Enum
 
         $actionsM->callPreSubmitActionsForEnum($this, $data);
 
-        $addedData = $this->addRecords($data['add']);
+        $addedData = $this->addRecords($data['add'], false);
 
-        $modOut = $this->modRecords($data['mod']);
+        $modOut = $this->modRecords($data['mod'], false);
         if (is_array($modOut))
             $underRevision = array_merge($underRevision, $modOut['underRevision']);
 
-        $val = $this->delRecords($data['del']);
+        $val = $this->delRecords($data['del'], false);
         if (is_string($val))
             $msg = $val;
         else if (is_array($val)) {
@@ -81,7 +81,7 @@ class EnumStore extends Enum
     {
         return is_array($data) && count($data) !==0;
     }
-    public function addRecords($data){
+    public function addRecords($data,$saveEnumsDataRevision = true){
         if(!$this->isData($data))
             return null;
 
@@ -110,9 +110,10 @@ class EnumStore extends Enum
             }
         }
         $actionsM->callPostAddActions($this,$addedData, $data);
+        Enums::UpdateDataRevsion($this->enumInstance, $saveEnumsDataRevision);
         return $addedData;
     }
-    public function modRecords($data){
+    public function modRecords($data, $saveEnumsDataRevision = true){
         if(!$this->isData($data))
             return null;
         $actionsM = ActionManager::getInstance($this->enumInstance);
@@ -153,9 +154,10 @@ class EnumStore extends Enum
         $data = $enumQ->getValueArrayFromDb($data);
 
         $actionsM->callPostModActions($this,$data,$originalData);
+        Enums::UpdateDataRevsion($this->enumInstance, $saveEnumsDataRevision);
         return array('underRevision'=> $details['underRevision'], 'modified'=>$data);
     }
-    public function delRecords($data){
+    public function delRecords($data, $saveEnumsDataRevision = true){
         if(!$this->isData($data))
             return null;
         $msg = $this->canDeleteData($data);
@@ -172,6 +174,7 @@ class EnumStore extends Enum
                 throw new EnumException($conn->getLastError());
             }
             $this->modifyMultiEnumData($data,true, false);
+            Enums::UpdateDataRevsion($this->enumInstance, $saveEnumsDataRevision);
             return $details['underRevision'];
         }
         return $msg;
@@ -250,7 +253,7 @@ class EnumStore extends Enum
 
         return $refs != true;
     }
-    public function remove()
+    public function remove($saveEnumsDataRevision = true)
     {
         try {
             $conn = EnumsUtils::getDBConnection($this);
@@ -264,7 +267,7 @@ class EnumStore extends Enum
         $refs->deleteReferencesFrom($this);
 
         $enums = Enums::getInstance($this->enumInstance);
-        $enums->delEnum($this);
+        $enums->delEnum($this, $saveEnumsDataRevision);
     }
     public function removeMultiFieldsTables(){
         $fields = $this->getFields();
@@ -330,7 +333,7 @@ class EnumStore extends Enum
 
         foreach ($visitedEnums as $value) {
             $enum = $enums->getEnumStore($value);
-            $enum->remove();
+            $enum->remove(false);
         }
         EnumsUtils::saveHeaders($enumInstance);
     }

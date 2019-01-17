@@ -12,7 +12,8 @@
         addW = AjaxPlugins.Ext3_components.Windows.AddModWindow;
 
     nom.interfaces.FormDataEditor = Ext.extend(Ext.util.Observable, {
-        constructor : function FormDataEditor (enumInstance, _enum, columns) {
+        constructor : function FormDataEditor (enumInstance, _enum, columns,config) {
+            $$.assign(this,config);
             nom.interfaces.FormDataEditor.superclass.constructor.call(this);
             this.enumInstance = enumInstance;
             this._enum = _enum;

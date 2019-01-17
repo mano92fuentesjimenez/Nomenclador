@@ -3,6 +3,7 @@
  */
 (function() {
 	var nom = AjaxPlugins.Nomenclador,
+		utils = Genesig.Utils,
 		buttons = AjaxPlugins.Ext3_components.buttons,
 		addType = nom.Type.Utils.addType;
 
@@ -30,14 +31,24 @@
 								return c.store.getCount() > 0;
 							return true;
 						},
-						getFormVEvtNames: function () {
-							return 'datachanged';
-						},
 						getValue:c.getValue.createDelegate(c),
-						setValue:c.setValue.createDelegate(c)
-
+						setValue:c.setValue.createDelegate(c),
+						getFormVEvtNames:function(){
+							return ['recordAdded','recordModified','recordDeleted'];
+						},
+						getXType:function(){
+							return 'enumtable';
+						}
 					});
-
+				c.on('recordAdded',function(){
+					ui.fireEvent('recordAdded');
+				});
+				c.on('recordModified',function(){
+					ui.fireEvent('recordModified');
+				});
+				c.on('recordDeleted',function(){
+					ui.fireEvent('recordDeleted');
+				});
 				return ui;
 			},
 			getPropertiesExtComp: function (enumInstance, _enumId, fieldId, fields) {
@@ -71,16 +82,19 @@
                     },
                 });
 			},
-			gridRender: function (value) {
+			gridRender: function (value,metadata,record,rowIndex,collIndex,store,obj) {
 				if(value == null)
 					return '';
+				var field = this._fieldDetails_;
+				if(utils.isObject(obj))
+					field = obj.field;
 
 				var html = '<div' +
 					" props_value= '"+value+"' "+
-					" _enum='"+Ext.encode(this._fieldDetails_.properties._enum)+"' "+
+					" _enum='"+Ext.encode(field.properties._enum)+"' "+
 					" enum_instance='"+this._enumInstance_.getName()+"' " +
 					" instance_modifier='"+this._enumInstance_.getInstanceNameModifier()+"' "+
-					"title= '"+this._fieldDetails_.header+"' " +
+					"title= '"+field.header+"' " +
 					"onclick='AjaxPlugins.Nomenclador.Type.Types.DB_Table.showValue(this)'>" +
 					"<span> Ver Tabla</span>" +
 					"</div>";

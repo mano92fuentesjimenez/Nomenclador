@@ -36,9 +36,11 @@
 		hasLoadedBoolean: null,
 		totalCount: null,
 		manageEnum:true,
+        selectEnum:false,
 
 		dataEditor: null,
 
+        dataEditorConfig:null,
         selections:null,
         constructor: function (config) {
             var self = this;
@@ -89,7 +91,7 @@
                             self.dataEditor.showEditor(null, function (recordObj) {
                                 if(self.fieldFilter)
                                     recordObj[self.fieldFilter] = self.fieldFilterValue;
-                                var record = new self.store.recordType(recordObj);
+                                var record = self.createNewRecord(recordObj);
                                 self.store.add(record);
                                 self.fireEvent('recordAdded',record);
                             });
@@ -121,7 +123,7 @@
                         iconCls: "gis_limpiar",
                         text: '',
                         handler: function () {
-                            self.store.rejectChanges();
+                            self.cancelChanges();
                             self.refreshView();
                         }
                     },
@@ -149,10 +151,12 @@
 
             var instanceConfig = this.enumInstance.getInstanceConfig(),
                 formDataEditor = instanceConfig.getFormDataEditor(this._enum.tpl);
-            if (formDataEditor)
-                this.dataEditor = new formDataEditor(this.enumInstance,this._enum, this.columns);
-            else this.dataEditor = new nom.FormDataEditor_Default(this.enumInstance, this._enum, this.columns);
 
+            this.dataEditor= this.createEditor(formDataEditor ? formDataEditor : nom.FormDataEditor_Default);
+
+        },
+        createEditor : function(classObject){
+            return new classObject(this.enumInstance, this._enum, this.columns, this.dataEditorConfig);
         },
         configureStore: function () {
             var self = this;
@@ -229,15 +233,28 @@
                 return r;
             };
             self.store.oldRejectChanges = self.store.rejectChanges;
-            self.store.rejectChanges = function () {
-                for (var key in changes.add)
+            self.store.rejectChanges = function (recordsIds) {
+                if(recordsIds._length_() === 0)
+                    recordsIds = null;
+                for (var key in changes.add) {
+                    if(recordsIds && recordsIds.indexOf(key) === -1)
+                        continue;
                     self.store.oldRemove(changes.add[key]);
+                    delete changes.add[key];
+                }
                 self.store.oldRejectChanges();
-                for (var key in changes.mod)
+                for (var key in changes.mod) {
+                    if(recordsIds && recordsIds.indexOf(key) === -1)
+                        continue;
                     changes.mod[key].state = undefined;
-                for (var key in changes.del)
+                    delete changes.mod[key];
+                }
+                for (var key in changes.del) {
+                    if(recordsIds && recordsIds.indexOf(key) === -1)
+                        continue;
                     changes.del[key].state = undefined;
-                changes = {del: {}, add: {}, mod: {}};
+                    delete changes.del[key];
+                }
                 self.refreshView();
             };
 
@@ -255,7 +272,9 @@
             });
         },
         cancelChanges: function () {
-            this.store.rejectChanges();
+            this.store.rejectChanges(this.getSelection()._map_(function (v) {
+                return v.id;
+            }));
         },
         submitChanges: function () {
             var changes = this.store.getRawChanges();
@@ -270,6 +289,7 @@
                     data: changes,
                     modelRevision: this._enum.modelRevision,
                     modelId: this._enum.id,
+                    extraParams : self.extraParams,
                     actions: this.getActions()
                    }, function (response, o) {
                     changes['add'] = response.add;
@@ -296,17 +316,23 @@
         },
 
         recorddblclick:function(record){
-            if(this.manageEnum)
+            if(this.manageEnum && !this.selectEnum)
                 this.modifyRecord(record);
             else
                 nom.interfaces.EnumStoreWriter.superclass.recorddblclick.call(this,record);
+        },
+        createNewRecord : function(data){
+            return new this.store.recordType(data);
+        },
+        updateRecordFieldValue : function(record,field,newValue){
+            record.set(field, newValue);
         },
         modifyRecord: function (record) {
             var self = this;
             this.dataEditor.showEditor(record.data, function (recordObj) {
                 record.beginEdit();
                 recordObj._each_(function (v, k) {
-                    record.set(k, v);
+                    self.updateRecordFieldValue(record,k,v);
                 });
                 record.endEdit();
                 self.fireEvent('recordModified', record);

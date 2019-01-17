@@ -74,8 +74,7 @@
 				 */
 				"finishedCreation" :true
 			});
-			this.refs = new nom.refs();
-			this.refs.load(this.enumInstance.getName(), arguments[0].refs || {});
+			nom.refs.load(this.enumInstance.getName(), arguments[0].refs || {});
 			this.on('afterrender', function (){
 				this.createValidator();
 			});
@@ -320,6 +319,7 @@
 						dataTypeSelector.setValue(t);
 						showFilter(t);
 						showMultiple(t);
+						showHideCheckbox();
 						self.showPropertiesButton(t, dataTypeSelector);
 						self.properties[fieldId] = undefined;
 					});
@@ -337,9 +337,9 @@
 					if(utils.isObject(self._enum)){
 						var currentRecord = self.getCurrentRecord(),
 							currentId = currentRecord.get('id');
-						disabled |= $$(self._enum.fields).some(function (v) {
+						disabled |= ($$(self._enum.fields).some(function (v) {
 							return v.id === currentId
-						})
+						}) && self.enumHasData)
 					}
 					if(type === 'DB_Enum'){
 						var multipleCounter = 0;
@@ -356,6 +356,12 @@
 						record = self.gridStore.getAt(self.rowEditing);
 
 					comboFilter.setDisabled(!t.canBeFiltered || record.isDefault);
+				},
+				showHideCheckbox = function () {
+					var record = self.getCurrentRecord();
+					hideChecbox.setValue(record.get('hidden'));
+
+					hideChecbox.setDisabled(!!record.isDefault);
 				};
 
 			this.typeStore = new Ext.data.ArrayStore({
@@ -363,7 +369,7 @@
 				data :dataArray
 			});
 			this.gridStore = new Ext.data.ArrayStore({
-				fields :["name", "type", "needed", "id", 'fieldToFilter', 'fieldOrder','integrationProperty','multiple'],
+				fields :["name", "type", "needed", "id", 'fieldToFilter', 'fieldOrder','integrationProperty','multiple','hidden'],
 				data :[]
 			});
 			this.multiple = new comps.fields.Checkbox({});
@@ -438,27 +444,27 @@
 					}
 					var record = self.gridStore.getAt(self.rowEditing);
 					var fieldId = record.get('id');
-					var references = self.refs.getReferences(self.enumInstance,self.getEnumId(), fieldId);
+					var references = nom.refs.getReferences(self.enumInstance,self.getEnumId(), fieldId);
 					this.canSelectEnum = true;
 					if (references._length_() > 0 && !this.isExpanded()) {
 						this.canSelectEnum = {
-							_enum :self.refs.getEnum(references._keys_()[0]),
-							field :self.refs.getField(references._keys_()[0])
+							_enum :nom.refs.getEnum(references._keys_()[0]),
+							field :nom.refs.getField(references._keys_()[0])
 						};
 					}
 					var v = true;
 					var getType = nom.Type.Utils.getType;
 					references._each_(function (value, key){
-						var _enum = enums.getEnumById(self.enumInstance.getName(), self.refs.getEnum(key));
+						var _enum = enums.getEnumById(self.enumInstance.getName(), nom.refs.getEnum(key));
 						_enum.fields._each_(function (value){
 							var type = getType(value.type);
 							if (!type)
 								return true;
-							if (type.dependsOnOthersFields && type.dependsOn(self.refs.getField(key), value.properties)) {
+							if (type.dependsOnOthersFields && type.dependsOn(nom.refs.getField(key), value.properties)) {
 								var o = type.getCandidatesTypes();
 								o.meta = {};
 								o.meta.referencingEnum = _enum;
-								o.meta.referencingField = _enum.fields[self.refs.getField(key)];
+								o.meta.referencingField = _enum.fields[nom.refs.getField(key)];
 								o.meta.formulaField = value;
 								dataTypeSelector.candidatesTypes = o;
 							}
@@ -498,6 +504,7 @@
 				var t = record.get('type');
 				showMultiple(t);
 				showFilter(t);
+				showHideCheckbox();
 
 				if (record.get('type') == 'DB_Enum' && combo.canSelectEnum._isObject_()) {
 					var o = combo.canSelectEnum;
@@ -625,6 +632,7 @@
 			comboFilter.on('beforeselect', function (c){
 				c.filterValueObj = undefined;
 			});
+			var hideChecbox = new fields.Checkbox();
 			var cm = new Ext.grid.ColumnModel([
 				{
 					id :"name",
@@ -673,6 +681,12 @@
 					dataIndex:'multiple',
 					editor:this.multiple,
 					renderer:boolRender
+				},
+				{
+					header:'Oculto',
+					dataIndex:'hidden',
+					editor: hideChecbox,
+					renderer: boolRender
 				}
 			]);
 
@@ -690,7 +704,7 @@
 						var error = false;
 						selected.map(function (record){
 							//no se puede borrar una columna que es referenciada por alguien
-							var references = self.refs.getReferences(self.enumInstance.getName(), self._enum.id, record.get("id"));
+							var references = nom.refs.getReferences(self.enumInstance.getName(), self._enum.id, record.get("id"));
 							if (references) {
 								self.alertRefsError(record.get('name'), references);
 								error = true;
@@ -775,6 +789,7 @@
 
 						showFilter(t);
 						showMultiple(t);
+						showHideCheckbox();
 
 						headerEditor.setDisabled(record.isDefault && !record.isDenom);
 						dataTypeSelector.setDisabled(record.isDefault && !record.isDenom);
@@ -869,7 +884,7 @@
 					return ['dataadded','orderchanged'];
 				},
 				isValid:function(){
-					return this.store.getCount() > 0;
+					return this.store.getCount() > 0 && !edittingGrid;
 				},
 				getValue:function(){
 					return '';
@@ -998,7 +1013,7 @@
 		getNomenclador :function (){
 			var nomenclador = {};
 			var changes = {add :{}, mod :{}, del :{}, delRefs :[]};
-			this.refs.clearToAdd(this.enumInstance.getName());
+			nom.refs.clearToAdd(this.enumInstance.getName());
 			var fields = {};
 			var self = this;
 			nomenclador.name = this.nameTextField.getValue();
@@ -1020,6 +1035,7 @@
 					integrationProp = record.get('integrationProperty'),
 					header = record.get("name"),
 					multi = record.get("multiple"),
+					hidden = record.get('hidden'),
 					t = nom.Type.Utils.getType(type);
 
 				if (properties)
@@ -1040,13 +1056,14 @@
 					'isDefault' :record.isDefault,
 					'isDenom' :record.isDenom,
 					'integrationProperty':integrationProp,
-					'order':order
+					'order':order,
+					'hidden': hidden
 				};
 				order++;
 				//anhadir todas las nuevas referencias.
 				if (nom.Type.Utils.getType(type).valueType == nom.Type.REF_Type) {
-					if (!self.refs.exists(self.enumInstance.getName(),nomenclador.id, id, properties._enum, properties.field))
-						self.refs.add(self.enumInstance.getName(), nomenclador.id, id, properties._enum, properties.field);
+					if (!nom.refs.exists(self.enumInstance.getName(),nomenclador.id, id, properties._enum, properties.field))
+						nom.refs.add(self.enumInstance.getName(), nomenclador.id, id, properties._enum, properties.field);
 				}
 			});
 			//adicionando las propiedades extras de la entidad.
@@ -1076,7 +1093,7 @@
 			};
 
 			if (this.creating)
-				return {_enum :nomenclador, refs :self.refs.getAddedReferences(this.enumInstance.getName())};
+				return {_enum :nomenclador, refs :nom.refs.getAddedReferences(this.enumInstance.getName())};
 
 
 			//Ver los cambios y ponerlos en un objeto
@@ -1127,7 +1144,7 @@
 						})
 					}
 				}
-			changes.addRefs = self.refs.getAddedReferences(this.enumInstance.getName());
+			changes.addRefs = nom.refs.getAddedReferences(this.enumInstance.getName());
 			if(_enum.modelRevision)
 				nomenclador.modelRevision = _enum.modelRevision;
 			if(_enum.dataRevision)
@@ -1261,7 +1278,8 @@
 						"id" :field.id,
 						"fieldToFilter" :filter,
 						'integrationProperty':field.integrationProperty,
-						'multiple':field.properties !== undefined && field.properties['multiSelection']
+						'multiple':field.properties !== undefined && field.properties['multiSelection'],
+						'hidden':!!field.hidden
 					});
 					if (modifying && this.enumHasData)
 						r.modDisabled = true;
@@ -1271,7 +1289,7 @@
 						r.isDenom = true;
 					this.gridStore.add(r);
 					if (!modifying) {
-						this.removeButton.setDisabled(this.countAddedFields() ==0);
+						this.removeButton.setDisabled(this.countAddedFields() === 0);
 						this.gridEditor.fireEvent('dataadded');
 					}
 				}

@@ -222,6 +222,7 @@
 	};
 	/**
 	 * Extrae los datos del nomenclador segun la configuración.
+	 * @deprecated Se va a quitar en cualquier momento, usar queryEnum en vez de este
      * @param instanceName string	    Nombre de la instancia de nomencladores
 	 * @param _enum {object | string}   Enum o id del enum al que se le quieren extraer los datos
 	 * @param config {object}       	Objeto de configuracion para cargar los datos. Ver Nomenclador.dynamic.getEnumData
@@ -234,7 +235,23 @@
 	addService('getEnumAllData', function(instanceName,_enum, config,callback, scope, onError, mask){
 		var configObj = config._isObject_() ? config : {};
 			_enum = _enum._isString_() ? _enum : _enum.id;
-		nom.getEnumData(instanceName, _enum, callback, scope, configObj, onError, mask)
+		nom.getEnumData(instanceName,'', _enum, callback, scope, configObj, onError, mask)
+	},true);
+	/**
+	 * Extrae los datos del nomenclador segun la configuración.
+     * @param instanceName string	    Nombre de la instancia de nomencladores
+	 * @param _enum {object | string}   Enum o id del enum al que se le quieren extraer los datos
+	 * @param config {object}       	Objeto de configuracion para cargar los datos. Ver Nomenclador.dynamic.getEnumData
+	 * @param callback {function}       Función que se llama cuando se terminan de cargar los datos del nomenclador.
+	 *                                  Recibe por parametros un arreglo de records con los datos de la forma
+	 *                                  [ { fieldId: data ,...} ].
+	 * @param scope                     Scope en el que se va a a llamar a la función callback.
+	 */
+	exp.queryEnum=function(instanceName,instanceModifier,_enum, config,callback, scope, onError, mask,_404EmptyPatch){};
+	addService('queryEnum', function(instanceName,instanceModifier,_enum, config,callback, scope, onError, mask,_404EmptyPatch){
+		var configObj = config._isObject_() ? config : {};
+			_enum = _enum._isString_() ? _enum : _enum.id;
+		nom.getEnumData(instanceName,instanceModifier, _enum, callback, scope, configObj, onError, mask,_404EmptyPatch)
 	},true);
 
 	/**
@@ -365,7 +382,8 @@
     		LOAD: 'load',
 			ADD: 'add',
 			MODIFY: 'mod',
-			DELETE: 'del'
+			DELETE: 'del',
+			COUNT: 'count'
 		}
 	};
     exp.addAction.ACTIONS_MOMENTS = {

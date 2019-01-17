@@ -44,7 +44,7 @@
          */
     {
 
-
+        refs:null,
         loaded: null,
         simpleTree:null,
         dataSources:null,
@@ -155,6 +155,7 @@
 
                 self.defaultFields = response.defaultFields;
                 self.simpleTree[instanceName] = response.simpleTree;
+                nom.refs.load(instanceName,response.refs);
                 nom.execute(callback);
 
             },onError,mask);
@@ -464,7 +465,7 @@
     nom.refs = Ext.extend(nom.refs, {
 
         // {
-        //     //idEnum+Idfield : [{enumId:"",fieldId:""}]
+        //     //idEnum+Idfield : [{enumId:fieldId}]
         // },
 
         load: function (instanceName, data){
@@ -488,6 +489,17 @@
                 if (refs[key]._length_() > 0)
                     return refs[key];
             return false;
+        },
+        getEnumsIdReferencingEnum: function(instanceName, _enumId){
+            var refs = this.getRefs(instanceName),
+                _enums = [];
+            refs._each_(function(v,k){
+                if(k.indexOf(_enumId) !== -1)
+                    v._each_(function(v,k){
+                        _enums.push(k);
+                    })
+            });
+            return _enums;
         },
         exists: function (instanceName,fromEnum, fromField, toEnum, toField){
             var from = this.getKey(fromEnum, fromField),
@@ -540,6 +552,7 @@
             return reference.split(':')[1];
         }
     });
+    nom.refs = new nom.refs();
 
     /**
      * LLave pública usada para el encriptado de los passwords mediante el algorirmo RSA
@@ -574,7 +587,7 @@
      * @param [onError]        {function}      Funcion que se ejecuta cuando el pedido genera errors
      * @param [mask]           {function}      Funcion que cuando se ejecuta quita la mascara
      */
-    nom.getEnumData = function (instanceName, enumId, callback, scope, enumDataLoadConfig, onError, mask, _404EmptyPatch){
+    nom.getEnumData = function (instanceName, instanceModifier, enumId, callback, scope, enumDataLoadConfig, onError, mask, _404EmptyPatch){
         function proccessRequest (response, params){
             callback.call(scope,response, params);
         }
@@ -597,14 +610,17 @@
             enumLoadColumns:cl,
             enumLoadWhere:this._default_(enumDataLoadConfig.where,'',null,null),
             enumLoadIdRow:this._default_(enumDataLoadConfig.idRow,'',null,null),
+            actions: nom.enums.getActionManager(instanceName,instanceModifier).getActions(),
             enumLoadActions:this._default_(enumDataLoadConfig.actions,{}),
+            extraParams: enumDataLoadConfig.extraParams,
             '404EmptyPatch': _404EmptyPatch
         },proccessRequest,onError,mask);
     };
-    nom.getStoreConfigFromEnum = function (_enum, columns){
+    nom.getStoreConfigFromEnum = function (_enum, columns,extraColumns){
 
         columns = columns || enums.getFieldsIdFromEnum(_enum);
-        var fields = [],
+
+        var fields = $$.check(extraColumns,[]),
             cl = _enum.fields._queryBy_(function(v,k){
                 return  columns.indexOf(v.id) !== -1;
             },this, true);
@@ -656,7 +672,8 @@
                 _fieldDetails_: field,
                 _enumDetails_: _enum,
                 _enumInstance_:enumInstance,
-                sortable: true
+                sortable: true,
+                hidden: field.hidden
             })
         });
         return new Ext.grid.ColumnModel(cmFields);
@@ -851,6 +868,7 @@
          */
         multiSelection:true,
         allowBlank: false,
+        returnValueAsReference: false,
 
         currentValue:null,
         //privates
@@ -867,7 +885,6 @@
             this._enum = enums.getEnumById(this.enumInstance.getName(), this._enum);
             this.referencedField = this._enum.fields[this._fieldId];
             this.selector_columns = (this.selector_columns  || enums.getFieldsIdFromEnum(this._enum));
-
         },
         getFilterObj:function(){
             return this.filterObj;
@@ -888,7 +905,8 @@
                     columns:this.selector_columns,
                     multiSelection:this.multiSelection,
                     excludeEnums: this.getExclusion(),
-                    maskObj:panel
+                    maskObj:panel,
+                    selectEnum:true
                 }._apply_(this.getFilterObj()),
                 instanceConfig = this.enumInstance.getInstanceConfig(),
                 tab = instanceConfig.getEnumDataEditor(this._enum.tpl),
@@ -937,10 +955,14 @@
         setValue:function(value,toClean){
             var type = nom.Type.Utils.getType(this.referencedField.type),
                 renderer  = type.enumTypeRenderer,
+                self = this,
                 v ='';
 
             toClean = !!toClean;
-
+            if(utils.isNumber(parseInt(value))){
+                this.setValueField(value);
+                return;
+            }
             if(utils.isObject(value)) { //fixing 2nd call ext does.
                 v = renderer(value.displayField);
                 this.currentValue = value;
@@ -952,7 +974,33 @@
                 this.currentValue = null;
                 this.fireEvent('datachanged',this.currentValue);
             }
-            nom.enumInput.superclass.setValue.call(this,v);
+            var f = function(){
+                if(utils.isFunction(self.showCleanButton))
+                    self.showCleanButton(v);
+                self.setRawValue(v);
+            };
+            if(this.rendered)
+                f();
+            else
+                this.on('afterrender',f);
+
+            // nom.enumInput.superclass.setValue.call(this,v);
+        },
+        setValueField:function(valueField){
+            var mask = utils.mask(this, 'cargando');
+            nom.getEnumData(
+                this.enumInstance.getName(),
+                this.enumInstance.getInstanceNameModifier(),
+                this._enum.id,function(data){
+                var record = data._first_();
+                this.setValue({
+                    displayField: record[this._fieldId],
+                    valueField: valueField
+                });
+            },this,{
+                columns:[this._fieldId],
+                idRow:valueField
+            },null,mask)
         },
         clean:function(){
              this.currentValue = null;
@@ -967,6 +1015,10 @@
         getValue:function(){
             if(this.currentValue == null)
                 return;
+
+            if(this.returnValueAsReference)
+                return this.currentValue.valueField;
+
             return this.currentValue;
         },
         getXType:function(){
@@ -1127,7 +1179,9 @@
                 currentField.onTrigger1Click();
             }
             currentField.setDisabled(false);
-            currentField.setFilterObj( filter,dependsField.getValue()['valueField']);
+
+            var dependsValue=dependsField.getValue();
+            currentField.setFilterObj( filter,dependsField.returnValueAsReference ? dependsValue : dependsValue['valueField']);
             currentField.needReload = true;
         };
         f = f.createDelegate(this, [currentField, filter], true);
@@ -1157,6 +1211,7 @@
      * @param pAtrs
      * @param config {object}  Es un objeto de configuracion o el string diciendo la instancia de nomencladores.
      * @param config.excludeEnum  {object | string}  Contiene los nomencladores q se van a excluir, si es un objeto es de la forma {idEnum:true}
+     * @param config.excludeNotNeededFields {boolean}  Dice si se excluyen o no los campos q son obligatorios.
      * @oaram config.includeEnum  {obectj} Es un nomenclador y si esta presente, solo se va a mostrar este mas todas las categorias
      * @oaram config.enumInstance {AjaxPlugins.Nomenclador.InstanceConfigClass} Es la instancia de nomencladores. Es obligatorio
      * @param config.showFields   {bool}  Si es true, se van a mostrar los campos de los nomencladores.
@@ -1174,6 +1229,7 @@
             instanceConfig = enumInstance.getInstanceConfig(),
             toExclude = config.excludeEnum,
             toInclude = config.includeEnum,
+            excludeNotNeededFields = config.excludeNotNeededFields,
             typ = pAtrs._type_ || ('childs' in pAtrs ? 'category' : 'enum'),
             isEnum = typ == 'enum',
             isCat = typ == 'category',
@@ -1211,7 +1267,9 @@
             }, this, false);
         }
         else if(isEnum && config.showFields){
-            children = enumFields._map_(function (pV, pK){
+            children = enumFields._queryBy_(function (v) {
+                return !excludeNotNeededFields || v.needed;
+            })._map_(function (pV, pK){
                 // esta linea clona la configuracion de enum, ademas de ponerle algunos valores
                 return ({})._apply_(pV,{
                     text :pV.header,
@@ -1266,6 +1324,7 @@
             _fieldId: columnId,
             _enum:_enum,
             _field:_enum.fields[columnId],
+            fieldLabel: _enum.name,
             selectorTitle: selectorTitle,
             show2ndTitle:show2ndTitle,
             selector_columns:columns,
@@ -1358,6 +1417,136 @@
         nom.UIDict[instanceName] = null;
     };
     nom.UIDict = {};
+
+    nom.TiniMce = Ext.extend(Ext.Panel,{
+        editor: null,
+        allowBlank: false,
+        originalValue: null,
+        layout:'border',
+        inline: false,
+        constructor: function(obj) {
+            var self = this,
+                id = ('tinyMCE_wind')._id_(),
+                id_bar = ('tinyMCE_bar')._id_(),
+                conf = {
+                    language:'es',
+                    branding: false,
+                    selector: '#' + id,
+                    height:'calc(100% - 100px)',
+                    resize: false,
+                    plugins: [
+                        " advlist autolink colorpicker contextmenu fullscreen help imagetools",
+                        " lists link  noneditable preview",
+                        " searchreplace table textcolor visualblocks wordcount"
+                    ],
+                    toolbar:
+                        "insertfile a11ycheck undo redo | bold italic | forecolor backcolor | template codesample | alignleft aligncenter alignright alignjustify | bullist numlist | link ",
+
+                };
+
+            this.editableContainer = new Ext.Panel({
+                id: id,
+                region: 'center'
+            });
+            var items = [this.editableContainer];
+
+            if (obj.inline) {
+
+                conf['setup'] = function (editor) {
+                    editor.on('blur', function () {
+                        return false;
+                    });
+                };
+                conf['init_instance_callback'] = function (editor) {
+                    editor.focus();
+                };
+                conf['autofocus'] = true;
+                conf['fixed_toolbar_container'] = '#'+id_bar;
+
+                this.editorContainer = new Ext.Panel({
+                    id: id_bar,
+                    region: 'north'
+                });
+                items.splice(0,0,this.editorContainer);
+            }
+            conf['inline'] = this.inline;
+
+            nom.TiniMce.superclass.constructor.call(this,{
+                items:items
+            });
+            this.editableContainer.on('resize',this.onContainerResize,this);
+            this.editableContainer.on('afterrender',function(){
+                window.tinyMCE.init(conf).then(function (editor) {
+                    editor = editor[0];
+                    if(editor == null)
+                        throw new Error('No se selecciono ningun elemento a la hora de inicializar el editor TiniMCE ');
+                    self.editor = editor;
+                    self.fireEvent('afterinit');
+                    editor.on('keyup',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('paste',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('SetContent',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('Redo',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('Undo',function () {
+                        self.fireEvent('change');
+                    });
+                    editor.on('PastePostProcess',function () {
+                        self.fireEvent('change');
+                    });
+
+                });
+            });
+
+        },
+        isValid: function () {
+            if(this.editor == null)
+                return false;
+            var value = this.getValue();
+            return this.allowBlank || value !== '';
+        },
+        isDirty: function () {
+            if (this.originalValue != null)
+                return this.originalValue !== this.getValue();
+            return true;
+        },
+        getValue: function () {
+            if(this.editor == null)
+                return;
+            return this.editor.getContent();
+        },
+        setValue: function (value) {
+            if(this.editor==null){
+                var self = this;
+                this.on('afterinit',function(){
+                    self.setValue(value);
+                });
+                return true;
+            }
+            if(value == null)
+                value = '';
+            this.editor.setContent(value);
+        },
+        getXType: function () {
+            return 'tinyMCE'
+        },
+        getFormVEvtNames: function () {
+            return 'change';
+        },
+        destroy: function () {
+            this.editor.destroy();
+            nom.TiniMce.superclass.destroy.apply(this,arguments);
+        },
+        onContainerResize: function () {
+            var f = 4;
+        }
+    });
 
     nom.execute = function(f,params, scope){
         if((function () {})._same_(f))
