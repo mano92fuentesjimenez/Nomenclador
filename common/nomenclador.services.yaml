@@ -52,7 +52,7 @@ services:
               enumLoadWhere:
 
   modelRecords:
-    description: "Interfaz para la interaciion con los records de los modelos"
+    description: "Interfaz para la interaccion con los records de los modelos"
     urls:
       /{enum}:
         description:
@@ -134,3 +134,17 @@ services:
               record:
                 description: "Modifica el record en el servidor y le pone los valores de este record"
                 required: true
+
+  getModelsAndDataRevision:
+    description: "Obtiene la revision general de los modelos y los datos"
+    urls:
+      /:
+        methods:
+          get:
+            description: "Obtiene la revision general de los modelos y los datos"
+            out: "application/json"
+            action: "getGeneralRevision"
+            arguments:
+              instance:
+                description: "Instancia o dominio de trabajo"
+                default: "system"
