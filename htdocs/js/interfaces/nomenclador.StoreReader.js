@@ -27,9 +27,13 @@
         enumInstance:null,
 
         //config
+        //-filters
         '404EmptyPatch': true,
         fieldFilter: null,
         fieldFilterValue: null,
+        filterByRecordId: null,
+
+        //----------------------
         pageSize: 10,
         pagePosition: 0,
         extraParams: null,
@@ -242,6 +246,8 @@
 
             if (this.fieldFilter)
                 where = _enumStr+'.' + this.fieldFilter + ' = ' + this.fieldFilterValue + ' ';
+            else if(this.filterByRecordId)
+                where = _enumStr+'.' + nom.Type.PrimaryKey.UNIQUE_ID + ' = ' + this.filterByRecordId;
             if(utils.isArray(this.excludeEnums) && this.excludeEnums._length_() > 0 ){
                 if(!utils.isString(where))
                     where = '';
