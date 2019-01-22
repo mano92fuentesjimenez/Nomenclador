@@ -132,13 +132,17 @@
                 title = (data ? "Modificar " : "Adicionar ") + (this._enum.name ? ("datos en el Nomenclador: " + this._enum.name):''),
                 editorConfig = $$.check(this.editorContainerConfig,{}),
                 defaultEditorConfig = {
-                    height: 400,
+                    // height: 400,
                     modal: true,
-                    width: '30%',
-                    title: title,
+                    // autoHeight: true,
+                    minHeight: 50,
+                    maxHeight: 400,
+                    width: '25%',
+                    // layout: "fit",
+                    layout: "form",
+                    title: title
                 },
                 editor = this.editorWindow = new addW($$.assign(defaultEditorConfig,editorConfig,{
-                    layout: "fit",
                     items: [
                         this.getFormBody()
                     ],
@@ -150,9 +154,23 @@
                     }
                 }));
 
-            editor.on('beforeclose',function () {
-                this.fireEvent('editorClosed',this,null);
-            },this);
+            editor.on({
+                scope:this,
+                beforeclose : function () {
+                    this.fireEvent('editorClosed',this,null);
+                },
+                afterrender : function () {
+                    if($$(editor.maxHeight).isNumber()){
+                        editor.body.applyStyles({
+                            'overflow-y':'auto',
+                            'max-height': editor.maxHeight+'px'
+                        });
+                    }
+                    $$(function () {
+                        editor.center();
+                    }).delay(100);
+                }
+            });
 
             this.fireEvent('editorCreated',this,editor,data);
             editor.show();
