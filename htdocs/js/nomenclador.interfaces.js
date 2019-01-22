@@ -136,11 +136,11 @@
                     modal: true,
                     // autoHeight: true,
                     minHeight: 50,
-                    maxHeight: 200,
-                    width: '30%',
+                    maxHeight: 400,
+                    width: '25%',
                     // layout: "fit",
                     layout: "form",
-                    title: title,
+                    title: title
                 },
                 editor = this.editorWindow = new addW($$.assign(defaultEditorConfig,editorConfig,{
                     items: [
@@ -162,13 +162,13 @@
                 afterrender : function () {
                     if($$(editor.maxHeight).isNumber()){
                         editor.body.applyStyles({
-                            'overflow-y':'scroll',
+                            'overflow-y':'auto',
                             'max-height': editor.maxHeight+'px'
                         });
                     }
                     $$(function () {
                         editor.center();
-                    }).delay(500);
+                    }).delay(100);
                 }
             });
 
