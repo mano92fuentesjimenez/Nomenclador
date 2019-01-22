@@ -268,19 +268,15 @@
 		closeAction :'hide',
 		layout :'fit',
 		onLoadedHeaders :null,
+		enumsToExclude: null,
 		constructor :function (args){
 			this.onLoadedHeaders = Genesig.Utils.createOnReadyFunction();
 			this.enums = nom.enums;
-			var excludeEnums = arguments[0]._enumId;
-			if(args.enumsToExclude){
-				excludeEnums = args.enumsToExclude;
-				excludeEnums[arguments[0]._enumId] = true;
-			}
 			this.tree = new nom.nomencladorTree({
 				autoScroll :true,
 				showFields :true,
 				autoLoadTree :false,
-				excludeEnum :excludeEnums,
+				excludeEnum :args.enumsToExclude,
 				enumInstance:args['enumInstance'],
 				allowReferencing:true,
 				excludeNotNeededFields:true,
