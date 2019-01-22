@@ -49,6 +49,10 @@
                             input.fireEvent('datachanged');
                         })
                     },
+                    onTrigger1Click: function(){
+                        fields.triggerField.prototype.onTrigger1Click.call(this);
+                        input.fireEvent('datachanged');
+                    },
                     getFormVEvtNames:function(){
                         return 'datachanged';
                     },
@@ -56,7 +60,7 @@
                         return 'enumimageviewer';
                     },
                     isDirty:function(){
-                        return true;
+                        return this.originalValue !== this.getValue();
                     },
                     getValue:function(){
                         var v = fields.triggerField.prototype.getValue.call(this);
@@ -88,8 +92,11 @@
                         }),
                         new buttons.btnDelete({
                             text:'',
-                            handler: dv.removeSelections,
-                            scope:dv
+                            handler: function (){
+                                dv.removeSelections();
+                                input.fireEvent('datachanged');
+                            },
+                            scope:this
                         })
                     ],
                     getValue:function(){
@@ -123,7 +130,10 @@
                         return this.allowBlank || dv.store.getCount() > 0;
                     },
                     isDirty:function(){
-                        return true;
+                        var value = this.getValue();
+                        return !(utils.isArray(this.originalValue)
+                            && this.originalValue.length === value.length
+                            && $$(this.originalValue.sort()).isEqual(value.sort()));
                     },
                     reset:function(){
                         dv.reset();
