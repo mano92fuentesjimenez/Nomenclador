@@ -76,7 +76,8 @@
 			});
 			nom.refs.load(this.enumInstance.getName(), arguments[0].refs || {});
 			this.on('afterrender', function (){
-				this.createValidator();
+				setTimeout(this.createValidator.createDelegate(this),100);
+
 			});
 		},
 		getUIConfig:function(){
