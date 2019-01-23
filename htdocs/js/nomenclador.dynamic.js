@@ -1045,7 +1045,8 @@
         // isGrid:true,
         constructor:function(config){
             config._enum =  enums.getEnumById(config.enumInstance.getName(), config._enum);
-            var t = nom.Type.Utils.getType(config._enum.fields[config._fieldId].type),
+            var field = config._enum.fields[config._fieldId];
+            var t = nom.Type.Utils.getType(field.type),
                 self =this,
                 fireDChanged = function(){
                     self.fireEvent('datachanged')
@@ -1060,7 +1061,13 @@
                 store: this.store,
                 cm: new Ext.grid.ColumnModel([
                     {header: "Llave primaria", dataIndex:'valueField', hidden: true, sortable: true},
-                    {header: config._enum.fields[config._fieldId].header, dataIndex:'displayField', renderer: t.gridRender}
+                    {
+                        header: config._enum.fields[config._fieldId].header,
+                        dataIndex:'displayField',
+                        renderer: t.gridRender,
+                        _fieldDetails_: field,
+                        _enumDetails_: config._enum,
+                        _enumInstance_:config.enumInstance}
                 ]),
                 tbar:[
                     new buttons.btnAdicionar({
