@@ -144,13 +144,7 @@
 				height :80
 			});
 			this.createGrid();
-			this.descriptionToGridValidator =  new Genesig.Componentes.FormValidator({
-				fields :[this.nameTextField],
-				buttons :[
-					this.gridEditor
-				],
-				checkDirty:false
-			});
+
 			if (!this.creating) {
 				this.setEnum();
 			}
@@ -997,6 +991,14 @@
 				checkDirty:false
 			});
 			this.formValidator.registrarNuevoXtype({'dataSource' :{evt :['valuesetted']}});
+
+			this.descriptionToGridValidator =  new Genesig.Componentes.FormValidator({
+				fields :[this.nameTextField],
+				buttons :[
+					this.gridEditor
+				],
+				checkDirty:false
+			});
 		},
 		SaveAndExit :function (){
 			if (!this.valid())
