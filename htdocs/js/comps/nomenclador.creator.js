@@ -144,6 +144,13 @@
 				height :80
 			});
 			this.createGrid();
+			this.descriptionToGridValidator =  new Genesig.Componentes.FormValidator({
+				fields :[this.nameTextField],
+				buttons :[
+					this.gridEditor
+				],
+				checkDirty:false
+			});
 			if (!this.creating) {
 				this.setEnum();
 			}
