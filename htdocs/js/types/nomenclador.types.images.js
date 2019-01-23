@@ -143,7 +143,7 @@
             return input;
         },
         enumTypeRenderer :function (value){
-
+            return value;
         }
 
     }));
