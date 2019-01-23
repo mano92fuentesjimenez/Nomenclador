@@ -346,7 +346,7 @@
 					if(type === 'DB_Enum'){
 						var multipleCounter = 0;
 						self.getFields()._each_(function (v) {
-							if(v.type =='DB_Enum' && v.multiple)
+							if(v.type === 'DB_Enum' && v.multiple && r.get('id') !== v.id)
 								multipleCounter ++;
 						});
 						disabled |= multipleCounter > 0;
