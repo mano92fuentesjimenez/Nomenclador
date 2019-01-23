@@ -411,6 +411,7 @@
      *              Todas las propiedades extras de una entidad van a ser guardadas en un objeto extraProp en
      *             el json del nomenclador q se construyo.
      * defaultDataSource: Id del dataSource q se va a tomar por defecto.
+     * showOnlyDefaultFields: Dice si solo las columnas por defecto se van a mosrtrar en el visor.
      */
     nom.Tpl = Ext.extend(nom.Tpl,{
         isReadOnly: function(){
@@ -455,6 +456,9 @@
         },
         getTplName: function () {
             return this.tplName;
+        },
+        getShowOnlyDefaultFields: function () {
+            return !!this.showOnlyDefaultFields;
         }
     });
 
@@ -634,17 +638,35 @@
     };
     nom.getColumnModelFromEnum = function (enumInstance, _enum, showHeadInfo,columns){
         var cmFields = [],
-            fields = _enum.fields;
+            fields = _enum.fields,
+            tpl = enumInstance.getInstanceConfig().getTpl(_enum.tpl),
+            defaultFields = tpl.getDefaultFields();
+
         if(columns)
             fields = fields._queryBy_(function(v, k){
                 return columns.indexOf(v.id) !== -1;
             });
 
-
         fields._sort_(function(a,b){
             if(a.order === undefined || b.order === undefined)
                 return false;
             return a.order>b.order;
+        });
+        //si true, se quitan todos los campos menos los de por defecto
+        if(tpl.getShowOnlyDefaultFields())
+            fields = fields._queryBy_(function (v, k) {
+                return $$(defaultFields).index(function(value){
+                    return value.id === v.id;
+                }) !== null;
+            });
+        //De los campos por defecto, solo se muestran los q tienen los q tienen visible
+        fields = fields._queryBy_(function (v,k) {
+            var field = $$(defaultFields).find(function (value,k) {
+                return value.id === v.id;
+            });
+            if(field == null)
+                return true;
+            return !field.hidden;
         });
         fields._each_(function (field){
             if (field.id === nom.Type.PrimaryKey.UNIQUE_ID || field.id === nom.Type.Revision.UNIQUE_ID  ) {
