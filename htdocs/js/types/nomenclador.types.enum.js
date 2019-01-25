@@ -33,7 +33,15 @@
 				enumProps = AjaxPlugins.Nomenclador.enums.getEnumById(this._enumInstance_.getName(), field.properties._enum),
 				refField = enumProps.fields[field.properties.field],
                 fieldClass = enumProps.fields[field.properties.field].type,
-                typeObj = new nom.Type.Utils.getType(fieldClass);
+                typeObj = new nom.Type.Utils.getType(fieldClass),
+				enum_data = "enumId='"+enumProps.id+"'" +
+							"base_field_id='"+field.id+"'"+
+					        "base_enum_id='" +enumD.id+"'"+
+							"enum_row='"+text.valueField+"' " +
+							"multi_data='"+Ext.encode(text)+"' "+
+							"instance_name='"+this._enumInstance_.getName()+"'" +
+							"instance_modifier='"+this._enumInstance_.getInstanceNameModifier()+"'" ;
+
 
 			if(!field.properties.multiSelection) {
 				var /*
@@ -42,26 +50,23 @@
                      fila pertenece ya que se renderiza en otro nomenclador apuntando a donde esta el originalmente.
                      */
                     rend = typeObj.gridRender.call(this, text.displayField, pD, pRec,null,null,null,{_enum:enumProps,field:refField}),
-                    html = '<div class="enums_Db_Enum">' +
-                        '<div ' +
-                        "enumId='"+enumProps.id+"'" +
-                        "enum_row='"+text.valueField+"' " +
-                        "instance_name='"+this._enumInstance_.getName()+"'" +
-                        "instance_modifier='"+this._enumInstance_.getInstanceNameModifier()+"'" +
-                        'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_Enum.getEnumRowData(this);" ' +
-                        'class="gisTtfIcon_flaticon-information-button">' +
-                        '</div>' +
-                        '<div>' + rend + '</div>';
+                    html =  '<div class="enums_Db_Enum">' +
+							'<div ' +
+							enum_data +
+							'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_Enum.getEnumRowData(this);" ' +
+							'class="gisTtfIcon_flaticon-information-button">' +
+							'</div>'+
+							'<div>' + rend + '</div>';
                 return html;
             }
             else{
-            	if(text == null)
-            		return '';
-				var s = '';
-				text._each_(function(v,k){
-					s+= typeObj.enumTypeRenderer(v.displayField)+', ';
-				});
-				return s.slice(0,-2);
+            	var rend = 'Ver mas',
+            	html = '<div class="enum_view_link" ' +
+						 enum_data +
+					    'onclick="AjaxPlugins.Nomenclador.Type.Types.DB_Enum.showMultiEnumsRender(this);"' +
+						'>' + rend + '</div>';
+            	return html
+
 			}
 		},
 		getValueEditExtComp :function (enumInstance, field, _enum){
@@ -172,18 +177,27 @@
 			return el;
 		},
 		getEnumRowData :function (pElement){
-			var enumId = pElement.getAttribute('enumId'),
-				enumRow = pElement.getAttribute('enum_row'),
-				instanceName = pElement.getAttribute('instance_name'),
-				instanceModifier= pElement.getAttribute('instance_modifier'),
-				instance = nom.enums.getInstance(instanceName,instanceModifier),
+			var d = this.getEnumDataFromHtmlEl(pElement),
+				instance = nom.enums.getInstance(d.instanceName,d.instanceModifier),
 				el = this.getEnumRowDataContainer(pElement),
 				self = this;
 
-			nom.getEnumData(instanceName,instanceModifier,enumId,function(resp) {
-					self.showLinkRecordData(instance, enumId, resp[0], el);
-				},null,{ idRow:enumRow }
+			nom.getEnumData(d.instanceName,d.instanceModifier,d.enumId,function(resp) {
+					self.showLinkRecordData(instance, d.enumId, resp[0], el);
+				},null,{ idRow:d.enumRow }
 			);
+		},
+		getEnumDataFromHtmlEl: function(element) {
+			var d= {
+				enumId : element.getAttribute('enumId'),
+				enumRow : element.getAttribute('enum_row'),
+				instanceName : element.getAttribute('instance_name'),
+				instanceModifier : element.getAttribute('instance_modifier'),
+				multiData: Ext.decode(element.getAttribute('multi_data'))
+			};
+			d['baseEnum']= nom.enums.getEnumById(d.instanceName, element.getAttribute('base_enum_id'));
+			d['baseField']=d['baseEnum'].fields[(element.getAttribute('base_field_id'))];
+			return d;
 		},
 		showLinkRecordData :function (enumInstance, pEnumId, pData, pEl){
 			var referencedEnum = nom.enums.getEnumById(enumInstance.getName(),pEnumId),
@@ -249,6 +263,18 @@
 					});
 				}
 			}, 500);
+		},
+
+		showMultiEnumsRender: function(pElement){
+			var d = this.getEnumDataFromHtmlEl(pElement),
+				m = new multiRenderer({
+					records: d.multiData,
+					field: d.baseField,
+					_enum: d.baseEnum,
+					enumInstance: nom.enums.getInstance(d.instanceName, d.instanceModifier)
+				});
+			m.show();
+
 		}
 	}));
 
@@ -401,5 +427,57 @@
 			Ext.Window.prototype.show.apply(this, arguments);
 		}
 	});
+	var multiRenderer = Ext.extend(Ext.Window,{
+		enumInstance:null,
+		_enum: null,
+		field:null,
+		records:null,
+		layout:'fit',
+		modal: true,
+		width: 500,
+		height: 500,
+		constructor: function(config){
+			this._apply_(config);
+			//la manera mas facil de hacer un deep clone.
+			this.field = Ext.decode(Ext.encode(this.field));
+			this.initializeUI();
+			multiRenderer.superclass.constructor.apply(this,arguments)
+		},
+		initializeUI: function(){
+
+			var gridPanel = new Ext.grid.GridPanel({
+				store: new Ext.data.JsonStore({
+					fields:['valueField','displayField'],
+					data:this.records
+				}),
+				viewConfig: {
+					forceFit:true
+				},
+				cm: new Ext.grid.ColumnModel([
+					{header:this.field.header, dataIndex:'displayField',renderer: this.renderer.createDelegate(this)}
+				])
+			});
+
+			this.items=[
+				gridPanel
+			]
+		},
+		renderer:function(value, metaData, record) {
+			var enumRenderer = nom.Type.Utils.getType('DB_Enum').gridRender,
+				enum_record = {
+					displayField: value,
+					valueField: record.get('valueField')
+				},
+				scope = {
+					_enumDetails_: this._enum,
+					_fieldDetails_: this.field,
+					_enumInstance_: this.enumInstance
+				};
+			this.field.properties.multiSelection = false;
+
+			return enumRenderer.call(scope, enum_record, metaData);
+		}
+	})
+
 
 })();
