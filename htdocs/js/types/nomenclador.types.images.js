@@ -61,12 +61,6 @@
                     },
                     isDirty:function(){
                         return this.originalValue !== this.getValue();
-                    },
-                    getValue:function(){
-                        var v = fields.triggerField.prototype.getValue.call(this);
-                        if(v == null || v == '')
-                            return;
-                        return v;
                     }
                 });
             else {

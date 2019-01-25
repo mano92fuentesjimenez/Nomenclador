@@ -23,13 +23,7 @@
                 maxLength: 10000,
 				plugins:[
 					new grow()
-				],
-				getValue:function(){
-                	var v = fields.fieldDescripcion.prototype.getValue.call(this);
-                	if(v === "")
-                		return;
-                	return v;
-				}
+				]
             });
 
 

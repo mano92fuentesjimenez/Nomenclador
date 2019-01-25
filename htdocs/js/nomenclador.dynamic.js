@@ -1036,7 +1036,7 @@
         },
         getValue:function(){
             if(this.currentValue == null)
-                return;
+                return '';
 
             if(this.returnValueAsReference)
                 return this.currentValue.valueField;

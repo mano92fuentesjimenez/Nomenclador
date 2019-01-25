@@ -134,8 +134,6 @@
 			cls:'enum_richTextView'
 		},
 		getValue:function(){
-			if(this.currentValue === '')
-				return null;
 			return this.currentValue;
 		},
 		setValue:function(v){

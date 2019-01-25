@@ -14,13 +14,7 @@
 		getValueEditExtComp :function (enumInstance, field){
 			return new AjaxPlugins.Ext3_components.fields.simpleField({
 				allowBlank :!field.needed,
-				fieldLabel :field.header,
-				getValue: function(){
-					var v = AjaxPlugins.Ext3_components.fields.simpleField.prototype.getValue.call(this);
-					if(v == '')
-						return;
-					return v;
-				}
+				fieldLabel :field.header
 			})
 		}
 	}));

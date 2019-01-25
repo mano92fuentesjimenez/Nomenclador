@@ -410,8 +410,6 @@
 			this.store.each(function (r) {
 				values.push(r.data);
 			});
-			if (values._length_() ===0)
-			    return;
 			return Ext.encode(values);
 		},
 		setValue: function (v) {

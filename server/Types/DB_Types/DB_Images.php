@@ -14,8 +14,8 @@ class DB_Images extends BaseType{
     }
     public static function getValueToDB($record, $value,Field $field, $connType, $enumInstance)
     {
-        if(is_null($value))
-            return $value;
+        if(is_null($value) || $value ==='')
+            return 'null';
         $server = ServerPlugin::requirePlugin('manageImages');
         if(!$server->imageExist($value))
             throw new EnumInvalidModifyingData($enumInstance, $field->getEnumId(), $field->getId(),$value);

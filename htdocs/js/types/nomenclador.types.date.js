@@ -26,14 +26,10 @@
                         return 'valuesetted';
                     },
                     setValue: function (v) {
+                        if(v === null)
+                            v = '';
                         fields.DateField.prototype.setValue.call(this, v);
                         this.fireEvent('valuesetted');
-                    },
-                    getValue: function(){
-                        var v = fields.DateField.prototype.getValue.call(this);
-                        if(v ==='')
-                            return;
-                        return v
                     }
                 });
 

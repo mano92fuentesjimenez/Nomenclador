@@ -58,8 +58,8 @@ abstract class BaseType
      * @return string
      */
     public static function getValueToDB($record, $value, $field, $connType){
-        if(is_null($value))
-            return null;
+        if(is_null($value) or $value === '')
+            return 'null';
         return "'$value'";
     }
 
