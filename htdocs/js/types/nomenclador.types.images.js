@@ -72,6 +72,7 @@
             else {
                 var dv = new imageViewer([]);
                 input = new Ext.Panel({
+                    fieldLabel:field.header,
                     allowBlank: !field.needed,
                     items: [dv],
                     isGrid:true,
