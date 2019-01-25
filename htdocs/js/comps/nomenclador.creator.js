@@ -122,6 +122,7 @@
 				allowBlank :false,
 				fieldLabel :"Denominaci&oacute;n",
 				tooltip:'Denominaci&oacute;n del '+this.entityType,
+				regex: /^[\S].*[\S]$/,
 				validator :function (text){
 					if (text.indexOf(':') !== -1)
 						return "El nombre de un "+self.entityType+" no puede contener ':'";
