@@ -449,9 +449,6 @@
         createStore: function () {
             return nom.getStoreConfigFromEnum(this._enum, this.columns);
         },
-        hasLoaded: function () {
-            return !!this.hasLoadedBoolean;
-        },
 
         getSelection: function () {
             return this.selections;

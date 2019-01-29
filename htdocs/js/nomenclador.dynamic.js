@@ -131,34 +131,41 @@
             }
             enums[_enum.id]._enum = _enum;
         },
-        load: function (instanceName, callback, onError,mask){
+        load: function (instanceName, callback, onError,mask, forceLoad){
             var self =this;
-            nom.request('getServerHeaders',{instanceName:instanceName},function (response, o){
-                self.loaded[instanceName] = true;
-                var enums = self.getEnums(instanceName);
-                response.enums._each_(function (_enum){
-                    if (enums[_enum.id] ) {
-                        if(JSON.stringify(_enum) !== JSON.stringify(enums[_enum.id]._enum))
-                            enums[_enum.id].fireEvent('enumchange', _enum);
-                    }
-                    else
-                        enums[_enum.id] = new Ext.util.Observable();
 
-                    enums[_enum.id]._enum = _enum;
+            if(forceLoad)
+                delete self.loaded[instanceName];
+            if(!(self.loaded[instanceName] instanceof Promise))
+                self.loaded[instanceName] = new Promise(function(resolve){
+                    nom.request('getServerHeaders',{instanceName:instanceName},function (response, o){
+                        var enums = self.getEnums(instanceName);
+                        response.enums._each_(function (_enum){
+                            if (enums[_enum.id] ) {
+                                if(JSON.stringify(_enum) !== JSON.stringify(enums[_enum.id]._enum))
+                                    enums[_enum.id].fireEvent('enumchange', _enum);
+                            }
+                            else
+                                enums[_enum.id] = new Ext.util.Observable();
+
+                            enums[_enum.id]._enum = _enum;
+                        });
+                        enums._each_(function (_enum){
+                            if (!response.enums[_enum._enum.id]) {
+                                enums[_enum._enum.id].fireEvent('enumdeleted');
+                                delete enums[_enum._enum.id];
+                            }
+                        });
+
+                        self.defaultFields = response.defaultFields;
+                        self.simpleTree[instanceName] = response.simpleTree;
+                        nom.refs.load(instanceName,response.refs);
+                        nom.execute(callback);
+                        resolve();
+
+                    },onError,mask);
                 });
-                enums._each_(function (_enum){
-                    if (!response.enums[_enum._enum.id]) {
-                        enums[_enum._enum.id].fireEvent('enumdeleted');
-                        delete enums[_enum._enum.id];
-                    }
-                });
-
-                self.defaultFields = response.defaultFields;
-                self.simpleTree[instanceName] = response.simpleTree;
-                nom.refs.load(instanceName,response.refs);
-                nom.execute(callback);
-
-            },onError,mask);
+            return self.loaded[instanceName];
         },
         getEnums: function(instanceName){
             if(!this.enums[instanceName])

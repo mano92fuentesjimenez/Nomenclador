@@ -39,6 +39,7 @@
 	 */
 	function addService(serviceName,fn, notUseLastAsCallback){
 		exp[serviceName] = function (){
+			var mask = Genesig.Utils.mask(Ext.getBody(),'Cargando headers nomencladores');
 			var args = arguments,
 				f = function(){
 					if((function(){})._same_(args[args.length-1]) && !notUseLastAsCallback) {
@@ -52,9 +53,9 @@
 				};
 
 			_require_('nomenclador').then(function(){
-                if( (args.length ===1 && utils.isFunction(args[0])) || nom.enums.hasLoaded(args[0]))
+                if( (args.length ===1 && utils.isFunction(args[0])))
                     f();
-                else nom.enums.load(args[0], f);
+                else nom.enums.load(args[0], null,null,mask).then(f);
             })
 
 			// nom.loadDynamicJs(
