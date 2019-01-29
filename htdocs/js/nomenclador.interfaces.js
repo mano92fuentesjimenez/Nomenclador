@@ -28,7 +28,7 @@
         _items: null,
         formColumns : 1,
         editorContainerConfig: null,
-        prepareFields : function(){
+        prepareFields : function(data){
             var enum_fields = this.getEnumFields(),
                 gridItems = [],
                 fieldItems = [],
@@ -53,7 +53,7 @@
                 if (!data)
                     currentField.disable();
 
-                nom.makeFilter(self.enumInstance.getName(), currentField, dependsField, !!data)
+                nom.makeFilter(this.enumInstance.getName(), currentField, dependsField, !!data)
             }, this);
 
             this._fields = fields;
@@ -111,8 +111,8 @@
                 items: this._gridItems
             };
         },
-        getFormBody : function(){
-            this.prepareFields();
+        getFormBody : function(data){
+            this.prepareFields(data);
             var simpleFieldsForm = this.buildSimpleFieldsForm(),
                 gridItemsForm = this.buildGridItemsForm();
 
@@ -144,7 +144,7 @@
                 },
                 editor = this.editorWindow = new addW($$.assign(defaultEditorConfig,editorConfig,{
                     items: [
-                        this.getFormBody()
+                        this.getFormBody(data)
                     ],
                     fields: this._fields,
                     fieldsValues: data,
