@@ -210,7 +210,7 @@
         recorddblclick:function(record){
             this.fireEvent('valueselected',record);
         },
-        searchByDemom: function(value){
+        searchByDenom: function(value){
             var self = this;
 
             this.searchByDenomValue = value;
@@ -219,7 +219,7 @@
             })
         },
         resetSearchByDenom: function(){
-            this.searchByDemom(undefined);
+            this.searchByDenom(undefined);
         },
         resetCount:function(cb){
             var self = this;
