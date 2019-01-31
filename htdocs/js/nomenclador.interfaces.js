@@ -3,6 +3,7 @@
  */
 (function(){
     var comps = AjaxPlugins.Ext3_components,
+        fields = comps.fields,
         buttons = comps.buttons,
         utils = Genesig.Utils,
         /**
@@ -238,11 +239,10 @@
 					}
 				];
 			}
-			tbar.push(this.searchField = new Ext.form.TextField());
-			tbar.push(new Ext.Button({
-                text:'Buscar',
-                handler:this.searchByDenom,
-                scope:this
+			tbar.push('->');
+			tbar.push(this.searchField = new fields.triggerField({
+                trigger2Class:'gis_search',
+                onTrigger2Click: this.searchByDenom.createDelegate(this)
             }));
 
 			return tbar;
