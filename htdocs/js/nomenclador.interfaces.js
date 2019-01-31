@@ -3,6 +3,7 @@
  */
 (function(){
     var comps = AjaxPlugins.Ext3_components,
+        fields = comps.fields,
         buttons = comps.buttons,
         utils = Genesig.Utils,
         /**
@@ -221,7 +222,7 @@
             // this.addMenuToColumnHeader();
         },
         initializeStoreWriterButtons: function(){
-			var tbar = undefined;
+			var tbar = [];
 			if(this.manageEnum) {
 				tbar = [
 					this.getButtonInstance(writterBtn.addBtn),
@@ -238,7 +239,16 @@
 					}
 				];
 			}
+			tbar.push('->');
+			tbar.push(this.searchField = new fields.triggerField({
+                trigger2Class:'gis_search',
+                onTrigger2Click: this.searchByDenom.createDelegate(this)
+            }));
+
 			return tbar;
+        },
+        searchByDenom:function(){
+            nom.GridDataEditor.superclass.searchByDenom.call(this,this.searchField.getValue());
         },
         getCM:function(columns){
           return nom.getColumnModelFromEnum(this.enumInstance, this._enum, true, columns);
@@ -328,7 +338,11 @@
                 grid.store = store;
                 grid.columnModel = this.getCM(this.columns);
             }
+        },
+        resetPagingTotalCount: function(totalCount){
+            this.pagingBar.changeTotalCount(totalCount)
         }
+
     })._apply_({
         columnHeaderHandler :function (el, mouseEvent){
             var enumId = el.getAttribute('enum_id'),
