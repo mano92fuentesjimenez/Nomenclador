@@ -231,6 +231,7 @@
                 extraParams: this.extraParams
             }, function (r) {
                 self.totalCount = r;
+                self.resetPagingTotalCount(r);
                 $$.execute(cb);
             },null ,this.getMaskObj());
         },
@@ -272,9 +273,11 @@
                 where += primary +' not in '+ Ext.encode(this.excludeEnums).replace('[','(').replace(']',')').replace(/"/g,'');
             }
             if(utils.isString(this.searchByDenomValue)){
-                if(!utils.isString(where))
-                    where = ' true ';
-                where += ' and ' + nom.enums.getDenomField(this.instance.getName(), this._enum.id)+" like '%"+this.searchByDenomValue+"%'";
+                if(utils.isString(where))
+                    where += ' and ';
+                else
+                    where = '';
+                where += nom.enums.getDenomField(this.enumInstance.getName(), this._enum.id)+" like '%"+this.searchByDenomValue+"%'";
             }
             if(this.appendData && c!==0 && (currentPageElemCount - c) > 0){
 
@@ -593,6 +596,9 @@
         },
         refreshView :function(){
             Logger.warn('Funcion refreshView no fue sobrescrita');
+        },
+        resetPagingTotalCount:function(){
+            Logger.warn('Funcion no fue sobrescrita');
         }
     });
 

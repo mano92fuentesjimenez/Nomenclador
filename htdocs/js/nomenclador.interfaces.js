@@ -221,7 +221,7 @@
             // this.addMenuToColumnHeader();
         },
         initializeStoreWriterButtons: function(){
-			var tbar = undefined;
+			var tbar = [];
 			if(this.manageEnum) {
 				tbar = [
 					this.getButtonInstance(writterBtn.addBtn),
@@ -238,7 +238,17 @@
 					}
 				];
 			}
+			tbar.push(this.searchField = new Ext.form.TextField());
+			tbar.push(new Ext.Button({
+                text:'Buscar',
+                handler:this.searchByDenom,
+                scope:this
+            }));
+
 			return tbar;
+        },
+        searchByDenom:function(){
+            nom.GridDataEditor.superclass.searchByDenom.call(this,this.searchField.getValue());
         },
         getCM:function(columns){
           return nom.getColumnModelFromEnum(this.enumInstance, this._enum, true, columns);
@@ -328,7 +338,11 @@
                 grid.store = store;
                 grid.columnModel = this.getCM(this.columns);
             }
+        },
+        resetPagingTotalCount: function(totalCount){
+            this.pagingBar.changeTotalCount(totalCount)
         }
+
     })._apply_({
         columnHeaderHandler :function (el, mouseEvent){
             var enumId = el.getAttribute('enum_id'),
