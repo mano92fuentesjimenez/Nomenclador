@@ -277,7 +277,7 @@
                     where += ' and ';
                 else
                     where = '';
-                where += nom.enums.getDenomField(this.enumInstance.getName(), this._enum.id)+" like '%"+this.searchByDenomValue+"%'";
+                where += nom.enums.getDenomField(this.enumInstance.getName(), this._enum.id)+" ilike '%"+this.searchByDenomValue+"%'";
             }
             if(this.appendData && c!==0 && (currentPageElemCount - c) > 0){
 
