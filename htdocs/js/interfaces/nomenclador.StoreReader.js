@@ -274,7 +274,7 @@
             if(utils.isString(this.searchByDenomValue)){
                 if(!utils.isString(where))
                     where = ' true ';
-                where += ' and base.' + nom.enums.getDenomField(this.instance.getName(), this._enum.id)+" like '%"+this.searchByDenomValue+"%'";
+                where += ' and ' + nom.enums.getDenomField(this.instance.getName(), this._enum.id)+" like '%"+this.searchByDenomValue+"%'";
             }
             if(this.appendData && c!==0 && (currentPageElemCount - c) > 0){
 
