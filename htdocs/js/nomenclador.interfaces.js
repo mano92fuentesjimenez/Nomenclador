@@ -222,7 +222,8 @@
             // this.addMenuToColumnHeader();
         },
         initializeStoreWriterButtons: function(){
-			var tbar = [];
+			var tbar = [],
+                self = this;
 			if(this.manageEnum) {
 				tbar = [
 					this.getButtonInstance(writterBtn.addBtn),
@@ -242,8 +243,12 @@
 			tbar.push('->');
 			tbar.push(this.searchField = new fields.triggerField({
                 trigger2Class:'gis_search',
+                tooltipsTriggers:['Limpiar b&uacute;squeda','Buscar'],
                 onTrigger2Click: this.searchByDenom.createDelegate(this)
             }));
+			this.searchField.on('valuecleaned',function(){
+			    self.searchByDenom();
+            });
 
 			return tbar;
         },
