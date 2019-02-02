@@ -187,17 +187,21 @@
         constructor :function (config) {
             this._apply_(config);
 
-            this.gridButtons = {};
-            this.gridButtons[writterBtn.addBtn] = buttons.btnAdicionar;
-            this.gridButtons[writterBtn.rmBtn] = buttons.btnDelete;
-            this.gridButtons[writterBtn.submitBtn] = buttons.btnGuardar;
-            this.gridButtons[writterBtn.cancelBtn] = buttons.btnCancelar;
-            this.gridButtons[writterBtn.modBtn] = buttons.btnModificar;
+            this.gridButtons = this.getGridButtons();
 
             if(this.showTitle)
                 this.title = this._enum.name;
 
             nom.GridDataEditor.superclass.constructor.call(this, ({items:[]})._apply_(config));
+        },
+        getGridButtons : function(){
+            var btns = {};
+            btns[writterBtn.addBtn] = buttons.btnAdicionar;
+            btns[writterBtn.rmBtn] = buttons.btnDelete;
+            btns[writterBtn.submitBtn] = buttons.btnGuardar;
+            btns[writterBtn.cancelBtn] = buttons.btnCancelar;
+            btns[writterBtn.modBtn] = buttons.btnModificar;
+            return btns;
         },
         initializeUI :function (_enum, multiSelection ) {
             var tbar = this.initializeStoreWriterButtons();
