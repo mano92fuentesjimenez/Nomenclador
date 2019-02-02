@@ -349,7 +349,7 @@
             }
         },
         resetPagingTotalCount: function(totalCount){
-            this.pagingBar.changeTotalCount(totalCount)
+            // this.pagingBar.changeTotalCount(totalCount);
         }
 
     })._apply_({
