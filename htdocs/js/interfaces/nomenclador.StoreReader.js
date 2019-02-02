@@ -56,6 +56,7 @@
         totalCount: null,
         submitButton: null,
 
+        searchByDenomValue:null,
         hasLoadedBoolean: null,
         enumUI:null,
         storeInitialized:false,
@@ -209,11 +210,34 @@
         recorddblclick:function(record){
             this.fireEvent('valueselected',record);
         },
+        searchByDenom: function(value){
+            var self = this;
 
+            this.searchByDenomValue = value;
+            this.resetCount(function (r) {
+                self.loadEnumData(0);
+            })
+        },
+        resetSearchByDenom: function(){
+            this.searchByDenom(undefined);
+        },
+        resetCount:function(cb){
+            var self = this;
+            nom.request('getTotalRecordsFromEnum', {
+                instanceName: this.enumInstance,
+                _enum: this._enum.id,
+                where: this.getEnumLoadConfig(0).where,
+                actions:this.getActions(this),
+                extraParams: this.extraParams
+            }, function (r) {
+                self.totalCount = r;
+                self.resetPagingTotalCount(r);
+                $$.execute(cb);
+            },null ,this.getMaskObj());
+        },
         init: function () {
             var self = this,
-                cb = function (r) {
-					self.totalCount = r;
+                cb = function () {
 					self.store = self.createStore();
 					self.setNewStore(self.store);
 					self.loadEnumData(self.pagePosition, function () {
@@ -221,17 +245,12 @@
 						self.pagePosition = 0;
 						self.storeInitialized = true;
 						self.fireEvent('storeinitialized', self);
-					})
+					});
                     self.initialized = true;
 				};
 			if(!this.offlineMode)
-                nom.request('getTotalRecordsFromEnum', {
-                    instanceName: this.enumInstance,
-                    _enum: this._enum.id,
-                    where: this.getEnumLoadConfig(0).where,
-                    actions:this.getActions(this),
-                    extraParams: this.extraParams
-                }, cb,null ,self.getMaskObj());
+			    this.resetCount(cb);
+
 			else setTimeout(cb,0);
 
         },
@@ -252,6 +271,13 @@
                 if(!utils.isString(where))
                     where = '';
                 where += primary +' not in '+ Ext.encode(this.excludeEnums).replace('[','(').replace(']',')').replace(/"/g,'');
+            }
+            if(utils.isString(this.searchByDenomValue)){
+                if(utils.isString(where))
+                    where += ' and ';
+                else
+                    where = '';
+                where += nom.enums.getDenomField(this.enumInstance.getName(), this._enum.id)+" ilike '%"+this.searchByDenomValue+"%'";
             }
             if(this.appendData && c!==0 && (currentPageElemCount - c) > 0){
 
@@ -570,6 +596,9 @@
         },
         refreshView :function(){
             Logger.warn('Funcion refreshView no fue sobrescrita');
+        },
+        resetPagingTotalCount:function(){
+            Logger.warn('Funcion no fue sobrescrita');
         }
     });
 

@@ -298,9 +298,9 @@ class EnumQuerier extends Enum
     }
     private function parseWhere($where, $baseName){
         $glue = '(?:(?i)or|and)';
-        $operators = '(?:not )?((?i)like|=|>|<|>=|<=|<>|in)';
+        $operators = '(?:not )?((?i)like|ilike|=|>|<|>=|<=|<>|in)';
         $id = '[-_[:alnum:]]+?';
-        $v = "('.*?'|\d+)";
+        $v = "(('.*?')|(\d+)|true|false)";
         $value = "($id)|($v)|(\($v(?:,$v)*\))";
         $clause = "^\s*(?:(?<table>$id)\.)?(?<field>$id)\s*(?<operator>$operators)\s*(?<value>$value)\s*((?<glue>$glue)|$)";
         $regEx = "~$clause~";
