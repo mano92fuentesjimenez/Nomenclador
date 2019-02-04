@@ -47,7 +47,8 @@ abstract class DBConn{
     public abstract function beginTransaction();
     public abstract function commitTransaction();
     
-    public abstract function getEnumData($schema, $baseName, $subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset, $limit, $idRow );
+    public abstract function getEnumData( $baseName, $subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset, $limit, $idRow );
+    public abstract function getQuery( $baseName, $subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $idRow );
 
     public abstract function countRows($tableName, $schema, $where);
     public abstract function getFieldSingleValue($tableName, $schema, $fieldName, $rowIndex, $getAll = false, $fields = null);
@@ -317,9 +318,12 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->endFrom($query);
     }
 
-    public function getEnumData($schema, $baseName,$subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset =null, $limit = null, $idRow =null)
+    public function getEnumData( $baseName,$subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset =null, $limit = null, $idRow =null)
     {
-        return $this->dbConn->getEnumData($schema, $baseName,$subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset, $limit, $idRow );
+        return $this->dbConn->getEnumData( $baseName,$subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset, $limit, $idRow );
+    }
+    public function getQuery( $baseName, $subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $idRow ){
+        return $this->dbConn->getQuery( $baseName, $subQName, $selectSubq, $fromSub, $select, $from, $whereSubq, $idRow);
     }
 
     public function startWhere($where)

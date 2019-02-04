@@ -375,7 +375,6 @@ class Postgree_9_1 extends DBConn
 
     public function getEnumData($schema, $baseName, $subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $offset=null, $limit=null, $idRow=null )
     {
-        $search_path ="set search_path = $schema ";
         $query = "$selectSubq $fromSub";
         
         if($idRow){
@@ -395,8 +394,24 @@ class Postgree_9_1 extends DBConn
         if(is_string($from)){
             $query = " $select from ($query) as $subQName $from";
         }
-        $query = "$search_path ; $query ;";
         return $this->query($query);
+    }
+    public function getQuery( $baseName, $subQName, $selectSubq, $fromSub,$select,$from, $whereSubq, $idRow ){
+
+        $query = "$selectSubq $fromSub";
+
+        if($idRow){
+            $query= "$query WHERE $baseName.".PrimaryKey::ID."='$idRow' ";
+        }
+        else if($whereSubq){
+            $query= "$query $whereSubq ";
+        }
+        $query ="$query order by $baseName asc ";
+
+        if(is_string($from)){
+            $query = " $select from ($query) as $subQName $from";
+        }
+        return $query;
     }
 
     public function startWhere($where = null)

@@ -168,8 +168,7 @@ class EnumQuerier extends Enum
         return $keys;
     }
 
-    private function getData($offset = null, $limit = null, $idRow = null,$fieldsToGet = null, $inData = null, $loadAllData, $where)
-    {
+    private function getSqlQueryFragments($offset = null, $limit = null, $idRow = null,$fieldsToGet = null, $inData = null, $loadAllData, $where){
         $fields = $fieldsToGet;
         $baseName = 'base';
         $subQeryName ='subq';
@@ -260,6 +259,48 @@ class EnumQuerier extends Enum
             $whereSql = $conn->startWhere($where);
             $whereSql = $conn->endWhere($whereSql);
         }
+
+        return array(
+            'baseName' => $baseName,
+            'subQueryName' => $subQeryName,
+            'selectSubq' => $selectSubq,
+            'fromSubq' => $fromSubq,
+            'select' => $select,
+            'from' => $from,
+            'where' => $whereSql,
+            'multiField'=>$multiField
+        );
+
+    }
+    public function getQuerySql($offset = null, $limit = null, $idRow = null,$fieldsToGet = null, $inData = null, $loadAllData, $where){
+        $fragments = $this->getSqlQueryFragments($offset , $limit , $idRow ,$fieldsToGet , $inData , $loadAllData, $where);
+
+        return EnumsUtils::getDBConnection($this)->getQuery(
+            $fragments['baseName'],
+            $fragments['subQueryName'],
+            $fragments['selectSubq'],
+            $fragments['fromSubq'],
+            $fragments['select'],
+            $fragments['from'],
+            $fragments['where'],
+            $idRow);
+    }
+
+    private function getData($offset = null, $limit = null, $idRow = null,$fieldsToGet = null, $inData = null, $loadAllData, $where)
+    {
+        $queryStrings = $this->getSqlQueryFragments($offset, $limit, $idRow, $fieldsToGet, $inData, $loadAllData, $where);
+
+        $ds = $this->getDataSource();
+        $conn = EnumsUtils::getDBConnection($this);
+
+        $baseName = $queryStrings['baseName'];
+        $subQeryName = $queryStrings['subQueryName'];
+        $whereSql = $queryStrings['where'];
+        $select = $queryStrings['select'];
+        $selectSubq = $queryStrings['selectSubq'];
+        $fromSubq = $queryStrings['fromSubq'];
+        $from = $queryStrings['from'];
+        $multiField = $queryStrings['multiField'];
 
         if (!$conn->getEnumData($ds->getSchema(), $baseName, $subQeryName, $selectSubq, $fromSubq,$select,$from, $whereSql,$offset, $limit,  $idRow)
         ) {
