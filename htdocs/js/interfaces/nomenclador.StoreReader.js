@@ -210,6 +210,10 @@
         recorddblclick:function(record){
             this.fireEvent('valueselected',record);
         },
+        setAppendDataConfig: function(appendConfig){
+            if(Ext.isBoolean(appendConfig))
+                this.appendData = appendConfig;
+        },
         searchByDenom: function(value){
             var self = this;
 
