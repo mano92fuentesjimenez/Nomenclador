@@ -220,14 +220,14 @@
             if(this.fireEvent('beforesearching',this,value) === false)
                 return;
 
-            if(value === '' && this.fireEvent('beforesearchreset',this,value) === false)
+            if(!value && this.fireEvent('beforesearchreset',this,value) === false)
                 return;
 
             this.searchByDenomValue = value;
             this.resetCount(function (r) {
                 self.loadEnumData(0,function(){
                     self.fireEvent('aftersearching',self,value);
-                    if(value === '')
+                    if(!value)
                         self.fireEvent('aftersearchreset', self, value);
                 });
             })
