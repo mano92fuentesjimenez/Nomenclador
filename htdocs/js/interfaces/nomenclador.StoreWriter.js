@@ -83,58 +83,7 @@
 
             this.manageEnum = (config && config.manageEnum !==undefined) ? config.manageEnum : this.manageEnum;
             if( this.manageEnum)
-                this.__buttonsConfig = {
-                    addBtn:{
-                        text: "",
-                        tooltip: 'Adicionar datos',
-                        handler: function () {
-                            self.dataEditor.showEditor(null, function (recordObj) {
-                                if(self.fieldFilter)
-                                    recordObj[self.fieldFilter] = self.fieldFilterValue;
-                                var record = self.createNewRecord(recordObj);
-                                self.store.add(record);
-                                self.fireEvent('recordAdded',record);
-                            });
-                        }
-                    },
-                    modBtn:{
-                        text:'',
-                        tooltip: 'Modificar datos',
-                        handler: function(){
-                            var selection = self.getSelection();
-                            if(selection._length_()> 0 )
-                                self.modifyRecord(selection._first_());
-                        }
-                    },
-                    rmBtn:{
-                        disabled: true,
-                        text: '',
-                        tooltip: "Eliminar datos",
-                        handler: function () {
-                            var selection = self.getSelection();
-                            selection._each_(function (v, k) {
-                                self.store.remove(v);
-                            });
-                            self.fireEvent('recordDeleted', selection);
-                        }
-                    },
-                    cancelBtn:{
-                        tooltip: "Limpiar Cambios",
-                        iconCls: "gis_limpiar",
-                        text: '',
-                        handler: function () {
-                            self.cancelChanges();
-                            self.refreshView();
-                        }
-                    },
-                    submitBtn:{
-                        tooltip: "Guardar Cambios",
-                        iconCls: "gis_guardar",
-                        text: '',
-                        handler: this.submitChanges,
-                        scope: this
-                    }
-                };
+                this.__buttonsConfig = this.getButtonsConfig();
 
             this.__eventsConfig = {
                 'recorddblclick':this.recorddblclick
@@ -154,6 +103,61 @@
 
             this.dataEditor= this.createEditor(formDataEditor ? formDataEditor : nom.FormDataEditor_Default);
 
+        },
+        getButtonsConfig : function(){
+		    var self = this;
+		    return {
+                addBtn:{
+                    text: "",
+                    tooltip: 'Adicionar datos',
+                    handler: function () {
+                        self.dataEditor.showEditor(null, function (recordObj) {
+                            if(self.fieldFilter)
+                                recordObj[self.fieldFilter] = self.fieldFilterValue;
+                            var record = self.createNewRecord(recordObj);
+                            self.store.add(record);
+                            self.fireEvent('recordAdded',record);
+                        });
+                    }
+                },
+                modBtn:{
+                    text:'',
+                    tooltip: 'Modificar datos',
+                    handler: function(){
+                        var selection = self.getSelection();
+                        if(selection._length_()> 0 )
+                            self.modifyRecord(selection._first_());
+                    }
+                },
+                rmBtn:{
+                    disabled: true,
+                    text: '',
+                    tooltip: "Eliminar datos",
+                    handler: function () {
+                        var selection = self.getSelection();
+                        selection._each_(function (v, k) {
+                            self.store.remove(v);
+                        });
+                        self.fireEvent('recordDeleted', selection);
+                    }
+                },
+                cancelBtn:{
+                    tooltip: "Limpiar Cambios",
+                    iconCls: "gis_limpiar",
+                    text: '',
+                    handler: function () {
+                        self.cancelChanges();
+                        self.refreshView();
+                    }
+                },
+                submitBtn:{
+                    tooltip: "Guardar Cambios",
+                    iconCls: "gis_guardar",
+                    text: '',
+                    handler: this.submitChanges,
+                    scope: this
+                }
+            };
         },
         createEditor : function(classObject){
             return new classObject(this.enumInstance, this._enum, this.columns, this.dataEditorConfig);
