@@ -73,7 +73,7 @@
      *
      */
 
-_define_('nomenclador',['ext3*','layersWindows','QueryBuilder','nomenclador']);
+_define_('nomenclador',['ext3*','layersWindows','QueryBuilder','mapsUtils','nomenclador']);
 
 AjaxPlugins.Nomenclador = {
     

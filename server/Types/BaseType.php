@@ -21,6 +21,7 @@ require_once 'DB_Types/DB_Images.php';
 require_once 'DB_Types/DB_Description.php';
 require_once 'DB_Types/DB_RichText.php';
 require_once 'DB_Types/DB_Table.php';
+require_once 'DB_Types/DB_GeomDrawer.php';
 
 abstract class BaseType
 {

@@ -1414,11 +1414,16 @@
      * @param config.showTpls {string[]}  Arreglo de identificadores de tpl q se van a mostarar en esta vista. Por defecto se muestran todos.
      * @param instanceModifier  {string}  Modificador al nombre de instancia. El nombre de instancia agrupa entidades, el modificador
      *                                    agrupa configuraciones de UI.
+     * @param forceShow {boolean}     Si la ventana fue escondida porque se necesitaba abrir el mapa, no se va a mostrar a menos q este parametro fue true
 
      *
      */
-    nom.showUI = function (instanceName, config, instanceModifier){
-        nom.getUI(instanceName, config,instanceModifier).show();
+    nom.showUI = function (instanceName, config, instanceModifier, forceShow){
+        var ui = nom.getUI(instanceName, config,instanceModifier);
+
+    };
+    nom.hideUI = function(instanceName){
+
     };
     nom.getUI = function(instanceName, config, instanceModifier){
         instanceName = instanceName ? instanceName : nom.export.DEFAULT_INSTANCE;
