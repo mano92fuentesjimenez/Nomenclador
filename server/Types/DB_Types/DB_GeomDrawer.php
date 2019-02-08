@@ -21,7 +21,7 @@ class DB_GeomDrawer extends BaseType{
 //        }
     }
     public static  function transformSelect($fieldPath){
-        return "ST_AsGeoJSON($fieldPath)";
+        return "ST_AsGeoJSON($fieldPath, 15, 2)";
     }
     public static function getValueToDB($record, $value, $field, $connType){
         if(is_null($value) or $value === '')
