@@ -342,11 +342,11 @@ class Postgree_9_1 extends DBConn
         return "SELECT ";
     }
 
-    public function continueSelect($schema, $tableName, $field, $alias, $query, $baseName)
+    public function continueSelect($schema, $tableName, $field, $alias, $query, $baseName, $enumFieldType)
     {
         if(is_string($schema))
-            return $query."\"$schema\".\"$tableName\".\"$field\" as \"$alias\", ";
-        return "$query $baseName.\"$field\" as $alias,";
+            return $query.($enumFieldType::transformSelect("\"$schema\".\"$tableName\".\"$field\"")." as \"$alias\", ");
+        return $query.($enumFieldType::transformSelect( "$baseName.\"$field\"")." as $alias,");
     }
 
     public function endSelect($query, $baseName)

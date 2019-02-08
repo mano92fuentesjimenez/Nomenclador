@@ -97,6 +97,10 @@ abstract class BaseType
     public static function showInReport(){
         return true;
     }
+
+    public static  function transformSelect($fieldPath){
+        return $fieldPath;
+    }
 }
 
 class PrimaryKey extends BaseType{

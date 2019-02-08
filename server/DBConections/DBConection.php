@@ -68,7 +68,7 @@ abstract class DBConn{
     public abstract function tableExists($tablename, $schema);
     
     public abstract function startSelect();
-    public abstract function continueSelect($schema, $tableName, $field, $alias, $query, $baseName);
+    public abstract function continueSelect($schema, $tableName, $field, $alias, $query, $baseName, $enumFieldType);
     public abstract function endSelect($query, $baseName);
     
     public abstract function startFrom($enumScheman,$tableName,$baseName);
@@ -291,9 +291,9 @@ class DBConnProxy extends  DBConn
         return $this->dbConn->startSelect();
     }
 
-    public function continueSelect($schema, $tableName, $field, $alias, $query, $baseName)
+    public function continueSelect($schema, $tableName, $field, $alias, $query, $baseName, $enumFieldType)
     {
-        return $this->dbConn->continueSelect($schema, $tableName, $field, $alias,$query, $baseName);
+        return $this->dbConn->continueSelect($schema, $tableName, $field, $alias,$query, $baseName, $enumFieldType);
             
     }
 

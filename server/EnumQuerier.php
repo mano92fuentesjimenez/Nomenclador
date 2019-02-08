@@ -192,6 +192,7 @@ class EnumQuerier extends Enum
         foreach ($fieldsWalking as $key => $value) {
 
             $field = $this->getField($key);
+            $fieldType = $field->getType();
 
             $prop =$field->getProperties();
             $currentReferencedEnum =null;
@@ -214,28 +215,28 @@ class EnumQuerier extends Enum
 
                         $from = $conn->continueFromMultiSelect($ds->getSchema(), $currentReferencedEnum->getRawTableName(),$this->getRawTableName(),$multiName,'', $subQeryName);
                         //poner el valor verdadero del enum en $key (id del campo)
-                        $select = $conn->continueSelect($ds->getSchema(),$multiName,$currentReferencedEnum->getRawTableName(),$key,$select,$subQeryName);
-                        $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),$key . BaseType::REF_TYPE_VALUE_HEADER,$select,$subQeryName);
+                        $select = $conn->continueSelect($ds->getSchema(),$multiName,$currentReferencedEnum->getRawTableName(),$key,$select,$subQeryName, $fieldType);
+                        $select = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),$key . BaseType::REF_TYPE_VALUE_HEADER,$select,$subQeryName, $fieldType);
                     }
                     else {
 
                         $fromSubq = $conn->continueFrom($ds2->getSchema(),$currentReferencedEnum->getRawTableName(), $key, $fromSubq, $baseName);
                         //poner el valor verdadero del enum en $key (id del campo)
-                        $selectSubq = $conn->continueSelect(null,null, $key,$key, $selectSubq,$baseName);
+                        $selectSubq = $conn->continueSelect(null,null, $key,$key, $selectSubq,$baseName, $fieldType);
                         $selectSubq = $conn->continueSelect($ds2->getSchema(),$currentReferencedEnum->getRawTableName(),$rField->getId(),
-                            $key . BaseType::REF_TYPE_VALUE_HEADER, $selectSubq,$baseName);
+                            $key . BaseType::REF_TYPE_VALUE_HEADER, $selectSubq,$baseName, $fieldType);
 
-                        $select = $conn->continueSelect(null,null, $key,$key, $select,$subQeryName);
+                        $select = $conn->continueSelect(null,null, $key,$key, $select,$subQeryName, $fieldType);
                         $select = $conn->continueSelect(null,null,$key . BaseType::REF_TYPE_VALUE_HEADER,
-                            $key . BaseType::REF_TYPE_VALUE_HEADER, $select,$subQeryName);
+                            $key . BaseType::REF_TYPE_VALUE_HEADER, $select,$subQeryName, $fieldType);
                     }
                 }
             }
             else {
                 $selectSubq = $conn->continueSelect(null, null, $key,
-                    $key, $selectSubq, $baseName);
+                    $key, $selectSubq, $baseName, $fieldType);
                 $select = $conn->continueSelect(null, null, $key,
-                    $key, $select, $subQeryName);
+                    $key, $select, $subQeryName, $fieldType);
             }
             unset($fields[$key]);
         }
