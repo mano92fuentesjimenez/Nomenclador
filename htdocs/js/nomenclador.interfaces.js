@@ -134,7 +134,7 @@
                 editorConfig = $$.check(this.editorContainerConfig,{}),
                 defaultEditorConfig = {
                     // height: 400,
-                    modal: true,
+                    // modal: true,
                     // autoHeight: true,
                     minHeight: 50,
                     maxHeight: 400,

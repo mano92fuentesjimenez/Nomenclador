@@ -4,7 +4,8 @@
 (function(){
     var nom = AjaxPlugins.Nomenclador,
         addType =nom.Type.Utils.addType,
-        mapUtils = AjaxPlugins.MapUtils;
+        mapUtils = AjaxPlugins.MapUtils,
+        deps = AjaxPlugins.Nomenclador.Type.commonDepependencies;
 
     /**
      * Tipo geometrico.Solo para pintar geometrias y guardarlas.
@@ -16,21 +17,51 @@
             return new geom_drawer();
         },
         getValueEditExtComp :function (enumInstance, field){
-            return new AjaxPlugins.Ext3_components.fields.triggerField({
+            var trigger =  new AjaxPlugins.Ext3_components.fields.triggerField({
                 allowBlank :!field.needed,
                 fieldLabel :field.header,
                 onTrigger2Click: function(){
-                    mapUtils.export.VECTOR.getGeomDrawer({
-                        maxGeometries: 1
-                    }).then(function(geoms){
-
+                    nom.hideUI(enumInstance.getName(), enumInstance.getInstanceNameModifier());
+                    mapUtils.export.VECTOR.getGeomDrawer(
+                        deps.getGeomDrawerConfig(trigger, enumInstance, trigger.getValue())
+                    ).then(function(geoms){
+                        var parser = new OpenLayers.Format.GeoJSON();
+                        trigger.setValue(parser.write(geoms[0]));
                     })
                 },
+                setValue: function (value) {
+                    this.currentValue = value;
+                    var self = this,
+                        f = function(){
+                        trigger.setRawValue('geometria seleccionada');
+                            self.fireEvent('datachanged');
+                    };
 
-            })
+                    if(!this.rendered)
+                        this.on('afterrender',f);
+                    else
+                        f();
+
+                },
+                getValue: function () {
+                    if(this.currentValue)
+                        return this.currentValue;
+                    return '';
+                },
+                getFormVEvtNames: function(){
+                    return 'datachanged';
+                },
+                getXType: function(){
+                    return 'geomDrawertrigger';
+                },
+                isDirty: function () {
+                    return true;
+                }
+            });
+            return trigger;
         },
         gridRender: function (value) {
-            return 'geom';
+            return 'geometria';
         }
     }));
 
