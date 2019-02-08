@@ -1420,10 +1420,11 @@
      */
     nom.showUI = function (instanceName, config, instanceModifier, forceShow){
         var ui = nom.getUI(instanceName, config,instanceModifier);
-
+        ui.show();
     };
-    nom.hideUI = function(instanceName){
-
+    nom.hideUI = function(instanceName,instanceModifier){
+        var ui = nom.getUI(instanceName,null,instanceModifier);
+        ui.hide();
     };
     nom.getUI = function(instanceName, config, instanceModifier){
         instanceName = instanceName ? instanceName : nom.export.DEFAULT_INSTANCE;
